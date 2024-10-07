@@ -1,6 +1,6 @@
 Type: Package
 Package: dist.spec
-Title: git@github.com:epiforecasts/dist.spec.gitDefine probability distributions with certain or uncertain parameters
+Title: Define probability distributions with certain or uncertain parameters
 Version: 0.0.9000
 Authors@R: 
     c(person(given = "Sebastian",
