@@ -7,12 +7,31 @@ cff-version: 1.2.0
 message: 'To cite package "dist.spec" in publications use:'
 type: software
 license: MIT
-title: 'dist.spec: Define probability distributions with certain or uncertain parameters'
+title: 'dist.spec: git@github.com:epiforecasts/dist.spec.gitDefine probability distributions
+  with certain or uncertain parameters'
 version: 0.0.9000
 abstract: Functions for defining probability distributions with potentially uncertain
   parameters.
+authors:
+- family-names: Funk
+  given-names: Sebastian
+  email: sebastian.funk@lshtm.ac.uk
+  orcid: https://orcid.org/0000-0002-2842-3406
+- family-names: Azam
+  given-names: James M.
+  email: james.azam@lshtm.ac.uk
+  orcid: https://orcid.org/0000-0001-5782-7330
+- family-names: Abbott
+  given-names: Sam
+  email: sam.abbott@lshtm.ac.uk
+  orcid: https://orcid.org/0000-0001-8057-8037
 repository-code: https://github.com/epiforecasts/dist.spec
 url: https://epiforecasts.io/dist.spec
+contact:
+- family-names: Funk
+  given-names: Sebastian
+  email: sebastian.funk@lshtm.ac.uk
+  orcid: https://orcid.org/0000-0002-2842-3406
 references:
 - type: software
   title: 'R: A Language and Environment for Statistical Computing'
