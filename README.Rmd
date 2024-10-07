@@ -1,0 +1,3 @@
+# Define and manipulate probability distributions with potentially uncertain parameters
+
+This package is an experimental spin-out from the [EpiNow2](https://epiforecasts.io/EpiNow2) package.
