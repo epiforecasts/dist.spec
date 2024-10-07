@@ -1,0 +1,40 @@
+url: https://epiforecasts.io/dist.spec/
+template:
+  bootstrap: 5
+  params:
+    bootswatch: lumen
+
+development:
+  mode: auto
+
+reference:
+  - title: Defining probability distributions
+    desc: Functions that are used to define probability distributions
+    contents:
+      - Distributions
+  - title: Access functions
+    desc: Functions that are used to acccess properties of probability distributions
+    contents:
+      - get_distribution
+      - get_parameters
+      - get_pmf
+  - title: Modify distributions
+    desc: Functions to modify and combine probability distributions
+    contents:
+      - c.dist_spec
+      - +.dist_spec
+      - collapse.dist_spec
+      - bound_dist
+      - discretise.dist_spec
+      - fix_parameters.dist_spec
+  - title: Query properties of distributions
+    desc: Functions used to query properties of probability distributions
+    contents:
+      - max.dist_spec
+      - mean.dist_spec
+      - is_constrained
+  - title: Visualise distributions
+    desc: Functions used to print or plot probability distributions
+    contents:
+      - print.dist_spec
+      - plot.dist_spec

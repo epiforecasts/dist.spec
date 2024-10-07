@@ -1086,12 +1086,14 @@ extract_params <- function(params, distribution) {
 #' @importFrom purrr walk
 #' @importFrom cli cli_abort cli_warn
 #' @return A `dist_spec` of the given specification.
-#' @export
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' new_dist_spec(
 #'   params = list(mean = 2, sd = 1),
 #'   distribution = "normal"
 #' )
+#' }
 new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution

@@ -28,8 +28,11 @@ This will convert all parameters to natural parameters before generating
 a \code{dist_spec}. If they have uncertainty this will be done using sampling.
 }
 \examples{
+\dontrun{
 new_dist_spec(
   params = list(mean = 2, sd = 1),
   distribution = "normal"
 )
 }
+}
+\keyword{internal}
