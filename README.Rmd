@@ -11,6 +11,7 @@ Contributors
 
 
 
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -21,19 +22,21 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 
 
 <a href="https://github.com/epiforecasts/dist.spec/commits?author=sbfnk">sbfnk</a>, 
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=dependabot[bot]">dependabot[bot]</a>
+<a href="https://github.com/epiforecasts/dist.spec/commits?author=seabbs">seabbs</a>, 
+<a href="https://github.com/epiforecasts/dist.spec/commits?author=dependabot[bot]">dependabot[bot]</a>, 
+<a href="https://github.com/epiforecasts/dist.spec/commits?author=github-merge-queue[bot]">github-merge-queue[bot]</a>
 
 
 
 ### Issues
 
 
-<a href="https://github.com/epiforecasts/dist.spec/issues?q=is%3Aissue+author%3Aseabbs">seabbs</a>, 
 <a href="https://github.com/epiforecasts/dist.spec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
 
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
 
 
