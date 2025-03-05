@@ -1,0 +1,7 @@
+linters: linters_with_tags(
+    tags = NULL, # include all linters
+    object_name_linter = NULL
+  )
+exclusions: c(
+    list.files("tests", recursive = TRUE, full.names = TRUE)
+  )
