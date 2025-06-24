@@ -12,6 +12,7 @@ reference:
     desc: Functions that are used to define probability distributions
     contents:
       - Distributions
+      - new_dist_spec
   - title: Access functions
     desc: Functions that are used to acccess properties of probability distributions
     contents:
@@ -36,8 +37,8 @@ reference:
   - title: Compare distributions
     desc: Functions used to compare probability distributions
     contents:
-      - ==.dist_spec
-      - !=.dist_spec
+      - "`==.dist_spec`"
+      - "`!=.dist_spec`"
   - title: Visualise distributions
     desc: Functions used to print or plot probability distributions
     contents:
