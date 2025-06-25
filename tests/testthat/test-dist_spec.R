@@ -117,7 +117,7 @@ test_that("`bound_dist` function can be applied to a convolution", {
 test_that("summary functions return correct output for fixed lognormal distribution", {
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
   expect_equal(mean(dist), 3.0, tolerance = 0.01)
-  expect_equal(EpiNow2:::sd(dist), 1.34, tolerance = 0.01)
+  expect_equal(sd(dist), 1.34, tolerance = 0.01)
   expect_equal(max(dist), 19L)
 })
 
@@ -132,7 +132,7 @@ test_that("mean returns correct output for sum of two distributions", {
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
   expect_equal(mean(dist), c(4.48, 3), tolerance = 0.001)
-  expect_equal(EpiNow2:::sd(dist), c(5.87, 2), tolerance = 0.001)
+  expect_equal(sd(dist), c(5.87, 2), tolerance = 0.001)
   ## shortened due to tolerance level
   expect_equal(max(dist), c(19L, 19L))
 })
@@ -144,7 +144,7 @@ test_that("mean returns NA when applied to uncertain distributions", {
 
 test_that("sd returns NA when applied to uncertain distributions", {
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_true(is.na(EpiNow2:::sd(dist)))
+  expect_true(is.na(sd(dist)))
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
@@ -217,8 +217,8 @@ test_that("composite delay distributions can be disassembled", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
-  expect_equal(EpiNow2:::extract_single_dist(dist, 1), dist1)
-  expect_equal(EpiNow2:::extract_single_dist(dist, 2), dist2)
+  expect_equal(extract_single_dist(dist, 1), dist1)
+  expect_equal(extract_single_dist(dist, 2), dist2)
 })
 
 test_that("constrained distributions are correctly identified", {
