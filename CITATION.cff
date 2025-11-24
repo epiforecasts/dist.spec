@@ -41,7 +41,7 @@ references:
   institution:
     name: R Foundation for Statistical Computing
     address: Vienna, Austria
-  year: '2024'
+  year: '2025'
   version: '>= 3.5.0'
 - type: software
   title: cli
@@ -52,8 +52,8 @@ references:
   authors:
   - family-names: Csárdi
     given-names: Gábor
-    email: csardi.gabor@gmail.com
-  year: '2024'
+    email: gabor@posit.co
+  year: '2025'
   doi: 10.32614/CRAN.package.cli
 - type: software
   title: stats
@@ -64,7 +64,7 @@ references:
   institution:
     name: R Foundation for Statistical Computing
     address: Vienna, Austria
-  year: '2024'
+  year: '2025'
 - type: software
   title: utils
   abstract: 'R: A Language and Environment for Statistical Computing'
@@ -74,5 +74,5 @@ references:
   institution:
     name: R Foundation for Statistical Computing
     address: Vienna, Austria
-  year: '2024'
+  year: '2025'
 
