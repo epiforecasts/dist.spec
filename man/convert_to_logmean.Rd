@@ -22,12 +22,12 @@ The log mean of a lognormal distribution
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Convert from mean and standard deviation to the log mean of the
 lognormal distribution. Useful for defining distributions supported by
-\code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=epinow]{epinow()}}, and \code{\link[=regional_epinow]{regional_epinow()}}.
+\code{estimate_infections()}, \code{epinow()}, and \code{regional_epinow()}.
 
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Convert from mean and standard deviation to the log mean of the
 lognormal distribution. Useful for defining distributions supported by
-\code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=epinow]{epinow()}}, and \code{\link[=regional_epinow]{regional_epinow()}}.
+\code{estimate_infections()}, \code{epinow()}, and \code{regional_epinow()}.
 }
 \examples{
 

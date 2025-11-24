@@ -189,7 +189,7 @@ discrete_pmf <- function(distribution =
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' This combines the parameters so that they can be fed as multiple delay
-#' distributions to [epinow()] or [estimate_infections()].
+#' distributions to `epinow()` or `estimate_infections()`.
 #'
 #' Note that distributions that already are combinations of other distributions
 #' cannot be combined with other combinations of distributions.
@@ -690,8 +690,8 @@ print.dist_spec <- function(x, ...) {
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
 #' @param ... ignored
-#' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
-#' scale_color_brewer
+#' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
+#' theme_bw scale_color_brewer labs
 #' @importFrom data.table data.table rbindlist
 #' @importFrom cli cli_abort
 #' @export

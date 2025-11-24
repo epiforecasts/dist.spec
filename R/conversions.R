@@ -3,7 +3,7 @@
 #' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log mean of the
 #' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
+#' `estimate_infections()`, `epinow()`, and `regional_epinow()`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -22,7 +22,7 @@ convert_to_logmean <- function(mean, sd) {
 #' @description `r lifecycle::badge("stable")`
 #' Convert from mean and standard deviation to the log standard deviation of the
 #' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
+#' `estimate_infections()`, `epinow()`, and `regional_epinow()`.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
