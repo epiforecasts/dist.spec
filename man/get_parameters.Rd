@@ -2,12 +2,17 @@
 % Please edit documentation in R/dist_spec.R
 \name{get_parameters}
 \alias{get_parameters}
+\alias{get_parameters.dist_spec}
 \title{Get parameters of a parametric distribution}
 \usage{
-get_parameters(x, id = NULL)
+get_parameters(x, ...)
+
+\method{get_parameters}{dist_spec}(x, id = NULL, ...)
 }
 \arguments{
-\item{x}{A \verb{<dist_spec>}.}
+\item{x}{A \code{dist_spec} object}
+
+\item{...}{Additional arguments passed to methods}
 
 \item{id}{Integer; the id of the distribution to use (if x is a composite
 distribution). If \code{x} is a single distribution this is ignored and can be
@@ -18,6 +23,8 @@ A list of parameters of the distribution.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Generic function to extract the distribution parameters (e.g. shape and
+rate for Gamma) from a \code{dist_spec} object.
 }
 \examples{
 dist <- Gamma(shape = 3, rate = 2)

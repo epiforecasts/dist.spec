@@ -6,7 +6,7 @@
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-\method{discretise}{dist_spec}(x, strict = TRUE, ...)
+\method{discretise}{dist_spec}(x, strict = TRUE, remove_trailing_zeros = TRUE, ...)
 
 discretize(x, ...)
 }
@@ -18,6 +18,10 @@ distribution cannot be discretised (e.g., because no finite maximum has been
 specified or parameters are uncertain). If \code{FALSE} then any distribution
 that cannot be discretised will be returned as is.}
 
+\item{remove_trailing_zeros}{Logical; If \code{TRUE} (default), trailing zeroes
+in the resulting PMF will be removed. If \code{FALSE}, trailing zeroes will be
+retained.}
+
 \item{...}{ignored}
 }
 \value{
@@ -28,14 +32,17 @@ nonparametric.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \section{Methodological details}{
+The probability mass function is computed using the \code{{primarycensored}}
+package, which provides double censored PMF calculations. This correctly
+represents the probability mass function of a double censored distribution
+arising from the difference of two censored events.
+
 The probability mass function of the discretised probability distribution is
 a vector where the first entry corresponds to the integral over the (0,1]
 interval of the corresponding continuous distribution (probability of
 integer 0), the second entry corresponds to the (0,2] interval (probability
 mass of integer 1), the third entry corresponds to the (1, 3] interval
-(probability mass of integer 2), etc. This approximates the true
-probability mass function of a double censored distribution which arises
-from the difference of two censored events.
+(probability mass of integer 2), etc.
 }
 
 \examples{
@@ -61,4 +68,6 @@ health surveillance and healthcare data”, \emph{arXiv e-prints}, 2024.
 Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 infectious diseases", \emph{medRxiv}, 2024.
 \doi{https://doi.org/10.1101/2024.01.12.24301247}
+Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
+2025. \doi{10.5281/zenodo.13632839}
 }

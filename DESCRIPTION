@@ -32,6 +32,7 @@ Imports:
     data.table,
     ggplot2,
     lifecycle,
+    primarycensored,
     purrr,
     rlang,
     stats,
