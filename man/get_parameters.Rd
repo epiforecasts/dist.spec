@@ -22,7 +22,6 @@ left at its default value of \code{NULL}.}
 A list of parameters of the distribution.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Generic function to extract the distribution parameters (e.g. shape and
 rate for Gamma) from a \code{dist_spec} object.
 }
