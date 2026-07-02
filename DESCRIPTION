@@ -31,7 +31,6 @@ Imports:
     cli,
     data.table,
     ggplot2,
-    lifecycle,
     primarycensored,
     purrr,
     rlang,
