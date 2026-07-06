@@ -44,3 +44,8 @@ reference:
     contents:
       - print.dist_spec
       - plot.dist_spec
+  - title: Convert distribution parameters
+    desc: Functions used to convert between distribution parameterisations
+    contents:
+      - convert_to_logmean
+      - convert_to_logsd
