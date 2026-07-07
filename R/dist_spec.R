@@ -675,10 +675,10 @@ collapse.multi_dist_spec <- function(x, ...) {
 #' )
 #' print(dist2)
 print.dist_spec <- function(x, ...) {
-  .print.dist_spec(x, indent = 0, ...)
+  print_dist_spec_indented(x, indent = 0, ...)
 }
 #' @keywords internal
-.print.dist_spec <- function(x, indent, ...) {
+print_dist_spec_indented <- function(x, indent, ...) {
   indent_str <- strrep(" ", indent)
   if (ndist(x) > 1) {
     cat(indent_str, "Composite distribution:\n", sep = "")
@@ -697,7 +697,9 @@ print.dist_spec <- function(x, ...) {
       if (is.numeric(get_parameters(x, i)$value)) {
         cat(indent_str, "  ", get_parameters(x, i)$value, "\n", sep = "")
       } else {
-        .print.dist_spec(get_parameters(x, i)$value, indent = indent + 4)
+        print_dist_spec_indented(
+          get_parameters(x, i)$value, indent = indent + 4
+        )
       }
     } else {
       ## parametric
@@ -729,7 +731,9 @@ print.dist_spec <- function(x, ...) {
             sep = ""
           )
         } else {
-          .print.dist_spec(get_parameters(x, i)[[param]], indent = indent + 4)
+          print_dist_spec_indented(
+            get_parameters(x, i)[[param]], indent = indent + 4
+          )
         }
       }
     }
@@ -752,7 +756,8 @@ print.dist_spec <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
-#' @importFrom data.table data.table rbindlist
+#' @importFrom stats ave
+#' @importFrom rlang .data
 #' @importFrom cli cli_abort
 #' @export
 #' @examples
@@ -814,41 +819,45 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           distribution = get_distribution(x, i), params = get_parameters(y),
           max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
         )
-        data.table(x = (seq_along(x) - 1) * res, p = x)
+        data.frame(x = (seq_along(x) - 1) * res, p = x)
       })
-      pmf_dt <- rbindlist(pmf_dt, idcol = "sample")
+      pmf_dt <- do.call(rbind, Map(function(dt, s) {
+        dt$sample <- s
+        dt
+      }, pmf_dt, seq_along(pmf_dt)))
 
       dist_name <- paste0(
         ifelse(any(uncertain), "Uncertain ", ""),
         get_distribution(x, i), " (ID: ", i, ")"
       )
-      pmf_dt <- pmf_dt[, distribution := dist_name]
+      pmf_dt$distribution <- dist_name
     }
     pmf_dt
   })
-  pmf_data <- rbindlist(pmf_data)[, `:=`(
-    type = factor("pmf", levels = c("pmf", "cmf")),
-    distribution = factor(distribution, levels = unique(distribution))
-  )]
+  pmf_data <- do.call(rbind, pmf_data)
+  pmf_data$type <- factor("pmf", levels = c("pmf", "cmf"))
+  pmf_data$distribution <- factor(
+    pmf_data$distribution, levels = unique(pmf_data$distribution)
+  )
 
   # Plot PMF and CDF as facets in the same plot
   p <- ggplot(
     pmf_data,
-    mapping = aes(x = x, y = p, group = sample, color = type)
+    mapping = aes(
+      x = .data$x, y = .data$p, group = .data$sample, color = .data$type
+    )
   ) +
     geom_line() +
-    facet_wrap(vars(distribution)) +
+    facet_wrap(vars(.data$distribution)) +
     labs(x = "x", y = "Probability") +
     scale_color_brewer(palette = "Dark2") +
     theme_bw()
   if (cumulative) {
-    cmf_data <- pmf_data[,
-      list(x = x, p = cumsum(p)),
-      by = list(sample, distribution)
-    ][
-      ,
-      type := factor("cmf", levels = c("pmf", "cmf"))
-    ]
+    cmf_data <- pmf_data
+    cmf_data$p <- ave(
+      pmf_data$p, pmf_data$sample, pmf_data$distribution, FUN = cumsum
+    )
+    cmf_data$type <- factor("cmf", levels = c("pmf", "cmf"))
     p <- p +
       geom_step(data = cmf_data)
   }
@@ -1232,8 +1241,7 @@ rdirichlet <- function(alpha) {
 #' @param x The `<dist_spec>` being plotted.
 #' @param i Index of the nonparametric component within `x`.
 #' @param samples Number of PMFs to draw when alpha is present.
-#' @importFrom data.table data.table rbindlist
-#' @return A `data.table` with columns `sample`, `x`, `p`,
+#' @return A `data.frame` with columns `sample`, `x`, `p`,
 #'   `distribution`.
 #' @keywords internal
 nonparametric_pmf_data <- function(x, i, samples) {
@@ -1241,15 +1249,15 @@ nonparametric_pmf_data <- function(x, i, samples) {
   alpha <- component$alpha
   if (!is.null(alpha) && any(alpha > 0)) {
     dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
-    return(rbindlist(lapply(seq_len(samples), function(s) {
-      data.table(
+    return(do.call(rbind, lapply(seq_len(samples), function(s) {
+      data.frame(
         sample = s, x = seq_along(alpha) - 1,
         p = rdirichlet(alpha), distribution = dist_name
       )
     })))
   }
   pmf <- get_pmf(x, i)
-  data.table(
+  data.frame(
     sample = 1, x = seq_along(pmf) - 1, p = pmf,
     distribution = paste0("Nonparametric (ID: ", i, ")")
   )
@@ -1377,7 +1385,6 @@ extract_params <- function(params, distribution) {
 #' @param params Parameters of the distribution (including `max`)
 #' @inheritParams extract_params
 #' @inheritParams bound_dist
-#' @importFrom purrr walk
 #' @importFrom cli cli_abort cli_warn
 #' @return A `dist_spec` of the given specification.
 #' @export
