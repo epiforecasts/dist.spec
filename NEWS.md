@@ -8,3 +8,5 @@
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
+- Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
+  `lower_bounds()` so that dependent packages can reuse them.
