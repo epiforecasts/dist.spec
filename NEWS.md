@@ -1,5 +1,6 @@
 # dist.spec (development version)
 
+- Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Discretisation now uses the `primarycensored` package to compute double
   censored probability mass functions.
 - Added `Exp()` and `Weibull()` distributions.
