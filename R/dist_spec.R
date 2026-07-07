@@ -435,7 +435,7 @@ sd.multi_dist_spec <- function(x, ...) {
 }
 #' @export
 sd.default <- function(x, ...) {
-  stats::sd(x)
+  stats::sd(x, ...)
 }
 
 #' Returns the maximum of one or more delay distribution
