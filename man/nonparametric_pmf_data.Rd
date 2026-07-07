@@ -14,7 +14,7 @@ nonparametric_pmf_data(x, i, samples)
 \item{samples}{Number of PMFs to draw when alpha is present.}
 }
 \value{
-A \code{data.table} with columns \code{sample}, \code{x}, \code{p},
+A \code{data.frame} with columns \code{sample}, \code{x}, \code{p},
 \code{distribution}.
 }
 \description{
