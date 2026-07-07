@@ -23,8 +23,8 @@ Please report steps to reproduce the issue. If it's not possible to reproduce, p
 
 If you can produce a [reproducible example](http://reprex.tidyverse.org/articles/reprex-dos-and-donts.html), please include it.
 
-dist.spec Version:
-The version of dist.spec you are running (e.g., from `packageVersion("dist.spec")`)
+distspec Version:
+The version of distspec you are running (e.g., from `packageVersion("distspec")`)
 
 ---------
 

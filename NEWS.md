@@ -1,4 +1,4 @@
-# dist.spec (development version)
+# distspec (development version)
 
 - Discretisation now uses the `primarycensored` package to compute double
   censored probability mass functions.
