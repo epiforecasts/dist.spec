@@ -1,0 +1,11 @@
+linters: linters_with_defaults(
+    # Distribution constructors (Normal(), Gamma(), Beta(), ...) intentionally
+    # use UpperCamelCase; everything else is snake_case
+    object_name_linter = object_name_linter(
+      styles = c("snake_case", "symbols", "CamelCase")
+    )
+  )
+exclusions: c(
+    list.files("tests", recursive = TRUE, full.names = TRUE),
+    list.files("inst", recursive = TRUE, full.names = TRUE)
+  )
