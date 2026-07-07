@@ -339,6 +339,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
       gamma = params$shape / params$rate,
       normal = params$mean,
+      beta = params$shape1 / (params$shape1 + params$shape2),
       exp = 1 / params$rate,
       weibull = params$scale * gamma(1 + 1 / params$shape),
       fixed = params$value
@@ -409,6 +410,11 @@ sd.dist_spec <- function(x, ...) {
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
       gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
       normal = x$parameters$sd,
+      beta = {
+        a <- x$parameters$shape1
+        b <- x$parameters$shape2
+        sqrt(a * b / ((a + b)^2 * (a + b + 1)))
+      },
       exp = 1 / x$parameters$rate,
       weibull = {
         wshape <- x$parameters$shape
@@ -1041,7 +1047,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' from the given uncertainty and converting resulting parameters to their
 #' natural representation.
 #'
-#' Currently available distributions are lognormal, gamma, normal, fixed
+#' Currently available distributions are lognormal, gamma, normal, beta, fixed
 #' (delta), nonparametric, and estimated nonparametric. The nonparametric
 #' is a special case where the probability mass function is given directly
 #' as a numeric vector. The estimated nonparametric allows the PMF to be
@@ -1090,6 +1096,18 @@ Gamma <- function(shape, rate, scale, mean, sd, ...) {
 Normal <- function(mean, sd, ...) {
   params <- as.list(environment())
   new_dist_spec(params, "normal", ...)
+}
+
+#' @rdname Distributions
+#' @order 7
+#' @param shape1,shape2 shape parameters of the beta distribution
+#' @export
+#' @examples
+#' Beta(shape1 = 2, shape2 = 5)
+#' Beta(mean = 0.3, sd = 0.15)
+Beta <- function(shape1, shape2, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "beta", ...)
 }
 
 #' @inheritParams stats::Exponential
@@ -1272,6 +1290,7 @@ natural_params <- function(distribution) {
     gamma = c("shape", "rate"),
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
+    beta = c("shape1", "shape2"),
     exp = "rate",
     weibull = c("shape", "scale"),
     dirichlet = "alpha",
@@ -1295,6 +1314,7 @@ lower_bounds <- function(distribution) {
     gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
+    beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
     exp = c(rate = 0, mean = 0),
     weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
     dirichlet = c(alpha = 0),
@@ -1552,6 +1572,33 @@ convert_to_natural <- function(params, distribution) {
     normal = {
       x$mean <- ux$mean
       x$sd <- ux$sd
+    },
+    beta = {
+      if (all(c("mean", "sd") %in% names(ux))) {
+        if (ux$mean <= 0 || ux$mean >= 1) {
+          cli_abort(
+            c(
+              "!" = "The mean of a beta distribution must be between 0 and 1.",
+              "i" = "It is currently {ux$mean}."
+            )
+          )
+        }
+        if (ux$sd^2 >= ux$mean * (1 - ux$mean)) {
+          cli_abort(
+            c(
+              "!" = "The variance of a beta distribution must be less than
+            mean * (1 - mean).",
+              "i" = "Reduce the sd below {sqrt(ux$mean * (1 - ux$mean))}."
+            )
+          )
+        }
+        common <- ux$mean * (1 - ux$mean) / ux$sd^2 - 1
+        x$shape1 <- ux$mean * common
+        x$shape2 <- (1 - ux$mean) * common
+      } else {
+        x$shape1 <- ux$shape1
+        x$shape2 <- ux$shape2
+      }
     },
     weibull = {
       if (all(c("mean", "sd") %in% names(ux))) {

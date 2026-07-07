@@ -10,6 +10,7 @@
 \alias{NonParametric}
 \alias{Fixed}
 \alias{Dirichlet}
+\alias{Beta}
 \title{Probability distributions}
 \usage{
 LogNormal(meanlog, sdlog, mean, sd, ...)
@@ -27,6 +28,8 @@ NonParametric(pmf, ...)
 Fixed(value, ...)
 
 Dirichlet(alpha, prior, concentration, ...)
+
+Beta(shape1, shape2, mean, sd, ...)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -41,6 +44,8 @@ passed to \code{\link[=bound_dist]{bound_dist()}}}
     \code{scale} strictly.}
 
 \item{rate}{an alternative way to specify the scale.}
+
+\item{shape1, shape2}{shape parameters of the beta distribution}
 
 \item{pmf}{Probability mass of the given distribution; this is
 passed as either a zero-indexed numeric vector (i.e. the fist entry
@@ -130,4 +135,6 @@ Fixed(value = 3)
 Fixed(value = 3.5)
 Dirichlet(c(1, 1, 1, 1))
 Dirichlet(prior = c(0.1, 0.3, 0.4, 0.2), concentration = 10)
+Beta(shape1 = 2, shape2 = 5)
+Beta(mean = 0.3, sd = 0.15)
 }
