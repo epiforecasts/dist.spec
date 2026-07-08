@@ -5,7 +5,7 @@
  
   If this is your first Pull Request, please make sure you read the
   contributing guidelines linked below and at
-  https://github.com/epiforecasts/dist.spec/blob/main/.github/CONTRIBUTING.md
+  https://github.com/epiforecasts/distspec/blob/main/.github/CONTRIBUTING.md
 -->
 
 ## Description

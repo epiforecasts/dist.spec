@@ -7,7 +7,9 @@ This package is an experimental spin-out from the
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
 
 All contributions to this project are gratefully acknowledged using the
@@ -17,16 +19,18 @@ specification. Contributions of any kind are welcome!
 
 ### Code
 
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=sbfnk">sbfnk</a>,
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=github-merge-queue[bot]">github-merge-queue\[bot\]</a>,
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=seabbs">seabbs</a>,
-<a href="https://github.com/epiforecasts/dist.spec/commits?author=github-actions[bot]">github-actions\[bot\]</a>
+<a href="https://github.com/epiforecasts/distspec/commits?author=sbfnk">sbfnk</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=dependabot[bot]">dependabot\[bot\]</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=github-merge-queue[bot]">github-merge-queue\[bot\]</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=seabbs">seabbs</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=github-actions[bot]">github-actions\[bot\]</a>
 
 ### Issues
 
-<a href="https://github.com/epiforecasts/dist.spec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
+<a href="https://github.com/epiforecasts/distspec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
 
 <!-- markdownlint-enable -->
+
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->

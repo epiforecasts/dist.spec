@@ -1,4 +1,4 @@
 library(testthat)
-library(dist.spec)
+library(distspec)
 
-test_check("dist.spec")
+test_check("distspec")

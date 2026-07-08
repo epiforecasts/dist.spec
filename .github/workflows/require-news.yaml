@@ -1,0 +1,39 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  merge_group:
+
+name: require-news
+
+jobs:
+  require-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Require a NEWS.md entry
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          # Nothing to check outside a pull request (e.g. in the merge queue,
+          # where the PR already passed this check).
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "Not a pull request; skipping."
+            exit 0
+          fi
+          # Allow maintainers to opt out with a label.
+          case ",$LABELS," in
+            *",no news needed,"*)
+              echo "'no news needed' label present; skipping."
+              exit 0
+              ;;
+          esac
+          git fetch origin "$GITHUB_BASE_REF"
+          if git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | grep -qx 'NEWS.md'; then
+            echo "NEWS.md updated."
+          else
+            echo "::error::This PR does not update NEWS.md. Add a news item, or apply the 'no news needed' label to skip."
+            exit 1
+          fi

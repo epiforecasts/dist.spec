@@ -1,4 +1,4 @@
-url: https://epiforecasts.io/dist.spec/
+url: https://epiforecasts.io/distspec/
 template:
   bootstrap: 5
   params:

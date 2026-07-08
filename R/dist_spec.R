@@ -362,9 +362,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 }
 
 
-sd <- function(x, ...) {
-  UseMethod("sd")
-}
 #' Returns the standard deviation of one or more delay distribution
 #'
 #' @name sd
@@ -374,14 +371,13 @@ sd <- function(x, ...) {
 #' If any of the parameters are themselves uncertain then `NA` is returned.
 #'
 #' @param x The <dist_spec> to use
+#' @param ... Not used
 #' @return A vector of standard deviations.
-#' @importFrom utils head
-#' @importFrom cli cli_abort
 #' @keywords internal
 #' @export
 #' @examples
 #' \dontrun{
-#' # A fixed lognormal distribution with sd 5 and sd 1.
+#' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' sd(dist1)
 #'
@@ -392,6 +388,13 @@ sd <- function(x, ...) {
 #' # The sd of the sum of two distributions
 #' sd(dist1 + dist2)
 #' }
+sd <- function(x, ...) {
+  UseMethod("sd")
+}
+
+#' @rdname sd
+#' @importFrom cli cli_abort
+#' @export
 sd.dist_spec <- function(x, ...) {
   if (get_distribution(x) == "nonparametric") {
     ## nonparametric
@@ -438,7 +441,7 @@ sd.multi_dist_spec <- function(x, ...) {
 }
 #' @export
 sd.default <- function(x, ...) {
-  stats::sd(x)
+  stats::sd(x, ...)
 }
 
 #' Returns the maximum of one or more delay distribution
@@ -1287,10 +1290,9 @@ nonparametric_pmf_data <- function(x, i, samples) {
 #' @param distribution Character; the distribution to use.
 #' @return A character vector, the natural parameters.
 #' @keywords internal
+#' @export
 #' @examples
-#' \dontrun{
 #' natural_params("gamma")
-#' }
 natural_params <- function(distribution) {
   switch(distribution,
     gamma = c("shape", "rate"),
@@ -1312,10 +1314,9 @@ natural_params <- function(distribution) {
 #' @return A numeric vector, the lower bounds.
 #' @inheritParams natural_params
 #' @keywords internal
+#' @export
 #' @examples
-#' \dontrun{
 #' lower_bounds("lognormal")
-#' }
 lower_bounds <- function(distribution) {
   switch(distribution,
     gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
@@ -1762,11 +1763,12 @@ get_distribution <- function(x, id = NULL) {
   get_element(x, id, "distribution")
 }
 
-##' Calculate the number of distributions in a `<dist_spec>`
-##'
-##' @param x A `<dist_spec>` object.
-##' @return The number of distributions.
-##' @keywords internal
+#' Calculate the number of distributions in a `<dist_spec>`
+#'
+#' @param x A `<dist_spec>` object.
+#' @return The number of distributions.
+#' @keywords internal
+#' @export
 ndist <- function(x) {
   if (is(x, "multi_dist_spec")) {
     length(x)
