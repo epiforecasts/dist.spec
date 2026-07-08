@@ -10,6 +10,7 @@
 \alias{NonParametric}
 \alias{Fixed}
 \alias{Dirichlet}
+\alias{Beta}
 \title{Probability distributions}
 \usage{
 LogNormal(meanlog, sdlog, mean, sd, ...)
@@ -27,6 +28,8 @@ NonParametric(pmf, ...)
 Fixed(value, ...)
 
 Dirichlet(alpha, prior, concentration, ...)
+
+Beta(shape1, shape2, mean, sd, ...)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -70,6 +73,8 @@ value (near-uniform for roughly equal PMF entries)
 reference shape
 \item \verb{concentration = 50+}: strong anchoring to the reference PMF
 }}
+
+\item{shape1, shape2}{shape parameters of the beta distribution}
 }
 \value{
 A \code{dist_spec} representing a distribution of the given
@@ -100,7 +105,7 @@ parameters. If they have uncertainty, this will be done by random sampling
 from the given uncertainty and converting resulting parameters to their
 natural representation.
 
-Currently available distributions are lognormal, gamma, normal, fixed
+Currently available distributions are lognormal, gamma, normal, beta, fixed
 (delta), nonparametric, and estimated nonparametric. The nonparametric
 is a special case where the probability mass function is given directly
 as a numeric vector. The estimated nonparametric allows the PMF to be
@@ -130,4 +135,6 @@ Fixed(value = 3)
 Fixed(value = 3.5)
 Dirichlet(c(1, 1, 1, 1))
 Dirichlet(prior = c(0.1, 0.3, 0.4, 0.2), concentration = 10)
+Beta(shape1 = 2, shape2 = 5)
+Beta(mean = 0.3, sd = 0.15)
 }
