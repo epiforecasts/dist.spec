@@ -27,12 +27,9 @@ BugReports: https://github.com/epiforecasts/distspec/issues
 Depends: 
     R (>= 3.5.0)
 Imports:
-    checkmate,
     cli,
-    data.table,
     ggplot2,
     primarycensored,
-    purrr,
     rlang,
     stats,
     truncnorm,

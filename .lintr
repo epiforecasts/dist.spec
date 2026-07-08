@@ -1,10 +1,9 @@
 linters: linters_with_defaults(
-    # Distribution constructors (Normal(), Gamma(), ...) and internal S3 helpers
-    # (.print.dist_spec) use intentional non-snake_case names
-    object_name_linter = NULL,
-    # data.table non-standard evaluation (`:=`, bare column names) trips the
-    # usage linter with false positives
-    object_usage_linter = NULL
+    # Distribution constructors (Normal(), Gamma(), Beta(), ...) intentionally
+    # use UpperCamelCase; everything else is snake_case
+    object_name_linter = object_name_linter(
+      styles = c("snake_case", "symbols", "CamelCase")
+    )
   )
 exclusions: c(
     list.files("tests", recursive = TRUE, full.names = TRUE),

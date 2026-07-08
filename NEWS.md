@@ -13,3 +13,4 @@
 - Convolution in `collapse()` now uses a numerically stable implementation.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
   `lower_bounds()` so that dependent packages can reuse them.
+- Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
