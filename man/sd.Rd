@@ -5,10 +5,14 @@
 \alias{sd.dist_spec}
 \title{Returns the standard deviation of one or more delay distribution}
 \usage{
+sd(x, ...)
+
 \method{sd}{dist_spec}(x, ...)
 }
 \arguments{
 \item{x}{The <dist_spec> to use}
+
+\item{...}{Not used}
 }
 \value{
 A vector of standard deviations.
@@ -20,7 +24,7 @@ If any of the parameters are themselves uncertain then \code{NA} is returned.
 }
 \examples{
 \dontrun{
-# A fixed lognormal distribution with sd 5 and sd 1.
+# A fixed lognormal distribution with mean 5 and sd 1.
 dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 sd(dist1)
 
