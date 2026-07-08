@@ -2,6 +2,7 @@
 
 - The package has been renamed from `dist.spec` to `distspec`. The `dist_spec`
   object class is unchanged.
+- Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Discretisation now uses the `primarycensored` package to compute double
   censored probability mass functions.
 - Added `Exp()` and `Weibull()` distributions.
