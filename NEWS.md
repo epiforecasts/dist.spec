@@ -1,5 +1,7 @@
 # distspec (development version)
 
+- The package has been renamed from `dist.spec` to `distspec`. The `dist_spec`
+  object class is unchanged.
 - Discretisation now uses the `primarycensored` package to compute double
   censored probability mass functions.
 - Added `Exp()` and `Weibull()` distributions.
