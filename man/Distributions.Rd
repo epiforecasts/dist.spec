@@ -45,8 +45,6 @@ passed to \code{\link[=bound_dist]{bound_dist()}}}
 
 \item{rate}{an alternative way to specify the scale.}
 
-\item{shape1, shape2}{shape parameters of the beta distribution}
-
 \item{pmf}{Probability mass of the given distribution; this is
 passed as either a zero-indexed numeric vector (i.e. the fist entry
 represents the probability mass of zero) or a \code{dist_spec} (e.g.
@@ -75,6 +73,8 @@ value (near-uniform for roughly equal PMF entries)
 reference shape
 \item \verb{concentration = 50+}: strong anchoring to the reference PMF
 }}
+
+\item{shape1, shape2}{shape parameters of the beta distribution}
 }
 \value{
 A \code{dist_spec} representing a distribution of the given
@@ -105,7 +105,7 @@ parameters. If they have uncertainty, this will be done by random sampling
 from the given uncertainty and converting resulting parameters to their
 natural representation.
 
-Currently available distributions are lognormal, gamma, normal, fixed
+Currently available distributions are lognormal, gamma, normal, beta, fixed
 (delta), nonparametric, and estimated nonparametric. The nonparametric
 is a special case where the probability mass function is given directly
 as a numeric vector. The estimated nonparametric allows the PMF to be
