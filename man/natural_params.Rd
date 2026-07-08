@@ -18,8 +18,6 @@ representations are converted to these using \code{\link[=convert_to_natural]{co
 being passed to the stan models.
 }
 \examples{
-\dontrun{
 natural_params("gamma")
-}
 }
 \keyword{internal}
