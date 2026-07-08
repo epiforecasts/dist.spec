@@ -9,3 +9,4 @@
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
+- Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
