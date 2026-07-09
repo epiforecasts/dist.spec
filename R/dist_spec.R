@@ -85,7 +85,7 @@ discrete_pmf <- function(distribution =
   ## map distribution types to CDF functions
   pdist <- switch(distribution,
     exp = pexp,
-    gamma = pgamma,
+    gamma = dist_cdf(new_dist("gamma")),
     lognormal = plnorm,
     normal = pnorm,
     weibull = pweibull
@@ -337,7 +337,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
     }
     ret_mean <- switch(get_distribution(x),
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
-      gamma = params$shape / params$rate,
+      gamma = mean(new_dist("gamma", params)),
       normal = params$mean,
       beta = params$shape1 / (params$shape1 + params$shape2),
       exp = 1 / params$rate,
@@ -408,7 +408,7 @@ sd.dist_spec <- function(x, ...) {
     ret_sd <- switch(get_distribution(x),
       lognormal = sqrt(exp(x$parameters$sdlog**2) - 1) *
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
-      gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
+      gamma = sd(new_dist("gamma", x$parameters)),
       normal = x$parameters$sd,
       beta = {
         a <- x$parameters$shape1
@@ -1295,7 +1295,7 @@ nonparametric_pmf_data <- function(x, i, samples) {
 #' natural_params("gamma")
 natural_params <- function(distribution) {
   switch(distribution,
-    gamma = c("shape", "rate"),
+    gamma = dist_natural_params(new_dist("gamma")),
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
     beta = c("shape1", "shape2"),
