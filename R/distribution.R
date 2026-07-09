@@ -16,21 +16,20 @@ new_dist <- function(name, params = NULL) {
 
 # --- interface generics -----------------------------------------------------
 
-# Natural (stan) parameter names. Type-level: ignores parameter values.
-dist_natural_params <- function(d) UseMethod("dist_natural_params")
+# `natural_params()` and `lower_bounds()` are existing exported helpers turned
+# into generics (see `dist_spec.R`); their per-distribution methods live in each
+# distribution's file (e.g. `natural_params.gamma`). Analytic `mean()` / `sd()`
+# reuse the base generics the same way.
 
 # CDF function, used for discretisation. Optional capability: distributions
 # that are never discretised simply do not provide a method.
-dist_cdf <- function(d) UseMethod("dist_cdf")
-
-# Analytic mean / standard deviation are the existing `mean` / `sd` generics;
-# per-distribution methods live in each distribution's file (e.g. `mean.gamma`).
+pdist <- function(distribution) UseMethod("pdist")
 
 # Discretisation is an optional capability, not a type: a distribution without
 # a CDF cannot be discretised.
 #' @exportS3Method
-dist_cdf.default <- function(d) {
+pdist.default <- function(distribution) {
   cli::cli_abort(
-    "{.val {class(d)[1]}} has no CDF and cannot be discretised."
+    "{.val {class(distribution)[1]}} has no CDF and cannot be discretised."
   )
 }
