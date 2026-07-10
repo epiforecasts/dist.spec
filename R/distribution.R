@@ -23,12 +23,12 @@ new_dist <- function(name, params = NULL) {
 
 # CDF function, used for discretisation. Optional capability: distributions
 # that are never discretised simply do not provide a method.
-pdist <- function(distribution) UseMethod("pdist")
+dist_cdf <- function(distribution) UseMethod("dist_cdf")
 
 # Discretisation is an optional capability, not a type: a distribution without
 # a CDF cannot be discretised.
 #' @exportS3Method
-pdist.default <- function(distribution) {
+dist_cdf.default <- function(distribution) {
   cli::cli_abort(
     "{.val {class(distribution)[1]}} has no CDF and cannot be discretised."
   )

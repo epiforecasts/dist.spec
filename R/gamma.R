@@ -13,7 +13,7 @@ lower_bounds.gamma <- function(distribution) {
 }
 
 #' @exportS3Method
-pdist.gamma <- function(distribution) pgamma
+dist_cdf.gamma <- function(distribution) pgamma
 
 #' @method mean gamma
 #' @export

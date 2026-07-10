@@ -85,7 +85,7 @@ discrete_pmf <- function(distribution =
   ## map distribution types to CDF functions
   cdf <- switch(distribution,
     exp = pexp,
-    gamma = pdist(new_dist("gamma")),
+    gamma = dist_cdf(new_dist("gamma")),
     lognormal = plnorm,
     normal = pnorm,
     weibull = pweibull
