@@ -1296,6 +1296,13 @@ nonparametric_pmf_data <- function(x, i, samples) {
 natural_params <- function(distribution) UseMethod("natural_params")
 
 #' @exportS3Method
+natural_params.default <- function(distribution) {
+  cli::cli_abort(
+    "Cannot determine natural parameters for {.val {class(distribution)[1]}}."
+  )
+}
+
+#' @exportS3Method
 natural_params.character <- function(distribution) {
   switch(distribution,
     gamma = natural_params(new_dist("gamma")),
@@ -1321,6 +1328,13 @@ natural_params.character <- function(distribution) {
 #' @examples
 #' lower_bounds("lognormal")
 lower_bounds <- function(distribution) UseMethod("lower_bounds")
+
+#' @exportS3Method
+lower_bounds.default <- function(distribution) {
+  cli::cli_abort(
+    "Cannot determine lower bounds for {.val {class(distribution)[1]}}."
+  )
+}
 
 #' @exportS3Method
 lower_bounds.character <- function(distribution) {
