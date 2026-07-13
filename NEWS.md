@@ -13,4 +13,7 @@
 - Convolution in `collapse()` now uses a numerically stable implementation.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
   `lower_bounds()` so that dependent packages can reuse them.
+- `natural_params()` and `lower_bounds()` are now S3 generics, beginning a
+  refactor that defines each distribution's behaviour alongside its type
+  instead of in scattered `switch()` statements; `Gamma()` is migrated first.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
