@@ -11,7 +11,8 @@
 
 # Build a dispatch object from a distribution name (+ optional parameters).
 new_dist <- function(name, params = NULL) {
-  if (!is.character(name) || length(name) != 1 || is.na(name) || !nzchar(name)) {
+  if (!is.character(name) || length(name) != 1 ||
+        is.na(name) || !nzchar(name)) {
     cli::cli_abort("`name` must be a non-empty scalar character string.")
   }
   if (!is.null(params) && !is.list(params)) {
