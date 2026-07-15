@@ -87,7 +87,7 @@ discrete_pmf <- function(distribution =
     exp = pexp,
     gamma = dist_cdf(new_dist("gamma")),
     lognormal = plnorm,
-    normal = pnorm,
+    normal = dist_cdf(new_dist("normal")),
     weibull = pweibull
   )
 
@@ -338,7 +338,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
     ret_mean <- switch(get_distribution(x),
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
       gamma = mean(new_dist("gamma", params)),
-      normal = params$mean,
+      normal = mean(new_dist("normal", params)),
       beta = params$shape1 / (params$shape1 + params$shape2),
       exp = 1 / params$rate,
       weibull = params$scale * gamma(1 + 1 / params$shape),
@@ -409,7 +409,7 @@ sd.dist_spec <- function(x, ...) {
       lognormal = sqrt(exp(x$parameters$sdlog**2) - 1) *
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
       gamma = sd(new_dist("gamma", x$parameters)),
-      normal = x$parameters$sd,
+      normal = sd(new_dist("normal", x$parameters)),
       beta = {
         a <- x$parameters$shape1
         b <- x$parameters$shape2
@@ -1307,7 +1307,7 @@ natural_params.character <- function(distribution) {
   switch(distribution,
     gamma = natural_params(new_dist("gamma")),
     lognormal = c("meanlog", "sdlog"),
-    normal = c("mean", "sd"),
+    normal = natural_params(new_dist("normal")),
     beta = c("shape1", "shape2"),
     exp = "rate",
     weibull = c("shape", "scale"),
@@ -1341,7 +1341,7 @@ lower_bounds.character <- function(distribution) {
   switch(distribution,
     gamma = lower_bounds(new_dist("gamma")),
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
-    normal = c(mean = -Inf, sd = 0),
+    normal = lower_bounds(new_dist("normal")),
     beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
     exp = c(rate = 0, mean = 0),
     weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
