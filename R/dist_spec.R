@@ -83,9 +83,9 @@ discrete_pmf <- function(distribution =
   }
 
   ## map distribution types to CDF functions
-  pdist <- switch(distribution,
+  cdf <- switch(distribution,
     exp = pexp,
-    gamma = pgamma,
+    gamma = dist_cdf(new_dist("gamma")),
     lognormal = plnorm,
     normal = pnorm,
     weibull = pweibull
@@ -99,7 +99,7 @@ discrete_pmf <- function(distribution =
       c(
         list(
           p = 1 - cdf_cutoff,
-          pdist = pdist,
+          pdist = cdf,
           pwindow = width
         ),
         params
@@ -120,7 +120,7 @@ discrete_pmf <- function(distribution =
     c(
       list(
         x = seq(0, max_value - width, by = width),
-        pdist = pdist,
+        pdist = cdf,
         pwindow = width,
         swindow = width,
         D = max_value
@@ -337,7 +337,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
     }
     ret_mean <- switch(get_distribution(x),
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
-      gamma = params$shape / params$rate,
+      gamma = mean(new_dist("gamma", params)),
       normal = params$mean,
       beta = params$shape1 / (params$shape1 + params$shape2),
       exp = 1 / params$rate,
@@ -408,7 +408,7 @@ sd.dist_spec <- function(x, ...) {
     ret_sd <- switch(get_distribution(x),
       lognormal = sqrt(exp(x$parameters$sdlog**2) - 1) *
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
-      gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
+      gamma = sd(new_dist("gamma", x$parameters)),
       normal = x$parameters$sd,
       beta = {
         a <- x$parameters$shape1
@@ -1293,9 +1293,19 @@ nonparametric_pmf_data <- function(x, i, samples) {
 #' @export
 #' @examples
 #' natural_params("gamma")
-natural_params <- function(distribution) {
+natural_params <- function(distribution) UseMethod("natural_params")
+
+#' @exportS3Method
+natural_params.default <- function(distribution) {
+  cli::cli_abort(
+    "Cannot determine natural parameters for {.val {class(distribution)[1]}}."
+  )
+}
+
+#' @exportS3Method
+natural_params.character <- function(distribution) {
   switch(distribution,
-    gamma = c("shape", "rate"),
+    gamma = natural_params(new_dist("gamma")),
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
     beta = c("shape1", "shape2"),
@@ -1317,9 +1327,19 @@ natural_params <- function(distribution) {
 #' @export
 #' @examples
 #' lower_bounds("lognormal")
-lower_bounds <- function(distribution) {
+lower_bounds <- function(distribution) UseMethod("lower_bounds")
+
+#' @exportS3Method
+lower_bounds.default <- function(distribution) {
+  cli::cli_abort(
+    "Cannot determine lower bounds for {.val {class(distribution)[1]}}."
+  )
+}
+
+#' @exportS3Method
+lower_bounds.character <- function(distribution) {
   switch(distribution,
-    gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
+    gamma = lower_bounds(new_dist("gamma")),
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
     beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
