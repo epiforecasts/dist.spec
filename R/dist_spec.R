@@ -86,7 +86,7 @@ discrete_pmf <- function(distribution =
   cdf <- switch(distribution,
     exp = pexp,
     gamma = dist_cdf(new_dist("gamma")),
-    lognormal = plnorm,
+    lognormal = dist_cdf(new_dist("lognormal")),
     normal = dist_cdf(new_dist("normal")),
     weibull = pweibull
   )
@@ -336,7 +336,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       params <- lapply(params, mean, ignore_uncertainty = TRUE)
     }
     ret_mean <- switch(get_distribution(x),
-      lognormal = exp(params$meanlog + params$sdlog**2 / 2),
+      lognormal = mean(new_dist("lognormal", params)),
       gamma = mean(new_dist("gamma", params)),
       normal = mean(new_dist("normal", params)),
       beta = params$shape1 / (params$shape1 + params$shape2),
@@ -406,8 +406,7 @@ sd.dist_spec <- function(x, ...) {
       return(NA_real_)
     }
     ret_sd <- switch(get_distribution(x),
-      lognormal = sqrt(exp(x$parameters$sdlog**2) - 1) *
-        exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
+      lognormal = sd(new_dist("lognormal", x$parameters)),
       gamma = sd(new_dist("gamma", x$parameters)),
       normal = sd(new_dist("normal", x$parameters)),
       beta = {
@@ -1306,7 +1305,7 @@ natural_params.default <- function(distribution) {
 natural_params.character <- function(distribution) {
   switch(distribution,
     gamma = natural_params(new_dist("gamma")),
-    lognormal = c("meanlog", "sdlog"),
+    lognormal = natural_params(new_dist("lognormal")),
     normal = natural_params(new_dist("normal")),
     beta = c("shape1", "shape2"),
     exp = "rate",
@@ -1340,7 +1339,7 @@ lower_bounds.default <- function(distribution) {
 lower_bounds.character <- function(distribution) {
   switch(distribution,
     gamma = lower_bounds(new_dist("gamma")),
-    lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
+    lognormal = lower_bounds(new_dist("lognormal")),
     normal = lower_bounds(new_dist("normal")),
     beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
     exp = c(rate = 0, mean = 0),
