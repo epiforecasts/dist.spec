@@ -399,7 +399,8 @@ sd.dist_spec <- function(x, ...) {
   if (get_distribution(x) == "nonparametric") {
     ## nonparametric
     mean_pmf <- sum((seq_along(x$pmf) - 1) * x$pmf)
-    sum((seq_along(x$pmf) - 1)**2 * x$pmf) - mean_pmf^2
+    variance <- sum((seq_along(x$pmf) - 1)**2 * x$pmf) - mean_pmf^2
+    sqrt(max(variance, 0))
   } else {
     ## parametric
     if (!all(vapply(x$parameters, is.numeric, logical(1)))) {

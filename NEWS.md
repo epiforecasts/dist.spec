@@ -12,6 +12,10 @@
   `value` parameter has been corrected accordingly, and a value below that
   bound is now rejected with an informative error instead of silently
   producing an invalid probability mass function.
+- `sd()` of a nonparametric distribution now returns the standard deviation
+  rather than the variance (a missing square root). This also affects `sd()` of
+  any discretised distribution, since `discretise()` produces a nonparametric
+  distribution.
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
