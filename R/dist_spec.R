@@ -1448,6 +1448,18 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
     params <- extract_params(params, distribution)
     ## fixed distribution
     if (distribution == "fixed") {
+      ## check bounds (a fixed value may be uncertain, in which case it is
+      ## bound-checked when sampled rather than here)
+      lb <- lower_bounds("fixed")[["value"]]
+      if (is.numeric(params[["value"]]) && any(params[["value"]] < lb)) {
+        cli_abort(
+          c(
+            "!" = "Parameter {.arg value} must be greater than or equal to its
+            lower bound {lb}.",
+            "i" = "It is currently set to less than the lower bound."
+          )
+        )
+      }
       ret <- list(
         parameters = params,
         distribution = "fixed"

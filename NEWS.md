@@ -9,7 +9,9 @@
 - Added `Dirichlet()` and support for estimated nonparametric distributions
   specified via a Dirichlet prior (`NonParametric(pmf = Dirichlet(...))`).
 - `Fixed()` distributions may now take a value of `0`; the lower bound for the
-  `value` parameter has been corrected accordingly.
+  `value` parameter has been corrected accordingly, and a value below that
+  bound is now rejected with an informative error instead of silently
+  producing an invalid probability mass function.
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
