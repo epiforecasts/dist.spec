@@ -90,15 +90,15 @@ precommit::use_precommit()
 
 ## Adding a new distribution
 
-Each distribution's behaviour is defined by a small set of S3 methods dispatched on the distribution *type*, so adding one is mostly a matter of writing a new `R/<type>.R` file — there are no central `switch()` statements to edit.
+Each distribution's behaviour comes from a small set of S3 methods dispatched on the distribution *type*. Adding one means writing a new `R/<type>.R` file that implements those methods.
 
 ### How dispatch works
 
-`new_dist("<type>", params)` builds a lightweight object that carries the type as its class (`c("<type>", "distribution")`) and the parameters in `$params`. The shared code (`mean.dist_spec()`, `sd.dist_spec()`, `natural_params()`, `lower_bounds()`, `discrete_pmf()`) delegates to your per-type methods automatically through this object. A distribution returned by a constructor has class `c("dist_spec", "list")` and hits the `.dist_spec` methods, which extract its parameters and delegate — which is why your per-type methods read `x$params$<param>`.
+`new_dist("<type>", params)` builds a lightweight object that carries the type as its class (`c("<type>", "distribution")`) and the parameters in `$params`. The shared code (`mean.dist_spec()`, `sd.dist_spec()`, `natural_params()`, `lower_bounds()`, `discrete_pmf()`) delegates to your per-type methods through this object. A distribution returned by a constructor has class `c("dist_spec", "list")` and hits the `.dist_spec` methods, which pull out its parameters and delegate. That is why your per-type methods read `x$params$<param>`.
 
 ### The methods
 
-Create `R/<type>.R` and implement the methods that apply to your distribution. Only `natural_params()` and `lower_bounds()` are always required; `mean()`/`sd()` need a closed form, and `dist_cdf()` is only for distributions that can be discretised.
+Create `R/<type>.R` and implement the methods that apply. Only `natural_params()` and `lower_bounds()` are always required. `mean()` and `sd()` need a closed form, and `dist_cdf()` is only for distributions that can be discretised.
 
 ```r
 # R/mydist.R -- methods for the "mydist" distribution. Behaviour is dispatched
