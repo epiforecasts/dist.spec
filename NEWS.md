@@ -16,5 +16,5 @@
 - `natural_params()` and `lower_bounds()` are now S3 generics, beginning a
   refactor that defines each distribution's behaviour alongside its type
   instead of in scattered `switch()` statements. `Gamma()`, `Normal()`,
-  `LogNormal()`, `Exp()` and `Weibull()` are migrated so far.
+  `LogNormal()`, `Exp()`, `Weibull()` and `Beta()` are migrated so far.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
