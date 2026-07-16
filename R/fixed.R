@@ -22,6 +22,12 @@ mean.fixed <- function(x, ...) x$params$value
 #' @export
 sd.fixed <- function(x, ...) 0.0
 
+# A fixed distribution is a point mass, so every sample is the same value.
+#' @exportS3Method
+sample_dist.fixed <- function(x, n, ...) {
+  rep(x$params$value, n)
+}
+
 # A fixed distribution discretises to a point mass rather than through a CDF.
 # For fractional values the probability is split proportionally across the two
 # adjacent intervals.

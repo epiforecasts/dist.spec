@@ -22,3 +22,9 @@ mean.exp <- function(x, ...) 1 / x$params$rate
 #' @method sd exp
 #' @export
 sd.exp <- function(x, ...) 1 / x$params$rate
+
+#' @importFrom stats rexp
+#' @exportS3Method
+sample_dist.exp <- function(x, n, ...) {
+  rexp(n, rate = x$params$rate)
+}

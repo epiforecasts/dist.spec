@@ -22,3 +22,9 @@ mean.gamma <- function(x, ...) x$params$shape / x$params$rate
 #' @method sd gamma
 #' @export
 sd.gamma <- function(x, ...) sqrt(x$params$shape / x$params$rate^2)
+
+#' @importFrom stats rgamma
+#' @exportS3Method
+sample_dist.gamma <- function(x, n, ...) {
+  rgamma(n, shape = x$params$shape, rate = x$params$rate)
+}

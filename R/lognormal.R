@@ -27,3 +27,9 @@ sd.lognormal <- function(x, ...) {
   sqrt(exp(x$params$sdlog^2) - 1) *
     exp(x$params$meanlog + 0.5 * x$params$sdlog^2)
 }
+
+#' @importFrom stats rlnorm
+#' @exportS3Method
+sample_dist.lognormal <- function(x, n, ...) {
+  rlnorm(n, meanlog = x$params$meanlog, sdlog = x$params$sdlog)
+}

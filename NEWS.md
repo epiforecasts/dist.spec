@@ -1,5 +1,8 @@
 # distspec (development version)
 
+- Added `sample_dist()` to draw random samples from a distribution with fixed
+  parameters. Distributions with uncertain (prior) parameters cannot be sampled
+  and raise an error.
 - The package has been renamed from `dist.spec` to `distspec`. The `dist_spec`
   object class is unchanged.
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).

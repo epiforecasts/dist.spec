@@ -366,6 +366,79 @@ sd.default <- function(x, ...) {
   stats::sd(x, ...)
 }
 
+#' Sample from a distribution
+#'
+#' @description
+#' Draws random samples from a `<dist_spec>` whose parameters are fixed numbers,
+#' using the base-R random-generation function for its family (e.g. [rgamma()]
+#' for a gamma distribution). A discretised distribution is sampled on its
+#' integer support.
+#'
+#' Only distributions with fixed parameters can be sampled. If any parameter is
+#' itself a distribution (a prior), there is no single distribution to sample
+#' from and an error is raised.
+#'
+#' @param x A `<dist_spec>`.
+#' @param n The number of samples to draw.
+#' @param ... Not used.
+#' @return A numeric vector of `n` samples.
+#' @export
+#' @examples
+#' # Samples from a fixed gamma distribution
+#' sample_dist(Gamma(shape = 2, rate = 1), 10)
+#'
+#' # Samples from a discretised distribution, drawn on its integer support
+#' sample_dist(discretise(Gamma(shape = 2, rate = 1, max = 20)), 10)
+#'
+#' # A fixed distribution always returns the same value
+#' sample_dist(Fixed(3), 5)
+sample_dist <- function(x, n, ...) {
+  UseMethod("sample_dist")
+}
+
+#' @rdname sample_dist
+#' @importFrom cli cli_abort
+#' @export
+sample_dist.dist_spec <- function(x, n, ...) {
+  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n < 0) {
+    cli_abort("{.arg n} must be a single non-negative number.")
+  }
+  if (get_distribution(x) == "nonparametric") {
+    if (isTRUE(x$estimated)) {
+      cli_abort(
+        c(
+          "!" = "Can only sample from a distribution with fixed parameters.",
+          "i" = "This nonparametric distribution is estimated (it has a
+          Dirichlet prior)."
+        )
+      )
+    }
+    return(sample_dist(new_dist("nonparametric", list(pmf = get_pmf(x))), n))
+  }
+  params <- get_parameters(x)
+  if (!all(vapply(params, is.numeric, logical(1)))) {
+    cli_abort(
+      c(
+        "!" = "Can only sample from a distribution with fixed parameters.",
+        "i" = "At least one parameter is itself a distribution (a prior)."
+      )
+    )
+  }
+  sample_dist(new_dist(get_distribution(x), params), n)
+}
+
+#' @rdname sample_dist
+#' @export
+sample_dist.multi_dist_spec <- function(x, n, ...) {
+  cli_abort(
+    c(
+      "!" = "Sampling from a composite (summed) distribution is not yet
+      supported.",
+      "i" = "Sample from each component distribution individually."
+    )
+  )
+}
+
 #' Returns the maximum of one or more delay distribution
 #'
 #' @description

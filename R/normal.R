@@ -22,3 +22,9 @@ mean.normal <- function(x, ...) x$params$mean
 #' @method sd normal
 #' @export
 sd.normal <- function(x, ...) x$params$sd
+
+#' @importFrom stats rnorm
+#' @exportS3Method
+sample_dist.normal <- function(x, n, ...) {
+  rnorm(n, mean = x$params$mean, sd = x$params$sd)
+}
