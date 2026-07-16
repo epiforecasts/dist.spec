@@ -1407,6 +1407,22 @@ extract_params <- function(params, distribution) {
   params
 }
 
+# Validate a fixed `value` against its lower bound. An uncertain (non-numeric)
+# value is bound-checked when sampled rather than here.
+validate_fixed_value <- function(value) {
+  lb <- lower_bounds("fixed")[["value"]]
+  if (is.numeric(value) && any(value < lb)) {
+    cli_abort(
+      c(
+        "!" = "Parameter {.arg value} must be greater than or equal to its
+        lower bound {lb}.",
+        "i" = "It is currently set to less than the lower bound."
+      )
+    )
+  }
+  invisible(value)
+}
+
 #' Internal function for generating a `dist_spec` given parameters and a
 #' distribution.
 #'
@@ -1448,18 +1464,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
     params <- extract_params(params, distribution)
     ## fixed distribution
     if (distribution == "fixed") {
-      ## check bounds (a fixed value may be uncertain, in which case it is
-      ## bound-checked when sampled rather than here)
-      lb <- lower_bounds("fixed")[["value"]]
-      if (is.numeric(params[["value"]]) && any(params[["value"]] < lb)) {
-        cli_abort(
-          c(
-            "!" = "Parameter {.arg value} must be greater than or equal to its
-            lower bound {lb}.",
-            "i" = "It is currently set to less than the lower bound."
-          )
-        )
-      }
+      validate_fixed_value(params[["value"]])
       ret <- list(
         parameters = params,
         distribution = "fixed"
@@ -1512,6 +1517,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       }
       ## convert normal with sd == 0 to fixed
       if (distribution == "normal" && is.numeric(params$sd) && params$sd == 0) {
+        validate_fixed_value(params$mean)
         ret <- list(
           parameters = list(value = params$mean), distribution = "fixed"
         )
