@@ -84,7 +84,7 @@ discrete_pmf <- function(distribution =
 
   ## map distribution types to CDF functions
   cdf <- switch(distribution,
-    exp = pexp,
+    exp = dist_cdf(new_dist("exp")),
     gamma = dist_cdf(new_dist("gamma")),
     lognormal = dist_cdf(new_dist("lognormal")),
     normal = dist_cdf(new_dist("normal")),
@@ -340,7 +340,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       gamma = mean(new_dist("gamma", params)),
       normal = mean(new_dist("normal", params)),
       beta = params$shape1 / (params$shape1 + params$shape2),
-      exp = 1 / params$rate,
+      exp = mean(new_dist("exp", params)),
       weibull = params$scale * gamma(1 + 1 / params$shape),
       fixed = params$value
     )
@@ -414,7 +414,7 @@ sd.dist_spec <- function(x, ...) {
         b <- x$parameters$shape2
         sqrt(a * b / ((a + b)^2 * (a + b + 1)))
       },
-      exp = 1 / x$parameters$rate,
+      exp = sd(new_dist("exp", x$parameters)),
       weibull = {
         wshape <- x$parameters$shape
         wscale <- x$parameters$scale
@@ -1308,7 +1308,7 @@ natural_params.character <- function(distribution) {
     lognormal = natural_params(new_dist("lognormal")),
     normal = natural_params(new_dist("normal")),
     beta = c("shape1", "shape2"),
-    exp = "rate",
+    exp = natural_params(new_dist("exp")),
     weibull = c("shape", "scale"),
     dirichlet = "alpha",
     fixed = "value"
@@ -1342,7 +1342,7 @@ lower_bounds.character <- function(distribution) {
     lognormal = lower_bounds(new_dist("lognormal")),
     normal = lower_bounds(new_dist("normal")),
     beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
-    exp = c(rate = 0, mean = 0),
+    exp = lower_bounds(new_dist("exp")),
     weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
     dirichlet = c(alpha = 0),
     fixed = c(value = 1)
