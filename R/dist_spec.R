@@ -32,8 +32,9 @@
 #'
 #' @importFrom primarycensored dprimarycensored
 #'
-#' @param distribution A character string representing the distribution to be
-#'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
+#' @param distribution A character string naming the distribution to
+#'   discretise. Any type with a `dist_cdf()` method can be discretised;
+#'   `"fixed"` is handled as a point mass.
 #'
 #' @param params A list of parameters values (by name) required for each model.
 #' For the exponential model this is a rate parameter and for the gamma model
@@ -48,13 +49,8 @@
 #' @keywords internal
 #' @inheritParams bound_dist
 #' @importFrom stats pexp pgamma plnorm pnorm pweibull
-#' @importFrom rlang arg_match
 #' @importFrom primarycensored qprimarycensored
-discrete_pmf <- function(distribution =
-                           c("exp", "gamma", "lognormal", "normal",
-                             "weibull", "fixed"),
-                         params, max_value, cdf_cutoff, width) {
-  distribution <- arg_match(distribution)
+discrete_pmf <- function(distribution, params, max_value, cdf_cutoff, width) {
 
   ## handle fixed distribution as special case
   ## for fractional values, split probability proportionally across intervals
@@ -82,14 +78,9 @@ discrete_pmf <- function(distribution =
     return(pmf)
   }
 
-  ## map distribution types to CDF functions
-  cdf <- switch(distribution,
-    exp = dist_cdf(new_dist("exp")),
-    gamma = dist_cdf(new_dist("gamma")),
-    lognormal = dist_cdf(new_dist("lognormal")),
-    normal = dist_cdf(new_dist("normal")),
-    weibull = dist_cdf(new_dist("weibull"))
-  )
+  ## CDF function for the distribution type (dispatches to its `dist_cdf`
+  ## method; a type without one errors via `dist_cdf.default`)
+  cdf <- dist_cdf(new_dist(distribution))
 
   ## apply CDF cutoff if given
   if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
@@ -331,23 +322,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       }
       params <- lapply(params, mean, ignore_uncertainty = TRUE)
     }
-    ret_mean <- switch(get_distribution(x),
-      lognormal = mean(new_dist("lognormal", params)),
-      gamma = mean(new_dist("gamma", params)),
-      normal = mean(new_dist("normal", params)),
-      beta = mean(new_dist("beta", params)),
-      exp = mean(new_dist("exp", params)),
-      weibull = mean(new_dist("weibull", params)),
-      fixed = mean(new_dist("fixed", params))
-    )
-    if (is.null(ret_mean)) {
-      cli_abort(
-        c(
-          "!" = "Don't know how to calculate mean of {dist} distribution."
-        )
-      )
-    }
-    ret_mean
+    mean(new_dist(get_distribution(x), params))
   }
 }
 
@@ -399,24 +374,7 @@ sd.dist_spec <- function(x, ...) {
     if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
       return(NA_real_)
     }
-    ret_sd <- switch(get_distribution(x),
-      lognormal = sd(new_dist("lognormal", x$parameters)),
-      gamma = sd(new_dist("gamma", x$parameters)),
-      normal = sd(new_dist("normal", x$parameters)),
-      beta = sd(new_dist("beta", x$parameters)),
-      exp = sd(new_dist("exp", x$parameters)),
-      weibull = sd(new_dist("weibull", x$parameters)),
-      fixed = sd(new_dist("fixed", x$parameters))
-    )
-    if (is.null(ret_sd)) {
-      cli_abort(
-        c(
-          "!" = "Don't know how to calculate standard deviation of
-        {x$distribution} distribution."
-        )
-      )
-    }
-    ret_sd
+    sd(new_dist(get_distribution(x), x$parameters))
   }
 }
 
@@ -1289,16 +1247,7 @@ natural_params.default <- function(distribution) {
 
 #' @exportS3Method
 natural_params.character <- function(distribution) {
-  switch(distribution,
-    gamma = natural_params(new_dist("gamma")),
-    lognormal = natural_params(new_dist("lognormal")),
-    normal = natural_params(new_dist("normal")),
-    beta = natural_params(new_dist("beta")),
-    exp = natural_params(new_dist("exp")),
-    weibull = natural_params(new_dist("weibull")),
-    dirichlet = natural_params(new_dist("dirichlet")),
-    fixed = natural_params(new_dist("fixed"))
-  )
+  natural_params(new_dist(distribution))
 }
 
 
@@ -1323,16 +1272,7 @@ lower_bounds.default <- function(distribution) {
 
 #' @exportS3Method
 lower_bounds.character <- function(distribution) {
-  switch(distribution,
-    gamma = lower_bounds(new_dist("gamma")),
-    lognormal = lower_bounds(new_dist("lognormal")),
-    normal = lower_bounds(new_dist("normal")),
-    beta = lower_bounds(new_dist("beta")),
-    exp = lower_bounds(new_dist("exp")),
-    weibull = lower_bounds(new_dist("weibull")),
-    dirichlet = lower_bounds(new_dist("dirichlet")),
-    fixed = lower_bounds(new_dist("fixed"))
-  )
+  lower_bounds(new_dist(distribution))
 }
 
 #' Define bounds of a `<dist_spec>`

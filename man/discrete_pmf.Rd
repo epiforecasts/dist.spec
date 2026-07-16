@@ -4,17 +4,12 @@
 \alias{discrete_pmf}
 \title{Discretised probability mass function}
 \usage{
-discrete_pmf(
-  distribution = c("exp", "gamma", "lognormal", "normal", "weibull", "fixed"),
-  params,
-  max_value,
-  cdf_cutoff,
-  width
-)
+discrete_pmf(distribution, params, max_value, cdf_cutoff, width)
 }
 \arguments{
-\item{distribution}{A character string representing the distribution to be
-used (one of "exp", "gamma", "lognormal", "normal" or "fixed")}
+\item{distribution}{A character string naming the distribution to
+discretise. Any type with a \code{dist_cdf()} method can be discretised;
+\code{"fixed"} is handled as a point mass.}
 
 \item{params}{A list of parameters values (by name) required for each model.
 For the exponential model this is a rate parameter and for the gamma model

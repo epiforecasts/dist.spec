@@ -27,4 +27,7 @@
   `LogNormal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()`, the `Dirichlet()`
   prior and the nonparametric distribution now define their per-type behaviour
   (parameter metadata, and `mean()`/`sd()`/`max()` where applicable) this way.
+  The internal per-distribution `switch()` statements have been collapsed to
+  direct S3 dispatch; attempting to discretise a distribution that has no CDF
+  now reports this directly.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.

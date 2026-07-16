@@ -40,3 +40,23 @@ dist_cdf.default <- function(distribution) {
     "{.val {class(distribution)[1]}} has no CDF and cannot be discretised."
   )
 }
+
+# Fallbacks for distribution types that do not provide an analytic `mean()` /
+# `sd()`. These back the delegating `mean.dist_spec()` / `sd.dist_spec()` so an
+# unsupported type fails with a clear message rather than a base-R default.
+#' @method mean distribution
+#' @export
+mean.distribution <- function(x, ...) {
+  cli::cli_abort(
+    "Don't know how to calculate mean of {.val {class(x)[1]}} distribution."
+  )
+}
+
+#' @method sd distribution
+#' @export
+sd.distribution <- function(x, ...) {
+  cli::cli_abort(
+    "Don't know how to calculate standard deviation of {.val {class(x)[1]}}
+    distribution."
+  )
+}
