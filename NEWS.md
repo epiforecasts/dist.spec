@@ -23,9 +23,8 @@
   `lower_bounds()` so that dependent packages can reuse them.
 - `natural_params()` and `lower_bounds()` are now S3 generics, with each
   distribution's behaviour defined alongside its type (in its own `R/` file)
-  rather than in scattered `switch()` statements. `Gamma()`, `Normal()`,
-  `LogNormal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()` and the
-  `Dirichlet()` prior are defined this way. Nonparametric distributions are
-  handled directly from their probability mass function and are not part of
-  this per-type interface.
+  rather than in scattered `switch()`/`if` statements. `Gamma()`, `Normal()`,
+  `LogNormal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()`, the `Dirichlet()`
+  prior and the nonparametric distribution now define their per-type behaviour
+  (parameter metadata, and `mean()`/`sd()`/`max()` where applicable) this way.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
