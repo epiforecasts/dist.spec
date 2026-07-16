@@ -1302,7 +1302,7 @@ natural_params.character <- function(distribution) {
     beta = natural_params(new_dist("beta")),
     exp = natural_params(new_dist("exp")),
     weibull = natural_params(new_dist("weibull")),
-    dirichlet = "alpha",
+    dirichlet = natural_params(new_dist("dirichlet")),
     fixed = natural_params(new_dist("fixed"))
   )
 }
@@ -1336,7 +1336,7 @@ lower_bounds.character <- function(distribution) {
     beta = lower_bounds(new_dist("beta")),
     exp = lower_bounds(new_dist("exp")),
     weibull = lower_bounds(new_dist("weibull")),
-    dirichlet = c(alpha = 0),
+    dirichlet = lower_bounds(new_dist("dirichlet")),
     fixed = lower_bounds(new_dist("fixed"))
   )
 }

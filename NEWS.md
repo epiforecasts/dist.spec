@@ -17,9 +17,11 @@
 - Convolution in `collapse()` now uses a numerically stable implementation.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
   `lower_bounds()` so that dependent packages can reuse them.
-- `natural_params()` and `lower_bounds()` are now S3 generics, beginning a
-  refactor that defines each distribution's behaviour alongside its type
-  instead of in scattered `switch()` statements. `Gamma()`, `Normal()`,
-  `LogNormal()`, `Exp()`, `Weibull()`, `Beta()` and `Fixed()` are migrated so
-  far.
+- `natural_params()` and `lower_bounds()` are now S3 generics, with each
+  distribution's behaviour defined alongside its type (in its own `R/` file)
+  rather than in scattered `switch()` statements. `Gamma()`, `Normal()`,
+  `LogNormal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()` and the
+  `Dirichlet()` prior are defined this way. Nonparametric distributions are
+  handled directly from their probability mass function and are not part of
+  this per-type interface.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
