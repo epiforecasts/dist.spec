@@ -11,7 +11,7 @@ natural_params.fixed <- function(distribution) "value"
 
 #' @exportS3Method
 lower_bounds.fixed <- function(distribution) {
-  c(value = 1)
+  c(value = 0)
 }
 
 #' @method mean fixed
