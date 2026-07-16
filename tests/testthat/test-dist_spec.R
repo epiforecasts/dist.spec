@@ -411,6 +411,15 @@ test_that("a fixed distribution accepts a value of zero", {
   expect_equal(get_pmf(discretise(Fixed(value = 0))), 1)
 })
 
+test_that("an uncertain fixed value is not truncated below one when sampled", {
+  set.seed(1)
+  ## with the old lower bound of 1 the sampled value would be truncated at 1
+  sampled <- fix_parameters(
+    Fixed(value = Normal(0.3, 0.05)), strategy = "sample"
+  )
+  expect_lt(get_parameters(sampled)$value, 1)
+})
+
 test_that("get functions report errors", {
   expect_error(get_parameters("test"), "no applicable method")
   expect_error(
