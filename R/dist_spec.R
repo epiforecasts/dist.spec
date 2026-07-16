@@ -339,7 +339,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       lognormal = mean(new_dist("lognormal", params)),
       gamma = mean(new_dist("gamma", params)),
       normal = mean(new_dist("normal", params)),
-      beta = params$shape1 / (params$shape1 + params$shape2),
+      beta = mean(new_dist("beta", params)),
       exp = mean(new_dist("exp", params)),
       weibull = mean(new_dist("weibull", params)),
       fixed = params$value
@@ -409,11 +409,7 @@ sd.dist_spec <- function(x, ...) {
       lognormal = sd(new_dist("lognormal", x$parameters)),
       gamma = sd(new_dist("gamma", x$parameters)),
       normal = sd(new_dist("normal", x$parameters)),
-      beta = {
-        a <- x$parameters$shape1
-        b <- x$parameters$shape2
-        sqrt(a * b / ((a + b)^2 * (a + b + 1)))
-      },
+      beta = sd(new_dist("beta", x$parameters)),
       exp = sd(new_dist("exp", x$parameters)),
       weibull = sd(new_dist("weibull", x$parameters)),
       fixed = 0.0
@@ -1303,7 +1299,7 @@ natural_params.character <- function(distribution) {
     gamma = natural_params(new_dist("gamma")),
     lognormal = natural_params(new_dist("lognormal")),
     normal = natural_params(new_dist("normal")),
-    beta = c("shape1", "shape2"),
+    beta = natural_params(new_dist("beta")),
     exp = natural_params(new_dist("exp")),
     weibull = natural_params(new_dist("weibull")),
     dirichlet = "alpha",
@@ -1337,7 +1333,7 @@ lower_bounds.character <- function(distribution) {
     gamma = lower_bounds(new_dist("gamma")),
     lognormal = lower_bounds(new_dist("lognormal")),
     normal = lower_bounds(new_dist("normal")),
-    beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
+    beta = lower_bounds(new_dist("beta")),
     exp = lower_bounds(new_dist("exp")),
     weibull = lower_bounds(new_dist("weibull")),
     dirichlet = c(alpha = 0),
