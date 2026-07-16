@@ -32,13 +32,12 @@
 #'
 #' @importFrom primarycensored dprimarycensored
 #'
-#' @param distribution A character string naming the distribution to
-#'   discretise. Any type with a `dist_cdf()` method can be discretised;
-#'   `"fixed"` is handled as a point mass.
+#' @param x A `<distribution>` object (see [new_dist()]) giving the
+#'   distribution type and its parameters. Discretisation dispatches on the
+#'   type: any type with a `dist_cdf()` method uses the default method, while
+#'   `"fixed"` is handled as a point mass by its own method.
 #'
-#' @param params A list of parameters values (by name) required for each model.
-#' For the exponential model this is a rate parameter and for the gamma model
-#' this is alpha and beta.
+#' @param ... Additional arguments passed to methods.
 #'
 #' @param max_value Numeric, the maximum value to allow.
 #' Samples outside of this range are resampled.
@@ -50,37 +49,17 @@
 #' @inheritParams bound_dist
 #' @importFrom stats pexp pgamma plnorm pnorm pweibull
 #' @importFrom primarycensored qprimarycensored
-discrete_pmf <- function(distribution, params, max_value, cdf_cutoff, width) {
+discrete_pmf <- function(x, ...) {
+  UseMethod("discrete_pmf")
+}
 
-  ## handle fixed distribution as special case
-  ## for fractional values, split probability proportionally across intervals
-  if (distribution == "fixed") {
-    value <- params[["value"]]
-    if (missing(max_value) || is.infinite(max_value)) {
-      max_value <- ceiling(value) + 1
-    }
-    max_value <- ceiling(max_value)
-    pmf <- rep(0, max_value)
-    if (value < max_value) {
-      floor_v <- floor(value)
-      frac <- value - floor_v
-      if (frac == 0) {
-        ## integer value: all mass in interval [value, value+1)
-        pmf[floor_v + 1] <- 1
-      } else {
-        ## fractional: split between adjacent intervals
-        pmf[floor_v + 1] <- 1 - frac
-        if (floor_v + 2 <= max_value) {
-          pmf[floor_v + 2] <- frac
-        }
-      }
-    }
-    return(pmf)
-  }
+#' @exportS3Method
+discrete_pmf.distribution <- function(x, max_value, cdf_cutoff, width, ...) {
+  params <- x$params
 
-  ## CDF function for the distribution type (dispatches to its `dist_cdf`
-  ## method; a type without one errors via `dist_cdf.default`)
-  cdf <- dist_cdf(new_dist(distribution))
+  ## CDF function for the distribution type (a type without a `dist_cdf()`
+  ## method errors via `dist_cdf.default`)
+  cdf <- dist_cdf(x)
 
   ## apply CDF cutoff if given
   if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
@@ -495,8 +474,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     }
     y <- list(
       pmf = discrete_pmf(
-        get_distribution(x), get_parameters(x), dist_max, cdf_cutoff,
-        width = 1
+        new_dist(get_distribution(x), get_parameters(x)),
+        dist_max, cdf_cutoff, width = 1
       )
     )
     y$distribution <- "nonparametric"
@@ -765,7 +744,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           )
         }
         x <- discrete_pmf(
-          distribution = get_distribution(x, i), params = get_parameters(y),
+          new_dist(get_distribution(x, i), get_parameters(y)),
           max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
         )
         data.frame(x = (seq_along(x) - 1) * res, p = x)

@@ -4,23 +4,18 @@
 \alias{discrete_pmf}
 \title{Discretised probability mass function}
 \usage{
-discrete_pmf(distribution, params, max_value, cdf_cutoff, width)
+discrete_pmf(x, ...)
 }
 \arguments{
-\item{distribution}{A character string naming the distribution to
-discretise. Any type with a \code{dist_cdf()} method can be discretised;
-\code{"fixed"} is handled as a point mass.}
+\item{x}{A \verb{<distribution>} object (see \code{\link[=new_dist]{new_dist()}}) giving the
+distribution type and its parameters. Discretisation dispatches on the
+type: any type with a \code{dist_cdf()} method uses the default method, while
+\code{"fixed"} is handled as a point mass by its own method.}
 
-\item{params}{A list of parameters values (by name) required for each model.
-For the exponential model this is a rate parameter and for the gamma model
-this is alpha and beta.}
+\item{...}{Additional arguments passed to methods.}
 
 \item{max_value}{Numeric, the maximum value to allow.
 Samples outside of this range are resampled.}
-
-\item{cdf_cutoff}{Numeric; the desired CDF cutoff. Any part of the
-cumulative distribution function beyond 1 minus the value of this argument is
-removed. Default: \code{0}, i.e. use the full distribution.}
 
 \item{width}{Numeric, the width of each discrete bin.}
 }
