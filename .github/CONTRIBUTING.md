@@ -88,6 +88,84 @@ precommit::use_precommit()
 *  We use [testthat](https://cran.r-project.org/package=testthat) for unit tests. 
    Contributions with test cases included are easier to accept.
 
+## Adding a new distribution
+
+Each distribution's behaviour is defined by a small set of S3 methods dispatched on the distribution *type*, so adding one is mostly a matter of writing a new `R/<type>.R` file — there are no central `switch()` statements to edit.
+
+### How dispatch works
+
+`new_dist("<type>", params)` builds a lightweight object that carries the type as its class (`c("<type>", "distribution")`) and the parameters in `$params`. The shared code (`mean.dist_spec()`, `sd.dist_spec()`, `natural_params()`, `lower_bounds()`, `discrete_pmf()`) delegates to your per-type methods automatically through this object. A distribution returned by a constructor has class `c("dist_spec", "list")` and hits the `.dist_spec` methods, which extract its parameters and delegate — which is why your per-type methods read `x$params$<param>`.
+
+### The methods
+
+Create `R/<type>.R` and implement the methods that apply to your distribution. Only `natural_params()` and `lower_bounds()` are always required; `mean()`/`sd()` need a closed form, and `dist_cdf()` is only for distributions that can be discretised.
+
+```r
+# R/mydist.R -- methods for the "mydist" distribution. Behaviour is dispatched
+# on the distribution type via `new_dist()`, so these methods read their
+# parameters from `x$params$<param>`.
+
+# Required: the names of the natural (estimated) parameters, in order.
+#' @exportS3Method
+natural_params.mydist <- function(distribution) c("param1", "param2")
+
+# Required: the lower bound of each parameter (include any `mean`/`sd`
+# alternative parameterisation the constructor accepts). Used for parameter
+# validation and optimisation.
+#' @exportS3Method
+lower_bounds.mydist <- function(distribution) {
+  c(param1 = 0, param2 = 0)
+}
+
+# Optional: the analytic mean. Omit if there is no closed form.
+#' @method mean mydist
+#' @export
+mean.mydist <- function(x, ...) {
+  x$params$param1
+}
+
+# Optional: the analytic standard deviation. Omit if there is no closed form.
+#' @method sd mydist
+#' @export
+sd.mydist <- function(x, ...) {
+  x$params$param2
+}
+
+# Optional (discretisation): the CDF as a *function* whose arguments match the
+# natural parameters (e.g. a base-R `p*` function such as `pgamma`). It is
+# passed to {primarycensored}. Provide this only if the distribution can be
+# discretised; omit it for distributions that never are (e.g. beta, the
+# Dirichlet prior), which then error informatively via `dist_cdf.default()`.
+#' @exportS3Method
+dist_cdf.mydist <- function(distribution) pmydist
+
+# Optional (bespoke discretisation): if your distribution discretises in a
+# special way rather than through a CDF (as the point-mass `fixed` does),
+# provide a `discrete_pmf()` method instead of `dist_cdf()`:
+#
+# #' @exportS3Method
+# discrete_pmf.mydist <- function(x, max_value, ...) {
+#   ## return a numeric PMF vector computed from `x$params`
+# }
+```
+
+### Steps
+
+1. File an issue describing the distribution (see [Big changes](#big-changes)).
+2. Create `R/<type>.R` with the methods above (copy the template, replacing `mydist` with your type name).
+3. Add a user-facing constructor in `R/dist_spec.R`, following the existing pattern (see e.g. `Exp()`), and document it under the shared `Distributions` help topic:
+
+    ```r
+    MyDist <- function(param1, param2, ...) {
+      params <- as.list(environment())
+      new_dist_spec(params, "mydist", ...)
+    }
+    ```
+
+4. Run `devtools::document()` so the new S3 methods are registered in `NAMESPACE`.
+5. Add tests under `tests/testthat/` and a bullet to `NEWS.md`.
+6. Check locally with `devtools::test()`, `lintr::lint_package()` and `devtools::check()`.
+
 ## Code of Conduct
 
 Please note that the `{distspec}` project is released with a
