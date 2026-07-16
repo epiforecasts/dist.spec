@@ -403,6 +403,14 @@ test_that("delay distributions can be specified in different ways", {
   )
 })
 
+test_that("a fixed distribution accepts a value of zero", {
+  expect_identical(lower_bounds("fixed"), c(value = 0))
+  zero <- Fixed(value = 0)
+  expect_equal(mean(zero), 0)
+  expect_equal(sd(zero), 0)
+  expect_equal(get_pmf(discretise(Fixed(value = 0))), 1)
+})
+
 test_that("get functions report errors", {
   expect_error(get_parameters("test"), "no applicable method")
   expect_error(
