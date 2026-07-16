@@ -8,6 +8,8 @@
 - Added `Exp()` and `Weibull()` distributions.
 - Added `Dirichlet()` and support for estimated nonparametric distributions
   specified via a Dirichlet prior (`NonParametric(pmf = Dirichlet(...))`).
+- `Fixed()` distributions may now take a value of `0`; the lower bound for the
+  `value` parameter has been corrected accordingly.
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
