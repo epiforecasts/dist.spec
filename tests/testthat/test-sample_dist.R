@@ -76,4 +76,7 @@ test_that("sample_dist errors on a composite distribution", {
 test_that("sample_dist validates n", {
   expect_error(sample_dist(Fixed(3), -1), "non-negative")
   expect_error(sample_dist(Fixed(3), c(1, 2)), "single")
+  expect_error(sample_dist(Fixed(3), Inf), "integer")
+  expect_error(sample_dist(Fixed(3), 2.5), "integer")
+  expect_error(sample_dist(Fixed(3), NA), "integer")
 })

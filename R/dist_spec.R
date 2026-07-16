@@ -400,8 +400,9 @@ sample_dist <- function(x, n, ...) {
 #' @importFrom cli cli_abort
 #' @export
 sample_dist.dist_spec <- function(x, n, ...) {
-  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n < 0) {
-    cli_abort("{.arg n} must be a single non-negative number.")
+  if (!is.numeric(n) || length(n) != 1 || !is.finite(n) || n < 0 ||
+        n != trunc(n)) {
+    cli_abort("{.arg n} must be a single non-negative integer.")
   }
   if (get_distribution(x) == "nonparametric") {
     if (isTRUE(x$estimated)) {
