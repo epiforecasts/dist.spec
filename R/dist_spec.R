@@ -342,7 +342,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       beta = mean(new_dist("beta", params)),
       exp = mean(new_dist("exp", params)),
       weibull = mean(new_dist("weibull", params)),
-      fixed = params$value
+      fixed = mean(new_dist("fixed", params))
     )
     if (is.null(ret_mean)) {
       cli_abort(
@@ -412,7 +412,7 @@ sd.dist_spec <- function(x, ...) {
       beta = sd(new_dist("beta", x$parameters)),
       exp = sd(new_dist("exp", x$parameters)),
       weibull = sd(new_dist("weibull", x$parameters)),
-      fixed = 0.0
+      fixed = sd(new_dist("fixed", x$parameters))
     )
     if (is.null(ret_sd)) {
       cli_abort(
@@ -1303,7 +1303,7 @@ natural_params.character <- function(distribution) {
     exp = natural_params(new_dist("exp")),
     weibull = natural_params(new_dist("weibull")),
     dirichlet = "alpha",
-    fixed = "value"
+    fixed = natural_params(new_dist("fixed"))
   )
 }
 
@@ -1337,7 +1337,7 @@ lower_bounds.character <- function(distribution) {
     exp = lower_bounds(new_dist("exp")),
     weibull = lower_bounds(new_dist("weibull")),
     dirichlet = c(alpha = 0),
-    fixed = c(value = 1)
+    fixed = lower_bounds(new_dist("fixed"))
   )
 }
 
