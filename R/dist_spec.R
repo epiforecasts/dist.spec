@@ -410,7 +410,9 @@ sample_dist.dist_spec <- function(x, n, ...) {
         c(
           "!" = "Can only sample from a distribution with fixed parameters.",
           "i" = "This nonparametric distribution is estimated (it has a
-          Dirichlet prior)."
+          Dirichlet prior).",
+          "i" = "Resolve the parameters first with {.fn fix_parameters}, then
+          sample."
         )
       )
     }
@@ -421,7 +423,9 @@ sample_dist.dist_spec <- function(x, n, ...) {
     cli_abort(
       c(
         "!" = "Can only sample from a distribution with fixed parameters.",
-        "i" = "At least one parameter is itself a distribution (a prior)."
+        "i" = "At least one parameter is itself a distribution (a prior).",
+        "i" = "Resolve the parameters first with {.fn fix_parameters}, then
+        sample."
       )
     )
   }
