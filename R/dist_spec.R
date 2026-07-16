@@ -320,13 +320,9 @@ c.dist_spec <- function(...) {
 #' mean(dist1 + dist2)
 mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   if (get_distribution(x) == "nonparametric") {
-    ## nonparametric
-    pmf <- get_pmf(x)
-    sum((seq_along(pmf) - 1) * pmf)
+    mean(new_dist("nonparametric", list(pmf = get_pmf(x))))
   } else if (get_distribution(x) == "dirichlet") {
-    ## dirichlet
-    alpha <- get_parameters(x)$alpha
-    alpha / sum(alpha)
+    mean(new_dist("dirichlet", get_parameters(x)))
   } else {
     params <- get_parameters(x)
     if (!all(vapply(params, is.numeric, logical(1)))) {
@@ -397,10 +393,7 @@ sd <- function(x, ...) {
 #' @export
 sd.dist_spec <- function(x, ...) {
   if (get_distribution(x) == "nonparametric") {
-    ## nonparametric
-    mean_pmf <- sum((seq_along(x$pmf) - 1) * x$pmf)
-    variance <- sum((seq_along(x$pmf) - 1)**2 * x$pmf) - mean_pmf^2
-    sqrt(max(variance, 0))
+    sd(new_dist("nonparametric", list(pmf = get_pmf(x))))
   } else {
     ## parametric
     if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
@@ -473,7 +466,7 @@ max.dist_spec <- function(x, ...) {
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
-    nonparametric = length(get_pmf(x)),
+    nonparametric = max(new_dist("nonparametric", list(pmf = get_pmf(x)))),
     ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
   )
 }
