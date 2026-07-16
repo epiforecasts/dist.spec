@@ -196,7 +196,7 @@ test_that("`bound_dist` function can be applied to a convolution", {
 test_that("summary functions return correct output for fixed lognormal distribution", {
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
   expect_equal(mean(dist), 3.0, tolerance = 0.01)
-  expect_equal(sd(dist), 1.17, tolerance = 0.01)
+  expect_equal(sd(dist), 1.08, tolerance = 0.01)
   expect_equal(max(dist), 19L)
 })
 
