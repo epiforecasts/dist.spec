@@ -88,7 +88,7 @@ discrete_pmf <- function(distribution =
     gamma = dist_cdf(new_dist("gamma")),
     lognormal = dist_cdf(new_dist("lognormal")),
     normal = dist_cdf(new_dist("normal")),
-    weibull = pweibull
+    weibull = dist_cdf(new_dist("weibull"))
   )
 
   ## apply CDF cutoff if given
@@ -341,7 +341,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       normal = mean(new_dist("normal", params)),
       beta = params$shape1 / (params$shape1 + params$shape2),
       exp = mean(new_dist("exp", params)),
-      weibull = params$scale * gamma(1 + 1 / params$shape),
+      weibull = mean(new_dist("weibull", params)),
       fixed = params$value
     )
     if (is.null(ret_mean)) {
@@ -415,11 +415,7 @@ sd.dist_spec <- function(x, ...) {
         sqrt(a * b / ((a + b)^2 * (a + b + 1)))
       },
       exp = sd(new_dist("exp", x$parameters)),
-      weibull = {
-        wshape <- x$parameters$shape
-        wscale <- x$parameters$scale
-        wscale * sqrt(gamma(1 + 2 / wshape) - gamma(1 + 1 / wshape)^2)
-      },
+      weibull = sd(new_dist("weibull", x$parameters)),
       fixed = 0.0
     )
     if (is.null(ret_sd)) {
@@ -1309,7 +1305,7 @@ natural_params.character <- function(distribution) {
     normal = natural_params(new_dist("normal")),
     beta = c("shape1", "shape2"),
     exp = natural_params(new_dist("exp")),
-    weibull = c("shape", "scale"),
+    weibull = natural_params(new_dist("weibull")),
     dirichlet = "alpha",
     fixed = "value"
   )
@@ -1343,7 +1339,7 @@ lower_bounds.character <- function(distribution) {
     normal = lower_bounds(new_dist("normal")),
     beta = c(shape1 = 0, shape2 = 0, mean = 0, sd = 0),
     exp = lower_bounds(new_dist("exp")),
-    weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
+    weibull = lower_bounds(new_dist("weibull")),
     dirichlet = c(alpha = 0),
     fixed = c(value = 1)
   )
