@@ -416,6 +416,9 @@ test_that("a fixed distribution rejects a value below its lower bound", {
   expect_error(Fixed(value = -0.5), "lower bound")
   ## an uncertain value is bound-checked when sampled, not at construction
   expect_no_error(Fixed(value = Normal(0.3, 0.05)))
+  ## the same bound is enforced when a zero-sd normal collapses to fixed
+  expect_error(Normal(-3, 0), "lower bound")
+  expect_no_error(Normal(3, 0))
 })
 
 test_that("an uncertain fixed value is not truncated below one when sampled", {
