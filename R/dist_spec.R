@@ -974,9 +974,9 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     names(sampled) <- names(get_parameters(x))
     x$parameters <- sampled
   }
-  ## the parameters are now fixed, so drop the "uncertain" marker class
-  class(x) <- c(get_distribution(x), "dist_spec")
-  x
+  ## the parameters are now fixed, so recompute the uncertainty marker; this
+  ## drops the "uncertain" class while leaving other class memberships intact
+  mark_uncertainty(x)
 }
 
 #' @export
@@ -1520,18 +1520,19 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   mark_uncertainty(ret)
 }
 
-# Prepend a marker class to a distribution that carries a prior, so the shared
-# `mean`/`sd`/`sample_dist` handlers dispatch on it: `"uncertain"` for a
-# parametric distribution with a prior parameter, `"estimated"` for a
-# Dirichlet-backed nonparametric. Fixed distributions get no marker.
+# Recompute the uncertainty marker class from a distribution's current
+# parameters, so the shared `mean`/`sd`/`sample_dist` handlers dispatch on it:
+# `"uncertain"` for a parametric distribution with a prior parameter,
+# `"estimated"` for a Dirichlet-backed nonparametric. This is idempotent: it
+# strips any existing marker first (leaving other class memberships intact) and
+# re-adds one only if a prior remains, so it can be re-run whenever the
+# parameters change.
 mark_uncertainty <- function(x) {
-  marker <- NULL
-  if (get_distribution(x) == "nonparametric") {
-    if (isTRUE(x$estimated)) {
-      marker <- "estimated"
-    }
+  class(x) <- setdiff(class(x), c("uncertain", "estimated"))
+  marker <- if (get_distribution(x) == "nonparametric") {
+    if (isTRUE(x$estimated)) "estimated"
   } else if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
-    marker <- "uncertain"
+    "uncertain"
   }
   if (!is.null(marker)) {
     class(x) <- c(marker, class(x))
