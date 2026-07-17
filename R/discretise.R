@@ -246,6 +246,20 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
       )
     )
   }
+  ## an estimated nonparametric has no concrete PMF to bound, and its support is
+  ## fixed by the Dirichlet prior, so reject bounds rather than silently
+  ## dropping them (`discretise()` would never apply them)
+  if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
+        has_uncertainty(x) && (cdf_cutoff > 0 || is.finite(max))) {
+    cli_abort(
+      c(
+        "!" = "Can't apply {.arg max} or {.arg cdf_cutoff} to an estimated
+        nonparametric distribution.",
+        "i" = "Its support is set by the {.fn Dirichlet} prior; choose the
+        number of bins there, or resolve it with {.fn fix_parameters} first."
+      )
+    )
+  }
   ## if it is a single fixed-PMF nonparametric distribution we apply the bounds
   ## directly; an estimated one has no PMF, so it keeps the attribute-based path
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&

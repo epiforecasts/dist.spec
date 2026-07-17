@@ -501,6 +501,25 @@ test_that("fix_parameters resolves an estimated nonparametric distribution", {
   expect_false(inherits(fixed, "uncertain"))
 })
 
+test_that("bounding an estimated nonparametric distribution errors", {
+  ## `max`/`cdf_cutoff` have no effect on an estimated distribution, so they are
+  ## rejected rather than silently ignored
+  expect_error(
+    NonParametric(pmf = Dirichlet(c(0, 2, 4)), cdf_cutoff = 0.1),
+    "estimated nonparametric"
+  )
+  expect_error(
+    NonParametric(pmf = Dirichlet(c(0, 2, 4)), max = 2),
+    "estimated nonparametric"
+  )
+  expect_error(
+    bound_dist(NonParametric(pmf = Dirichlet(c(0, 2, 4))), max = 2),
+    "estimated nonparametric"
+  )
+  ## an unbounded estimated distribution is fine
+  expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
+})
+
 test_that("an estimated nonparametric distribution nests its prior on print", {
   result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## printed like any uncertain distribution: the PMF shown as a nested prior,
