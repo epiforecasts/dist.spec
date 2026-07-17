@@ -435,13 +435,10 @@ sample_dist.dist_spec <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  cli_abort(
-    c(
-      "!" = "Sampling from a composite (summed) distribution is not yet
-      supported.",
-      "i" = "Sample from each component distribution individually."
-    )
-  )
+  ## a composite distribution is the convolution of its components, so a sample
+  ## is the sum of one independent sample from each component. An uncertain
+  ## component errors via its own `sample_dist.dist_spec()` method.
+  Reduce(`+`, lapply(x, sample_dist, n = n))
 }
 
 #' Returns the maximum of one or more delay distribution

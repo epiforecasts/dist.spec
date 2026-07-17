@@ -98,7 +98,7 @@ Each distribution's behaviour comes from a small set of S3 methods dispatched on
 
 ### The methods
 
-Create `R/<type>.R` and implement the methods that apply. Only `natural_params()` and `lower_bounds()` are always required. `mean()` and `sd()` need a closed form, and `dist_cdf()` is only for distributions that can be discretised.
+Create `R/<type>.R` and implement the methods that apply. Only `natural_params()` and `lower_bounds()` are always required. `mean()` and `sd()` need a closed form, `dist_cdf()` is only for distributions that can be discretised, and `sample_dist()` gives random draws from the family's base-R generator.
 
 ```r
 # R/mydist.R -- methods for the "mydist" distribution. Behaviour is dispatched
@@ -129,6 +129,15 @@ mean.mydist <- function(x, ...) {
 #' @export
 sd.mydist <- function(x, ...) {
   x$params$param2
+}
+
+# Optional: random draws, using the family's base-R generator. Omit if the
+# distribution cannot be sampled. A composite (convolved) distribution is
+# sampled automatically as the sum of its components.
+#' @importFrom stats rmydist
+#' @exportS3Method
+sample_dist.mydist <- function(x, n, ...) {
+  rmydist(n, x$params$param1, x$params$param2)
 }
 
 # Optional (discretisation): the CDF as a *function* whose arguments match the

@@ -68,9 +68,20 @@ test_that("sample_dist errors on distributions with no sampler", {
   expect_error(sample_dist(Dirichlet(c(1, 2, 3)), 10), "sample from")
 })
 
-test_that("sample_dist errors on a composite distribution", {
+test_that("sample_dist of a composite sums independent draws from components", {
+  set.seed(1)
+  n <- 1e5
   composite <- Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1)
-  expect_error(sample_dist(composite, 10), "composite")
+  samples <- sample_dist(composite, n)
+  expect_length(samples, n)
+  ## convolution mean = sum of component means (2 + 3)
+  expect_equal(mean(samples), 5, tolerance = 0.05)
+})
+
+test_that("sample_dist of a composite errors if a component is uncertain", {
+  composite <- Gamma(shape = 2, rate = 1) +
+    LogNormal(meanlog = Normal(3, 0.5), sdlog = 1)
+  expect_error(sample_dist(composite, 10), "fixed parameters")
 })
 
 test_that("sample_dist validates n", {
