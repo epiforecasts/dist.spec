@@ -1,5 +1,9 @@
 # distspec (development version)
 
+- Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
+  nonparametric distribution now raises an informative error, since its support
+  is fixed by the Dirichlet prior and the bound would otherwise be silently
+  ignored.
 - Added `has_uncertainty()`, a predicate for whether a `<dist_spec>` (or a
   component of a composite) carries a prior, so dependent packages and internal
   code can test for uncertainty in one place.
