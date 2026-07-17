@@ -342,13 +342,10 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
     ## nonparametric distribution
     if (inherits(params$pmf, "dist_spec")) {
       prior_dist <- params$pmf
-      ret <- list(
-        pmf = mean(prior_dist),
-        distribution = "nonparametric"
-      )
       if (get_distribution(prior_dist) == "dirichlet") {
-        ret$estimated <- TRUE
-        ret$alpha <- get_parameters(prior_dist)$alpha
+        ret <- list(pmf = prior_dist, distribution = "nonparametric")
+      } else {
+        ret <- list(pmf = mean(prior_dist), distribution = "nonparametric")
       }
     } else {
       ret <- list(
@@ -428,26 +425,21 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   ## apply bounds
   ret <- bound_dist(ret, max, cdf_cutoff)
 
-  ## mark uncertain / estimated distributions so the shared handlers dispatch
+  ## mark uncertain distributions so the shared handlers dispatch
   mark_uncertainty(ret)
 }
 
 # Recompute the uncertainty marker class from a distribution's current
 # parameters, so the shared `mean`/`sd`/`sample_dist` handlers dispatch on it:
-# `"uncertain"` for a parametric distribution with a prior parameter,
-# `"estimated"` for a Dirichlet-backed nonparametric. This is idempotent: it
-# strips any existing marker first (leaving other class memberships intact) and
-# re-adds one only if a prior remains, so it can be re-run whenever the
-# parameters change.
+# applied to a distribution that carries a prior (a parametric distribution with
+# a prior parameter, or an estimated Dirichlet-backed nonparametric). This is
+# idempotent: it strips any existing marker first (leaving other class
+# memberships intact) and re-adds one only if a prior remains, so it can be
+# re-run whenever the parameters change.
 mark_uncertainty <- function(x) {
-  class(x) <- setdiff(class(x), c("uncertain", "estimated"))
-  marker <- if (get_distribution(x) == "nonparametric") {
-    if (isTRUE(x$estimated)) "estimated"
-  } else if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
-    "uncertain"
-  }
-  if (!is.null(marker)) {
-    class(x) <- c(marker, class(x))
+  class(x) <- setdiff(class(x), "uncertain")
+  if (has_uncertainty(x)) {
+    class(x) <- c("uncertain", class(x))
   }
   x
 }

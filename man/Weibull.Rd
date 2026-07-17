@@ -18,8 +18,8 @@ alternative to \code{shape}/\code{scale}.}
 A \verb{<dist_spec>}.
 }
 \description{
-A Weibull distribution as a \verb{<dist_spec>}, given either by its \code{shape}/\code{scale}
-or by its \code{mean}/\code{sd}.
+A Weibull distribution as a \verb{<dist_spec>}, given either by its
+\code{shape}/\code{scale} or by its \code{mean}/\code{sd}.
 }
 \examples{
 Weibull(shape = 1, scale = 1)

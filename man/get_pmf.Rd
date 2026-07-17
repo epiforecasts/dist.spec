@@ -19,6 +19,11 @@ The pmf of the distribution
 \description{
 Get the probability mass function of a nonparametric distribution
 }
+\details{
+An estimated (Dirichlet-backed) nonparametric distribution has no concrete
+PMF, so calling \code{get_pmf()} on one is an error. Resolve it to a fixed PMF
+first with \code{\link[=fix_parameters]{fix_parameters()}} (e.g. \code{strategy = "mean"}).
+}
 \examples{
 dist <- discretise(Gamma(shape = 3, rate = 2, max = 10))
 get_pmf(dist)

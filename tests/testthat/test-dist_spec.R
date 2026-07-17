@@ -473,9 +473,64 @@ test_that("NonParametric works with Dirichlet prior", {
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = conc))
   expect_s3_class(result, "dist_spec")
   expect_equal(get_distribution(result), "nonparametric")
-  expect_true(isTRUE(result$estimated))
-  expect_equal(get_pmf(result), prior / sum(prior))
-  expect_equal(result$alpha, conc * prior / sum(prior))
+  ## an estimated distribution stores its Dirichlet prior as the `pmf`, so it
+  ## has no concrete (numeric) PMF
+  expect_s3_class(result$pmf, "dist_spec")
+  expect_equal(get_distribution(result$pmf), "dirichlet")
+  expect_equal(get_parameters(result$pmf)$alpha, conc * prior / sum(prior))
+  expect_s3_class(result, "uncertain")
+})
+
+test_that("an estimated nonparametric distribution has no concrete PMF", {
+  prior <- c(0.1, 0.3, 0.4, 0.2)
+  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
+  ## `get_pmf()` and sampling error; the mean is uncertain
+  expect_error(get_pmf(result), "no fixed probability mass function")
+  expect_error(sample_dist(result, 5), "fixed parameters")
+  expect_true(is.na(mean(result)))
+  expect_equal(mean(result, ignore_uncertainty = TRUE), sum((0:3) * prior))
+  expect_equal(max(result), length(prior))
+})
+
+test_that("fix_parameters resolves an estimated nonparametric distribution", {
+  prior <- c(0.1, 0.3, 0.4, 0.2)
+  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
+  fixed <- fix_parameters(result, strategy = "mean")
+  expect_equal(get_distribution(fixed), "nonparametric")
+  expect_equal(get_pmf(fixed), prior / sum(prior))
+  expect_false(inherits(fixed, "uncertain"))
+})
+
+test_that("an estimated nonparametric distribution nests its prior on print", {
+  result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
+  ## printed like any uncertain distribution: the PMF shown as a nested prior,
+  ## with no special "estimated" label
+  expect_output(print(result), "- nonparametric distribution:")
+  expect_output(print(result), "pmf:")
+  expect_output(print(result), "- dirichlet distribution:")
+  expect_output(print(result), "alpha:")
+})
+
+test_that("estimated nonparametric distributions compare by their prior", {
+  a <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
+  ## equal to another with the same prior, unequal to a different prior or to
+  ## a fixed PMF
+  expect_true(a == NonParametric(pmf = Dirichlet(c(2, 4, 4))))
+  expect_false(a == NonParametric(pmf = Dirichlet(c(2, 4, 5))))
+  expect_false(a == NonParametric(pmf = c(0.2, 0.4, 0.4)))
+})
+
+test_that("has_uncertainty distinguishes fixed and uncertain distributions", {
+  expect_false(has_uncertainty(Gamma(shape = 1, rate = 1)))
+  expect_true(has_uncertainty(Gamma(shape = Normal(1, 0.5), rate = 1)))
+  expect_false(has_uncertainty(Fixed(3)))
+  expect_false(has_uncertainty(NonParametric(c(0.2, 0.8))))
+  expect_true(has_uncertainty(NonParametric(pmf = Dirichlet(c(1, 1, 1)))))
+  ## indexes into a composite distribution
+  composite <- Gamma(shape = 1, rate = 1) +
+    Gamma(shape = Normal(1, 0.5), rate = 1)
+  expect_false(has_uncertainty(composite, 1))
+  expect_true(has_uncertainty(composite, 2))
 })
 
 test_that("Dirichlet works with dist_spec prior", {

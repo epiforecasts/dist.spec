@@ -52,8 +52,21 @@
       return(FALSE)
     }
     if (get_distribution(e1, i) == "nonparametric") {
-      ## if nonparametric then PMFs need to be the same
-      if (!identical(get_pmf(e1, i), get_pmf(e2, i))) {
+      ## an estimated distribution is compared by its Dirichlet prior, a fixed
+      ## one by its PMF; the two are never equal
+      d1 <- extract_single_dist(e1, i)
+      d2 <- extract_single_dist(e2, i)
+      est1 <- has_uncertainty(d1)
+      est2 <- has_uncertainty(d2)
+      if (est1 != est2) {
+        return(FALSE)
+      }
+      same <- if (est1) {
+        identical(get_parameters(d1$pmf)$alpha, get_parameters(d2$pmf)$alpha)
+      } else {
+        identical(get_pmf(e1, i), get_pmf(e2, i))
+      }
+      if (!same) {
         return(FALSE)
       }
     } else {
@@ -194,14 +207,14 @@ mean.dist_spec <- function(x, ...) {
 #' @method mean uncertain
 #' @export
 mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
-  ## an uncertain distribution has at least one prior parameter, so its mean is
-  ## `NA` unless we ignore the uncertainty; then we use each parameter's mean
-  ## and defer to the fixed per-type method via `NextMethod()`.
+  ## an uncertain distribution carries a prior, so its mean is `NA` unless we
+  ## ignore the uncertainty; then we resolve it to its mean/point estimate with
+  ## `fix_parameters()` and take that distribution's mean. This handles both an
+  ## uncertain parametric distribution and an estimated nonparametric one.
   if (!ignore_uncertainty) {
     return(NA_real_)
   }
-  x$parameters <- lapply(x$parameters, mean, ignore_uncertainty = TRUE)
-  NextMethod()
+  mean(fix_parameters(x, strategy = "mean"))
 }
 
 #' @method mean multi_dist_spec
@@ -320,8 +333,9 @@ sample_dist.dist_spec <- function(x, n, ...) {
   )
 }
 
-# Uncertain and estimated distributions carry a prior component and so cannot be
-# sampled directly; the user resolves them with `fix_parameters()` first.
+# An uncertain distribution (including an estimated Dirichlet-backed
+# nonparametric) carries a prior and so cannot be sampled directly; the user
+# resolves it with `fix_parameters()` first.
 #' @exportS3Method
 sample_dist.uncertain <- function(x, n, ...) {
   cli_abort(
@@ -331,11 +345,6 @@ sample_dist.uncertain <- function(x, n, ...) {
       sample."
     )
   )
-}
-
-#' @exportS3Method
-sample_dist.estimated <- function(x, n, ...) {
-  sample_dist.uncertain(x, n, ...)
 }
 
 #' @rdname sample_dist
@@ -425,12 +434,20 @@ print_dist_spec_indented <- function(x, indent, ...) {
   }
   for (i in seq_len(ndist(x))) {
     if (get_distribution(x, i) == "nonparametric") {
-      ## nonparametric
-      cat(
-        indent_str, "- nonparametric distribution\n", indent_str, "  PMF: [",
-        paste(signif(get_pmf(x, i), digits = 2), collapse = " "), "]\n",
-        sep = ""
-      )
+      single <- extract_single_dist(x, i)
+      if (has_uncertainty(single)) {
+        ## uncertain: the PMF is itself a distribution (a Dirichlet prior),
+        ## shown nested just like an uncertain parametric parameter
+        cat(indent_str, "- nonparametric distribution:\n", sep = "")
+        cat(indent_str, "  pmf:\n", sep = "")
+        print_dist_spec_indented(single$pmf, indent = indent + 4)
+      } else {
+        cat(
+          indent_str, "- nonparametric distribution\n", indent_str, "  PMF: [",
+          paste(signif(get_pmf(x, i), digits = 2), collapse = " "), "]\n",
+          sep = ""
+        )
+      }
     } else if (get_distribution(x, i) == "fixed") {
       ## fixed
       cat(indent_str, "- fixed value:\n", sep = "")
@@ -467,7 +484,10 @@ print_dist_spec_indented <- function(x, indent, ...) {
         if (is.numeric(get_parameters(x, i)[[param]])) {
           cat(
             indent_str, "    ",
-            signif(get_parameters(x, i)[[param]], digits = 2), "\n",
+            paste(
+              signif(get_parameters(x, i)[[param]], digits = 2),
+              collapse = " "
+            ), "\n",
             sep = ""
           )
         } else {
@@ -676,18 +696,18 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
-  ## Dirichlet-backed nonparametric: resolve to a fixed PMF
-  if (get_distribution(x) == "nonparametric" && isTRUE(x$estimated)) {
+  ## Dirichlet-backed nonparametric: resolve its prior to a fixed PMF
+  if (get_distribution(x) == "nonparametric" && has_uncertainty(x)) {
+    alpha <- get_parameters(x$pmf)$alpha
     pmf <- if (strategy == "mean") {
-      x$alpha / sum(x$alpha)
+      alpha / sum(alpha)
     } else {
-      rdirichlet(x$alpha)
+      rdirichlet(alpha)
     }
     return(NonParametric(pmf = pmf))
   }
   ## fixed nonparametric or fully numeric parametric: nothing to do
-  if (get_distribution(x) == "nonparametric" ||
-        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+  if (!has_uncertainty(x)) {
     return(x)
   }
   ## apply strategy depending on choice
@@ -783,7 +803,9 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' @keywords internal
 nonparametric_pmf_data <- function(x, i, samples) {
   component <- extract_single_dist(x, i)
-  alpha <- component$alpha
+  alpha <- if (has_uncertainty(component)) {
+    get_parameters(component$pmf)$alpha
+  }
   if (!is.null(alpha) && any(alpha > 0)) {
     dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
     return(do.call(rbind, lapply(seq_len(samples), function(s) {
