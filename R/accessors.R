@@ -158,7 +158,7 @@ get_pmf <- function(x, id = NULL) {
       )
     )
   }
-  if (inherits(get_element(x, id, "pmf"), "dist_spec")) {
+  if (has_uncertainty(x, id)) {
     cli_abort(
       c(
         "!" = "An estimated distribution has no fixed probability mass
@@ -168,6 +168,31 @@ get_pmf <- function(x, id = NULL) {
     )
   }
   get_element(x, id, "pmf")
+}
+
+##' Check whether a `<dist_spec>` is uncertain
+##'
+##' @description
+##' A distribution is uncertain when it carries a prior: a parametric
+##' distribution with a `<dist_spec>` (rather than numeric) parameter, or a
+##' nonparametric distribution whose PMF is given by a `<dist_spec>` (a
+##' [Dirichlet()] prior) rather than a numeric vector.
+##'
+##' @inheritParams get_element
+##' @return `TRUE` if the (component) distribution is uncertain.
+##' @keywords internal
+##' @export
+##' @examples
+##' has_uncertainty(Gamma(shape = 1, rate = 1))
+##' has_uncertainty(Gamma(shape = Normal(1, 0.5), rate = 1))
+has_uncertainty <- function(x, id = NULL) {
+  if (is.null(id)) id <- 1L
+  single <- extract_single_dist(x, id)
+  if (get_distribution(single) == "nonparametric") {
+    inherits(single$pmf, "dist_spec")
+  } else {
+    !all(vapply(single$parameters, is.numeric, logical(1)))
+  }
 }
 
 ##' Get the distribution of a `<dist_spec>`

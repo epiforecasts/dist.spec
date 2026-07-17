@@ -56,8 +56,8 @@
       ## one by its PMF; the two are never equal
       d1 <- extract_single_dist(e1, i)
       d2 <- extract_single_dist(e2, i)
-      est1 <- inherits(d1$pmf, "dist_spec")
-      est2 <- inherits(d2$pmf, "dist_spec")
+      est1 <- has_uncertainty(d1)
+      est2 <- has_uncertainty(d2)
       if (est1 != est2) {
         return(FALSE)
       }
@@ -435,7 +435,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
   for (i in seq_len(ndist(x))) {
     if (get_distribution(x, i) == "nonparametric") {
       single <- extract_single_dist(x, i)
-      if (inherits(single$pmf, "dist_spec")) {
+      if (has_uncertainty(single)) {
         ## uncertain: the PMF is itself a distribution (a Dirichlet prior),
         ## shown nested just like an uncertain parametric parameter
         cat(indent_str, "- nonparametric distribution:\n", sep = "")
@@ -697,7 +697,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   strategy <- arg_match(strategy)
 
   ## Dirichlet-backed nonparametric: resolve its prior to a fixed PMF
-  if (get_distribution(x) == "nonparametric" && inherits(x$pmf, "dist_spec")) {
+  if (get_distribution(x) == "nonparametric" && has_uncertainty(x)) {
     alpha <- get_parameters(x$pmf)$alpha
     pmf <- if (strategy == "mean") {
       alpha / sum(alpha)
@@ -707,8 +707,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     return(NonParametric(pmf = pmf))
   }
   ## fixed nonparametric or fully numeric parametric: nothing to do
-  if (get_distribution(x) == "nonparametric" ||
-        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+  if (!has_uncertainty(x)) {
     return(x)
   }
   ## apply strategy depending on choice
@@ -804,7 +803,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' @keywords internal
 nonparametric_pmf_data <- function(x, i, samples) {
   component <- extract_single_dist(x, i)
-  alpha <- if (inherits(component$pmf, "dist_spec")) {
+  alpha <- if (has_uncertainty(component)) {
     get_parameters(component$pmf)$alpha
   }
   if (!is.null(alpha) && any(alpha > 0)) {

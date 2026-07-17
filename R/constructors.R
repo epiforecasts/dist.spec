@@ -343,10 +343,6 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
     if (inherits(params$pmf, "dist_spec")) {
       prior_dist <- params$pmf
       if (get_distribution(prior_dist) == "dirichlet") {
-        ## an estimated distribution stores its Dirichlet prior as the `pmf`
-        ## (just as an uncertain parametric distribution stores a `dist_spec`
-        ## for a parameter); it has no concrete PMF until `fix_parameters()`
-        ## resolves one
         ret <- list(pmf = prior_dist, distribution = "nonparametric")
       } else {
         ret <- list(pmf = mean(prior_dist), distribution = "nonparametric")
@@ -442,14 +438,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
 # re-run whenever the parameters change.
 mark_uncertainty <- function(x) {
   class(x) <- setdiff(class(x), "uncertain")
-  is_uncertain <- if (get_distribution(x) == "nonparametric") {
-    ## an estimated nonparametric carries a Dirichlet prior as its `pmf` in
-    ## place of a concrete (numeric) PMF
-    inherits(x$pmf, "dist_spec")
-  } else {
-    !all(vapply(x$parameters, is.numeric, logical(1)))
-  }
-  if (isTRUE(is_uncertain)) {
+  if (has_uncertainty(x)) {
     class(x) <- c("uncertain", class(x))
   }
   x

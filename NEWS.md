@@ -1,5 +1,8 @@
 # distspec (development version)
 
+- Added `has_uncertainty()`, a predicate for whether a `<dist_spec>` (or a
+  component of a composite) carries a prior, so dependent packages and internal
+  code can test for uncertainty in one place.
 - An estimated (Dirichlet-backed) nonparametric distribution is now treated
   consistently as uncertain, storing its Dirichlet prior in place of a concrete
   PMF just as an uncertain parametric distribution stores a `dist_spec` for a

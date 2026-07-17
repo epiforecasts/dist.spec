@@ -520,6 +520,19 @@ test_that("estimated nonparametric distributions compare by their prior", {
   expect_false(a == NonParametric(pmf = c(0.2, 0.4, 0.4)))
 })
 
+test_that("has_uncertainty distinguishes fixed and uncertain distributions", {
+  expect_false(has_uncertainty(Gamma(shape = 1, rate = 1)))
+  expect_true(has_uncertainty(Gamma(shape = Normal(1, 0.5), rate = 1)))
+  expect_false(has_uncertainty(Fixed(3)))
+  expect_false(has_uncertainty(NonParametric(c(0.2, 0.8))))
+  expect_true(has_uncertainty(NonParametric(pmf = Dirichlet(c(1, 1, 1)))))
+  ## indexes into a composite distribution
+  composite <- Gamma(shape = 1, rate = 1) +
+    Gamma(shape = Normal(1, 0.5), rate = 1)
+  expect_false(has_uncertainty(composite, 1))
+  expect_true(has_uncertainty(composite, 2))
+})
+
 test_that("Dirichlet works with dist_spec prior", {
   dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
   result <- Dirichlet(prior = dist, concentration = 5)

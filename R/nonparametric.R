@@ -27,7 +27,7 @@ sd.nonparametric <- function(x, ...) {
 max.nonparametric <- function(x, ...) {
   ## an estimated distribution has no PMF; its support size is the length of
   ## the Dirichlet prior it carries
-  if (inherits(x$pmf, "dist_spec")) {
+  if (has_uncertainty(x)) {
     length(get_parameters(x$pmf)$alpha)
   } else {
     length(x$pmf)

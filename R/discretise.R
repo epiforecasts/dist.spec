@@ -249,7 +249,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
   ## if it is a single fixed-PMF nonparametric distribution we apply the bounds
   ## directly; an estimated one has no PMF, so it keeps the attribute-based path
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
-        !inherits(x$pmf, "dist_spec")) {
+        !has_uncertainty(x)) {
     pmf <- get_pmf(x)
     if (cdf_cutoff > 0) {
       cmf <- cumsum(pmf)
