@@ -300,6 +300,8 @@ sd.default <- function(x, ...) {
 #'   composite distribution of `k` components, an `n` by `k` matrix, one column
 #'   of `n` samples per component (`rowSums()` gives `n` samples of the combined
 #'   distribution).
+#' @seealso [fix_parameters()] to resolve an uncertain distribution to fixed
+#'   parameters before sampling, and [discretise()] to obtain a PMF instead.
 #' @export
 #' @examples
 #' # Samples from a fixed gamma distribution

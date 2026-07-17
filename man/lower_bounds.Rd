@@ -17,5 +17,7 @@ This is used to avoid sampling parameter values that have no support.
 }
 \examples{
 lower_bounds(LogNormal(meanlog = 0, sdlog = 1))
+# a distribution type can also be given by name
+lower_bounds("lognormal")
 }
 \keyword{internal}

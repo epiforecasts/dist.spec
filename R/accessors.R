@@ -13,6 +13,8 @@
 #' @export
 #' @examples
 #' natural_params(Gamma(shape = 1, rate = 1))
+#' # a distribution type can also be given by name
+#' natural_params("gamma")
 natural_params <- function(x) UseMethod("natural_params")
 
 #' @exportS3Method
@@ -20,6 +22,11 @@ natural_params.default <- function(x) {
   cli::cli_abort(
     "Cannot determine natural parameters for {.val {class(x)[1]}}."
   )
+}
+
+#' @exportS3Method
+natural_params.character <- function(x) {
+  natural_params(structure(list(), class = c(x, "dist_spec")))
 }
 
 
@@ -33,6 +40,8 @@ natural_params.default <- function(x) {
 #' @export
 #' @examples
 #' lower_bounds(LogNormal(meanlog = 0, sdlog = 1))
+#' # a distribution type can also be given by name
+#' lower_bounds("lognormal")
 lower_bounds <- function(x) UseMethod("lower_bounds")
 
 #' @exportS3Method
@@ -40,6 +49,11 @@ lower_bounds.default <- function(x) {
   cli::cli_abort(
     "Cannot determine lower bounds for {.val {class(x)[1]}}."
   )
+}
+
+#' @exportS3Method
+lower_bounds.character <- function(x) {
+  lower_bounds(structure(list(), class = c(x, "dist_spec")))
 }
 
 ##' Extracts an element of a `<dist_spec>`
@@ -183,6 +197,9 @@ get_distribution <- function(x, id = NULL) {
 #' @return The number of distributions.
 #' @keywords internal
 #' @export
+#' @examples
+#' ndist(Gamma(mean = 5, sd = 1))
+#' ndist(Gamma(mean = 5, sd = 1) + Exp(rate = 1))
 ndist <- function(x) {
   if (is(x, "multi_dist_spec")) {
     length(x)

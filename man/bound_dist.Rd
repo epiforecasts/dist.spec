@@ -22,3 +22,10 @@ a \verb{<dist_spec>} with relevant attributes set that define its bounds
 \description{
 This sets attributes for further processing
 }
+\examples{
+# Truncate a gamma distribution at 20
+bound_dist(Gamma(mean = 5, sd = 1), max = 20)
+}
+\seealso{
+\code{\link[=discretise]{discretise()}}, which applies these bounds when producing a PMF.
+}
