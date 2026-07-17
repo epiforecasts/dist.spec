@@ -19,5 +19,7 @@ being passed to the stan models.
 }
 \examples{
 natural_params(Gamma(shape = 1, rate = 1))
+# a distribution type can also be given by name
+natural_params("gamma")
 }
 \keyword{internal}

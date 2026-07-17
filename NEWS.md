@@ -1,5 +1,9 @@
 # distspec (development version)
 
+- `natural_params()` and `lower_bounds()` again accept a distribution type given
+  by name (e.g. `natural_params("gamma")`), as well as a `<dist_spec>`, so
+  dependent packages can query type metadata without constructing an instance.
+
 - Each distribution now has its own reference page (`Gamma()`, `LogNormal()`,
   ...) rather than a single combined page, so each shows only its own
   parameters. The reference index covers the full exported API, and the
