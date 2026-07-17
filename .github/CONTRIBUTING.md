@@ -94,26 +94,26 @@ Each distribution's behaviour comes from a small set of S3 methods dispatched on
 
 ### How dispatch works
 
-`new_dist("<type>", params)` builds a lightweight object that carries the type as its class (`c("<type>", "distribution")`) and the parameters in `$params`. The shared code (`mean.dist_spec()`, `sd.dist_spec()`, `natural_params()`, `lower_bounds()`, `discrete_pmf()`) delegates to your per-type methods through this object. A distribution returned by a constructor has class `c("dist_spec", "list")` and hits the `.dist_spec` methods, which pull out its parameters and delegate. That is why your per-type methods read `x$params$<param>`.
+A `<dist_spec>` carries its distribution type as the head of its S3 class (e.g. `c("gamma", "dist_spec")`), so your per-type methods dispatch on it directly and read parameters from `x$parameters` (or `x$pmf` for the nonparametric family). Everything shared lives once in the framework, not in your methods: validating the number of samples, and handling a distribution whose parameters are themselves priors. An uncertain distribution is given an extra `"uncertain"` class, so `mean.uncertain()`/`sample_dist.uncertain()` intercept it before your method runs. As a result **your per-type methods only ever see fixed, numeric parameters and are written as plain functions — no guards, no uncertainty handling**.
 
 ### The methods
 
-Create `R/<type>.R` and implement the methods that apply. Only `natural_params()` and `lower_bounds()` are always required. `mean()` and `sd()` need a closed form, `dist_cdf()` is only for distributions that can be discretised, and `sample_dist()` gives random draws from the family's base-R generator.
+Create `R/<type>.R` and implement the methods that apply. Only `natural_params()` and `lower_bounds()` are always required. `mean()`/`sd()` need a closed form, `sample_dist()` gives random draws, `dist_cdf()` is only for distributions that can be discretised, and `to_natural()` is needed only if your constructor accepts an alternative parameterisation (e.g. `mean`/`sd`) that must be converted to the natural parameters.
 
 ```r
-# R/mydist.R -- methods for the "mydist" distribution. Behaviour is dispatched
-# on the distribution type via `new_dist()`, so these methods read their
-# parameters from `x$params$<param>`.
+# R/mydist.R -- methods for the "mydist" distribution. Each dispatches on the
+# "mydist" class of a `<dist_spec>` and reads fixed parameters from
+# `x$parameters`. Uncertainty and validation are handled by the framework, so
+# these methods are pure.
 
 # Required: the names of the natural (estimated) parameters, in order.
 #' @exportS3Method
-natural_params.mydist <- function(distribution) c("param1", "param2")
+natural_params.mydist <- function(x) c("param1", "param2")
 
 # Required: the lower bound of each parameter (include any `mean`/`sd`
-# alternative parameterisation the constructor accepts). Used for parameter
-# validation and optimisation.
+# alternative parameterisation the constructor accepts).
 #' @exportS3Method
-lower_bounds.mydist <- function(distribution) {
+lower_bounds.mydist <- function(x) {
   c(param1 = 0, param2 = 0)
 }
 
@@ -121,40 +121,47 @@ lower_bounds.mydist <- function(distribution) {
 #' @method mean mydist
 #' @export
 mean.mydist <- function(x, ...) {
-  x$params$param1
+  x$parameters$param1
 }
 
 # Optional: the analytic standard deviation. Omit if there is no closed form.
 #' @method sd mydist
 #' @export
 sd.mydist <- function(x, ...) {
-  x$params$param2
+  x$parameters$param2
 }
 
-# Optional: random draws, using the family's base-R generator. Omit if the
-# distribution cannot be sampled. A composite (multi-component) distribution is
-# sampled per component automatically, with no per-type work needed.
+# Optional: random draws, using the family's base-R generator. A composite
+# (multi-component) distribution is sampled per component automatically.
 #' @importFrom stats rmydist
 #' @exportS3Method
 sample_dist.mydist <- function(x, n, ...) {
-  rmydist(n, x$params$param1, x$params$param2)
+  rmydist(n, x$parameters$param1, x$parameters$param2)
+}
+
+# Optional (alternative parameterisations): convert the parameters the
+# constructor accepts (e.g. `mean`/`sd`) to the natural parameters. Take the
+# parameter means from `x$parameters` and return a named list.
+#' @exportS3Method
+to_natural.mydist <- function(x) {
+  ux <- lapply(x$parameters, mean)
+  list(param1 = ux$param1, param2 = ux$param2)
 }
 
 # Optional (discretisation): the CDF as a *function* whose arguments match the
-# natural parameters (e.g. a base-R `p*` function such as `pgamma`). It is
-# passed to {primarycensored}. Provide this only if the distribution can be
-# discretised; omit it for distributions that never are (e.g. beta, the
-# Dirichlet prior), which then error informatively via `dist_cdf.default()`.
+# natural parameters (e.g. a base-R `p*` function such as `pgamma`). Provide this
+# only if the distribution can be discretised; omit it otherwise (it then errors
+# informatively via `dist_cdf.default()`).
 #' @exportS3Method
-dist_cdf.mydist <- function(distribution) pmydist
+dist_cdf.mydist <- function(x) pmydist
 
 # Optional (bespoke discretisation): if your distribution discretises in a
-# special way rather than through a CDF (as the point-mass `fixed` does),
-# provide a `discrete_pmf()` method instead of `dist_cdf()`:
+# special way rather than through a CDF (as the point-mass `fixed` does), provide
+# a `discrete_pmf()` method instead of `dist_cdf()`:
 #
 # #' @exportS3Method
 # discrete_pmf.mydist <- function(x, max_value, ...) {
-#   ## return a numeric PMF vector computed from `x$params`
+#   ## return a numeric PMF vector computed from `x$parameters`
 # }
 ```
 

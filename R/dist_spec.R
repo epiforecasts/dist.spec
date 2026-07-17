@@ -32,10 +32,9 @@
 #'
 #' @importFrom primarycensored dprimarycensored
 #'
-#' @param x A `<distribution>` object (see [new_dist()]) giving the
-#'   distribution type and its parameters. Discretisation dispatches on the
-#'   type: any type with a `dist_cdf()` method uses the default method, while
-#'   `"fixed"` is handled as a point mass by its own method.
+#' @param x A `<dist_spec>`. Discretisation dispatches on the distribution type:
+#'   any type with a `dist_cdf()` method uses the default `.dist_spec` method,
+#'   while `"fixed"` is handled as a point mass by its own method.
 #'
 #' @param ... Additional arguments passed to methods.
 #'
@@ -54,11 +53,12 @@ discrete_pmf <- function(x, ...) {
 }
 
 #' @exportS3Method
-discrete_pmf.distribution <- function(x, max_value, cdf_cutoff, width, ...) {
-  params <- x$params
+discrete_pmf.dist_spec <- function(x, max_value, cdf_cutoff, width, ...) {
+  params <- get_parameters(x)
 
   ## CDF function for the distribution type (a type without a `dist_cdf()`
-  ## method errors via `dist_cdf.default`)
+  ## method errors via `dist_cdf.default`; the point-mass `fixed` overrides this
+  ## method entirely)
   cdf <- dist_cdf(x)
 
   ## apply CDF cutoff if given
@@ -288,21 +288,24 @@ c.dist_spec <- function(...) {
 #'
 #' # The mean of the sum of two distributions
 #' mean(dist1 + dist2)
-mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
-  if (get_distribution(x) == "nonparametric") {
-    mean(new_dist("nonparametric", list(pmf = get_pmf(x))))
-  } else if (get_distribution(x) == "dirichlet") {
-    mean(new_dist("dirichlet", get_parameters(x)))
-  } else {
-    params <- get_parameters(x)
-    if (!all(vapply(params, is.numeric, logical(1)))) {
-      if (!ignore_uncertainty) {
-        return(NA_real_)
-      }
-      params <- lapply(params, mean, ignore_uncertainty = TRUE)
-    }
-    mean(new_dist(get_distribution(x), params))
+mean.dist_spec <- function(x, ...) {
+  cli_abort(
+    "Don't know how to calculate the mean of a {.val {get_distribution(x)}}
+    distribution."
+  )
+}
+
+#' @method mean uncertain
+#' @export
+mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
+  ## an uncertain distribution has at least one prior parameter, so its mean is
+  ## `NA` unless we ignore the uncertainty; then we use each parameter's mean
+  ## and defer to the fixed per-type method via `NextMethod()`.
+  if (!ignore_uncertainty) {
+    return(NA_real_)
   }
+  x$parameters <- lapply(x$parameters, mean, ignore_uncertainty = TRUE)
+  NextMethod()
 }
 
 #' @method mean multi_dist_spec
@@ -346,16 +349,14 @@ sd <- function(x, ...) {
 #' @importFrom cli cli_abort
 #' @export
 sd.dist_spec <- function(x, ...) {
-  if (get_distribution(x) == "nonparametric") {
-    sd(new_dist("nonparametric", list(pmf = get_pmf(x))))
-  } else {
-    ## parametric
-    if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
-      return(NA_real_)
-    }
-    sd(new_dist(get_distribution(x), x$parameters))
-  }
+  cli_abort(
+    "Don't know how to calculate the standard deviation of a
+    {.val {get_distribution(x)}} distribution."
+  )
 }
+
+#' @export
+sd.uncertain <- function(x, ...) NA_real_
 
 #' @export
 sd.multi_dist_spec <- function(x, ...) {
@@ -403,50 +404,46 @@ sd.default <- function(x, ...) {
 #'
 #' # A composite: an n-by-k matrix, one column per component
 #' sample_dist(Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1), 10)
-sample_dist <- function(x, n, ...) {
-  UseMethod("sample_dist")
-}
-
-#' @rdname sample_dist
 #' @importFrom cli cli_abort
-#' @export
-sample_dist.dist_spec <- function(x, n, ...) {
+sample_dist <- function(x, n, ...) {
+  ## `n` validation is shared by every method, so it lives here in the generic.
   if (!is.numeric(n) || length(n) != 1 || !is.finite(n) || n < 0 ||
         n != trunc(n)) {
     cli_abort("{.arg n} must be a single non-negative integer.")
   }
-  if (get_distribution(x) == "nonparametric") {
-    if (isTRUE(x$estimated)) {
-      cli_abort(
-        c(
-          "!" = "Can only sample from a distribution with fixed parameters.",
-          "i" = "This nonparametric distribution is estimated (it has a
-          Dirichlet prior).",
-          "i" = "Resolve the parameters first with {.fn fix_parameters}, then
-          sample."
-        )
-      )
-    }
-    return(sample_dist(new_dist("nonparametric", list(pmf = get_pmf(x))), n))
-  }
-  params <- get_parameters(x)
-  if (!all(vapply(params, is.numeric, logical(1)))) {
-    cli_abort(
-      c(
-        "!" = "Can only sample from a distribution with fixed parameters.",
-        "i" = "At least one parameter is itself a distribution (a prior).",
-        "i" = "Resolve the parameters first with {.fn fix_parameters}, then
-        sample."
-      )
+  UseMethod("sample_dist")
+}
+
+#' @rdname sample_dist
+#' @export
+sample_dist.dist_spec <- function(x, n, ...) {
+  cli_abort(
+    "Don't know how to sample from a {.val {get_distribution(x)}} distribution."
+  )
+}
+
+# Uncertain and estimated distributions carry a prior component and so cannot be
+# sampled directly; the user resolves them with `fix_parameters()` first.
+#' @exportS3Method
+sample_dist.uncertain <- function(x, n, ...) {
+  cli_abort(
+    c(
+      "!" = "Can only sample from a distribution with fixed parameters.",
+      "i" = "Resolve the parameters first with {.fn fix_parameters}, then
+      sample."
     )
-  }
-  sample_dist(new_dist(get_distribution(x), params), n)
+  )
+}
+
+#' @exportS3Method
+sample_dist.estimated <- function(x, n, ...) {
+  sample_dist.uncertain(x, n, ...)
 }
 
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## An uncertain component errors via its own `sample_dist.dist_spec()` method.
+  ## An uncertain component errors via its own `sample_dist.uncertain()` method.
   vapply(x, sample_dist, numeric(n), n = n)
 }
 
@@ -487,7 +484,7 @@ max.dist_spec <- function(x, ...) {
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
-    nonparametric = max(new_dist("nonparametric", list(pmf = get_pmf(x)))),
+    nonparametric = max(x),
     ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
   )
 }
@@ -556,15 +553,14 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     if (is.null(dist_max)) {
       dist_max <- Inf
     }
-    y <- list(
-      pmf = discrete_pmf(
-        new_dist(get_distribution(x), get_parameters(x)),
-        dist_max, cdf_cutoff, width = 1
-      )
+    y <- new_single_dist_spec(
+      list(
+        pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
+      ),
+      "nonparametric"
     )
-    y$distribution <- "nonparametric"
     preserve_attributes <- setdiff(
-      names(attributes(x)), c("cdf_cutoff", "max", "names")
+      names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
     )
     for (attribute in preserve_attributes) {
       attributes(y)[attribute] <- attributes(x)[attribute]
@@ -828,7 +824,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           )
         }
         x <- discrete_pmf(
-          new_dist(get_distribution(x, i), get_parameters(y)),
+          y,
           max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
         )
         data.frame(x = (seq_along(x) - 1) * res, p = x)
@@ -967,7 +963,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     x$parameters <- lapply(get_parameters(x), mean)
   } else if (strategy == "sample") {
     lower_bound <-
-      lower_bounds(get_distribution(x))[natural_params(get_distribution(x))]
+      lower_bounds(x)[natural_params(x)]
     params_mean <- vapply(get_parameters(x), mean, numeric(1))
     params_sd <- vapply(get_parameters(x), sd, numeric(1))
     params_sd[is.na(params_sd)] <- 0
@@ -978,6 +974,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     names(sampled) <- names(get_parameters(x))
     x$parameters <- sampled
   }
+  ## the parameters are now fixed, so drop the "uncertain" marker class
+  class(x) <- c(get_distribution(x), "dist_spec")
   x
 }
 
@@ -1293,24 +1291,19 @@ nonparametric_pmf_data <- function(x, i, samples) {
 #' These are the parameters used in the stan models. All other parameter
 #' representations are converted to these using [convert_to_natural()] before
 #' being passed to the stan models.
-#' @param distribution Character; the distribution to use.
+#' @param x A `<dist_spec>`.
 #' @return A character vector, the natural parameters.
 #' @keywords internal
 #' @export
 #' @examples
-#' natural_params("gamma")
-natural_params <- function(distribution) UseMethod("natural_params")
+#' natural_params(Gamma(shape = 1, rate = 1))
+natural_params <- function(x) UseMethod("natural_params")
 
 #' @exportS3Method
-natural_params.default <- function(distribution) {
+natural_params.default <- function(x) {
   cli::cli_abort(
-    "Cannot determine natural parameters for {.val {class(distribution)[1]}}."
+    "Cannot determine natural parameters for {.val {class(x)[1]}}."
   )
-}
-
-#' @exportS3Method
-natural_params.character <- function(distribution) {
-  natural_params(new_dist(distribution))
 }
 
 
@@ -1323,19 +1316,14 @@ natural_params.character <- function(distribution) {
 #' @keywords internal
 #' @export
 #' @examples
-#' lower_bounds("lognormal")
-lower_bounds <- function(distribution) UseMethod("lower_bounds")
+#' lower_bounds(LogNormal(meanlog = 0, sdlog = 1))
+lower_bounds <- function(x) UseMethod("lower_bounds")
 
 #' @exportS3Method
-lower_bounds.default <- function(distribution) {
+lower_bounds.default <- function(x) {
   cli::cli_abort(
-    "Cannot determine lower bounds for {.val {class(distribution)[1]}}."
+    "Cannot determine lower bounds for {.val {class(x)[1]}}."
   )
-}
-
-#' @exportS3Method
-lower_bounds.character <- function(distribution) {
-  lower_bounds(new_dist(distribution))
 }
 
 #' Define bounds of a `<dist_spec>`
@@ -1390,7 +1378,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
 #' @keywords internal
 extract_params <- function(params, distribution) {
   params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
-  n_params <- length(natural_params(distribution))
+  n_params <- length(natural_params(dist_prototype(distribution)))
   if (length(params) != n_params) {
     cli_abort(
       c(
@@ -1407,7 +1395,7 @@ extract_params <- function(params, distribution) {
 # Validate a fixed `value` against its lower bound. An uncertain (non-numeric)
 # value is bound-checked when sampled rather than here.
 validate_fixed_value <- function(value) {
-  lb <- lower_bounds("fixed")[["value"]]
+  lb <- lower_bounds(dist_prototype("fixed"))[["value"]]
   if (is.numeric(value) && any(value < lb)) {
     cli_abort(
       c(
@@ -1456,21 +1444,23 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
         distribution = "nonparametric"
       )
     }
+    ret <- new_single_dist_spec(ret, "nonparametric")
   } else {
     ## extract parameters and convert all to dist_spec
     params <- extract_params(params, distribution)
     ## fixed distribution
     if (distribution == "fixed") {
       validate_fixed_value(params[["value"]])
-      ret <- list(
-        parameters = params,
-        distribution = "fixed"
-      )
+      ret <- new_single_dist_spec(list(parameters = params), "fixed")
     } else {
-      ## parametric probability distribution
+      ## parametric probability distribution. Build the object first so that the
+      ## per-type metadata methods can dispatch on it (there is no separate
+      ## dispatch token); parameters are validated and converted in place.
+      ret <- new_single_dist_spec(list(parameters = params), distribution)
       ## check bounds
+      lb_all <- lower_bounds(ret)
       for (param_name in names(params)) {
-        lb <- lower_bounds(distribution)[param_name]
+        lb <- lb_all[param_name]
         if (is.numeric(params[[param_name]]) &&
               any(params[[param_name]] < lb)) {
           cli_abort(
@@ -1484,7 +1474,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       }
 
       ## convert any unnatural parameters
-      unnatural_params <- setdiff(names(params), natural_params(distribution))
+      unnatural_params <- setdiff(names(params), natural_params(ret))
       if (length(unnatural_params) > 0) {
         ## sample parameters if they are uncertain
         uncertain <- vapply(params, function(x) {
@@ -1500,7 +1490,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
             c(
               "!" = "Uncertain {distribution} distribution specified in
               terms of parameters that are not the \"natural\" parameters of
-              the distribution {natural_params(distribution)}.",
+              the distribution {natural_params(ret)}.",
               "i" = "Converting using a crude and very approximate method
             that is likely to produce biased results.",
               "i" = "If possible it is preferable to specify the
@@ -1510,49 +1500,81 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
           # nolint end
         }
         ## generate natural parameters
-        params <- convert_to_natural(params, distribution)
+        ret$parameters <- convert_to_natural(ret)
       }
       ## convert normal with sd == 0 to fixed
-      if (distribution == "normal" && is.numeric(params$sd) && params$sd == 0) {
-        validate_fixed_value(params$mean)
-        ret <- list(
-          parameters = list(value = params$mean), distribution = "fixed"
+      if (distribution == "normal" && is.numeric(ret$parameters$sd) &&
+            ret$parameters$sd == 0) {
+        validate_fixed_value(ret$parameters$mean)
+        ret <- new_single_dist_spec(
+          list(parameters = list(value = ret$parameters$mean)), "fixed"
         )
-      } else {
-        ret <- list(parameters = params, distribution = distribution)
       }
     }
   }
-  ## add class attribute
-  attr(ret, "class") <- c("dist_spec", "list")
 
   ## apply bounds
   ret <- bound_dist(ret, max, cdf_cutoff)
 
-  ## now we have a distribution with natural parameters - return dist_spec
+  ## mark uncertain / estimated distributions so the shared handlers dispatch
+  mark_uncertainty(ret)
+}
+
+# Prepend a marker class to a distribution that carries a prior, so the shared
+# `mean`/`sd`/`sample_dist` handlers dispatch on it: `"uncertain"` for a
+# parametric distribution with a prior parameter, `"estimated"` for a
+# Dirichlet-backed nonparametric. Fixed distributions get no marker.
+mark_uncertainty <- function(x) {
+  marker <- NULL
+  if (get_distribution(x) == "nonparametric") {
+    if (isTRUE(x$estimated)) {
+      marker <- "estimated"
+    }
+  } else if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
+    marker <- "uncertain"
+  }
+  if (!is.null(marker)) {
+    class(x) <- c(marker, class(x))
+  }
+  x
+}
+
+# Attach the type-aware class to a single `dist_spec`, subclass-first
+# (`c(type, "dist_spec")`): per-type methods dispatch on the type head, and
+# whole-spec methods fall through to the `"dist_spec"` tail. The type is also
+# kept in the `$distribution` field for `get_distribution()`.
+new_single_dist_spec <- function(ret, distribution) {
+  ret$distribution <- distribution
+  class(ret) <- c(distribution, "dist_spec")
   ret
 }
+
+# A minimal, parameterless `dist_spec` of a type, used only to dispatch the
+# per-type metadata methods (`natural_params()`, `lower_bounds()`) before a full
+# object has been constructed.
+dist_prototype <- function(distribution) {
+  new_single_dist_spec(list(), distribution)
+}
+
+# Per-type conversion of a distribution's parameters to its natural parameters.
+# Dispatched on the distribution type; each method reads the raw parameters from
+# `x$parameters`, takes their means, and returns the natural parameters as a
+# named list (see e.g. `to_natural.gamma`). The shared pre/post-processing lives
+# in `convert_to_natural()`.
+to_natural <- function(x) UseMethod("to_natural")
 
 #' Internal function for converting parameters to natural parameters.
 #'
 #' @description
-#' This is used for preprocessing before generating a `dist_spec` object
-#' from a given set of parameters and distribution
-#' @param params A numerical named parameter vector
+#' Preprocessing before generating a `dist_spec`: converts a distribution's
+#' parameters to its natural parameters via the per-type `to_natural()` method,
+#' re-attaching uncertainty by sampling where parameters are uncertain.
 #' @inheritParams natural_params
 #' @importFrom cli cli_abort
-#' @importFrom stats uniroot
-#' @return A list with two elements, `params_mean` and `params_sd`, containing
-#' mean and sd of natural parameters.
+#' @return A named list of natural parameters.
 #' @keywords internal
-#' @examples
-#' \dontrun{
-#' convert_to_natural(
-#'   params = list(mean = 2, sd = 1),
-#'   distribution = "gamma"
-#' )
-#' }
-convert_to_natural <- function(params, distribution) {
+convert_to_natural <- function(x) {
+  params <- x$parameters
   ## unnatural parameter means
   ux <- lapply(params, mean)
   if (anyNA(ux)) {
@@ -1569,103 +1591,31 @@ convert_to_natural <- function(params, distribution) {
   sds <- vapply(params, sd, numeric(1))
   sds[is.na(sds)] <- 0
   rel_unc <- mean(sds^2 / unlist(ux))
-  ## store natural parameters
-  x <- list()
-  switch(distribution,
-    gamma = {
-      if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
-        x$shape <- ux$mean**2 / ux$sd**2
-        x$rate <- x$shape / ux$mean
-      } else {
-        ## convert scale => rate
-        if ("scale" %in% names(ux)) {
-          x$rate <- 1 / ux$scale
-        } else {
-          x$rate <- ux$rate
-        }
-        x$shape <- ux$shape
-      }
-    },
-    lognormal = {
-      if ("mean" %in% names(params) && "sd" %in% names(params)) {
-        x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
-        x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
-      } else {
-        x$meanlog <- ux$meanlog
-        x$sdlog <- ux$sdlog
-      }
-    },
-    exp = {
-      if ("mean" %in% names(params)) {
-        x$rate <- 1 / ux$mean
-      } else {
-        x$rate <- ux$rate
-      }
-    },
-    normal = {
-      x$mean <- ux$mean
-      x$sd <- ux$sd
-    },
-    beta = {
-      if (all(c("mean", "sd") %in% names(ux))) {
-        if (ux$mean <= 0 || ux$mean >= 1) {
-          cli_abort(
-            c(
-              "!" = "The mean of a beta distribution must be between 0 and 1.",
-              "i" = "It is currently {ux$mean}."
-            )
-          )
-        }
-        if (ux$sd^2 >= ux$mean * (1 - ux$mean)) {
-          cli_abort(
-            c(
-              "!" = "The variance of a beta distribution must be less than
-            mean * (1 - mean).",
-              "i" = "Reduce the sd below {sqrt(ux$mean * (1 - ux$mean))}."
-            )
-          )
-        }
-        common <- ux$mean * (1 - ux$mean) / ux$sd^2 - 1
-        x$shape1 <- ux$mean * common
-        x$shape2 <- (1 - ux$mean) * common
-      } else {
-        x$shape1 <- ux$shape1
-        x$shape2 <- ux$shape2
-      }
-    },
-    weibull = {
-      if (all(c("mean", "sd") %in% names(ux))) {
-        log_cv2_p1 <- log1p((ux$sd / ux$mean)^2)
-        x$shape <- uniroot(
-          function(k) lgamma(1 + 2 / k) - 2 * lgamma(1 + 1 / k) - log_cv2_p1,
-          interval = c(0.01, 200)
-        )$root
-        x$scale <- ux$mean / gamma(1 + 1 / x$shape)
-      } else {
-        x$shape <- ux$shape
-        x$scale <- ux$scale
-      }
-    }
-  )
-  ## sort
-  x <- x[natural_params(distribution)]
-  if (anyNA(names(x))) {
+  ## convert the parameter means to natural parameters (per-type dispatch);
+  ## drop any that could not be derived so the sort below flags them as missing
+  natural <- to_natural(x)
+  natural <- natural[!vapply(natural, is.null, logical(1))]
+  ## sort into the canonical natural-parameter order
+  natural <- natural[natural_params(x)]
+  if (anyNA(names(natural))) {
     cli_abort(
       c(
-        "!" = "Incompatible combination of parameters of a {distribution}
-      distribution specified: {names(params)}."
+        "!" = "Incompatible combination of parameters of a
+      {get_distribution(x)} distribution specified: {names(params)}."
       )
     )
   }
+  ## re-attach uncertainty by sampling around the natural parameters
   if (rel_unc > 0) {
-    params <- lapply(names(x), function(param_name) {
-      Normal(mean = x[[param_name]], sd = sqrt(abs(x[[param_name]]) * rel_unc))
+    natural <- lapply(names(natural), function(param_name) {
+      Normal(
+        mean = natural[[param_name]],
+        sd = sqrt(abs(natural[[param_name]]) * rel_unc)
+      )
     })
-    names(params) <- names(x)
-  } else {
-    params <- x
+    names(natural) <- natural_params(x)
   }
-  params
+  natural
 }
 
 ##' Extracts an element of a `<dist_spec>`

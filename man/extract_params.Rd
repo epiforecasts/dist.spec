@@ -8,8 +8,6 @@ extract_params(params, distribution)
 }
 \arguments{
 \item{params}{Given parameters (obtained using \code{as.list(environment())})}
-
-\item{distribution}{Character; the distribution to use.}
 }
 \value{
 A character vector of parameters and their values.

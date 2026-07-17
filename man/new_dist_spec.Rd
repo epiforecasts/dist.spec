@@ -10,8 +10,6 @@ new_dist_spec(params, distribution, max = Inf, cdf_cutoff = 0)
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}
 
-\item{distribution}{Character; the distribution to use.}
-
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 

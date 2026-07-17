@@ -102,25 +102,27 @@ test_that("each supported distribution is fully wired through dist_spec", {
   )
 
   for (d in supported) {
-    np <- natural_params(d)
+    np <- natural_params(dist_prototype(d))
     expect_type(np, "character")
     expect_gt(length(np), 0)
 
-    lb <- lower_bounds(d)
+    lb <- lower_bounds(dist_prototype(d))
     expect_true(
       all(np %in% names(lb)),
       info = paste("lower_bounds missing natural params for", d)
     )
 
     nat <- natural_values[[d]]
-    converted <- convert_to_natural(nat, d)
+    converted <- convert_to_natural(new_single_dist_spec(list(parameters = nat), d))
     expect_equal(
       converted[np], nat[np],
       info = paste("convert_to_natural does not round-trip for", d)
     )
 
     for (case in nonnatural_cases[[d]]) {
-      converted <- convert_to_natural(case$input, d)
+      converted <- convert_to_natural(
+        new_single_dist_spec(list(parameters = case$input), d)
+      )
       for (param in names(case$expected)) {
         expect_equal(
           converted[[param]], case$expected[[param]],
@@ -404,8 +406,8 @@ test_that("delay distributions can be specified in different ways", {
 })
 
 test_that("a fixed distribution accepts a value of zero", {
-  expect_identical(lower_bounds("fixed"), c(value = 0))
   zero <- Fixed(value = 0)
+  expect_identical(lower_bounds(zero), c(value = 0))
   expect_equal(mean(zero), 0)
   expect_equal(sd(zero), 0)
   expect_equal(get_pmf(discretise(Fixed(value = 0))), 1)

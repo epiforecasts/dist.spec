@@ -1,30 +1,34 @@
 # Normal distribution
 #
-# Everything specific to the normal distribution lives here, following the
-# per-distribution interface introduced for the gamma distribution (see
-# `distribution.R`, `gamma.R` and #41).
+# Per-type methods for the normal distribution; see `gamma.R` and #64.
 
 #' @exportS3Method
-natural_params.normal <- function(distribution) c("mean", "sd")
+natural_params.normal <- function(x) c("mean", "sd")
 
 #' @exportS3Method
-lower_bounds.normal <- function(distribution) {
+lower_bounds.normal <- function(x) {
   c(mean = -Inf, sd = 0)
 }
 
 #' @exportS3Method
-dist_cdf.normal <- function(distribution) pnorm
+dist_cdf.normal <- function(x) pnorm
+
+#' @exportS3Method
+to_natural.normal <- function(x) {
+  ux <- lapply(x$parameters, mean)
+  list(mean = ux$mean, sd = ux$sd)
+}
 
 #' @method mean normal
 #' @export
-mean.normal <- function(x, ...) x$params$mean
+mean.normal <- function(x, ...) x$parameters$mean
 
 #' @method sd normal
 #' @export
-sd.normal <- function(x, ...) x$params$sd
+sd.normal <- function(x, ...) x$parameters$sd
 
 #' @importFrom stats rnorm
 #' @exportS3Method
 sample_dist.normal <- function(x, n, ...) {
-  rnorm(n, mean = x$params$mean, sd = x$params$sd)
+  rnorm(n, mean = x$parameters$mean, sd = x$parameters$sd)
 }

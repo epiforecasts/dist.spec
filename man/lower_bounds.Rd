@@ -4,10 +4,10 @@
 \alias{lower_bounds}
 \title{Get the lower bounds of the parameters of a distribution}
 \usage{
-lower_bounds(distribution)
+lower_bounds(x)
 }
 \arguments{
-\item{distribution}{Character; the distribution to use.}
+\item{x}{A \verb{<dist_spec>}.}
 }
 \value{
 A numeric vector, the lower bounds.
@@ -16,6 +16,6 @@ A numeric vector, the lower bounds.
 This is used to avoid sampling parameter values that have no support.
 }
 \examples{
-lower_bounds("lognormal")
+lower_bounds(LogNormal(meanlog = 0, sdlog = 1))
 }
 \keyword{internal}
