@@ -53,3 +53,7 @@ sample_dist(Fixed(3), 5)
 # A composite: an n-by-k matrix, one column per component
 sample_dist(Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1), 10)
 }
+\seealso{
+\code{\link[=fix_parameters]{fix_parameters()}} to resolve an uncertain distribution to fixed
+parameters before sampling, and \code{\link[=discretise]{discretise()}} to obtain a PMF instead.
+}

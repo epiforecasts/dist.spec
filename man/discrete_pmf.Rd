@@ -38,6 +38,18 @@ interval of the corresponding continuous distribution (probability of
 integer 0), the second entry corresponds to the (0,2] interval (probability
 mass of integer 1), the third entry corresponds to the (1, 3] interval
 (probability mass of integer 2), etc.
+
+The maximum value truncates the distribution: mass beyond it is dropped and
+the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
+additionally trims the tail, removing the part of the distribution beyond its
+\code{1 - cdf_cutoff} quantile.
+\subsection{Fixed distributions}{
+
+A \code{Fixed()} (point-mass) distribution is not discretised through a CDF but by
+its own method: an integer value places all of the mass on that integer,
+while a fractional value splits the mass proportionally across the two
+adjacent integers. For example \code{Fixed(2.25)} places 0.75 on 2 and 0.25 on 3.
+}
 }
 
 \references{

@@ -9,43 +9,60 @@ development:
 
 reference:
   - title: Defining probability distributions
-    desc: Functions that are used to define probability distributions
+    desc: Constructors for the supported probability distributions.
     contents:
       - Distributions
+      - Gamma
+      - LogNormal
+      - Normal
+      - Exp
+      - Weibull
+      - Beta
+      - Fixed
+      - NonParametric
+      - Dirichlet
       - new_dist_spec
-  - title: Access functions
-    desc: Functions that are used to acccess properties of probability distributions
+  - title: Access properties
+    desc: Extract the type, parameters or probability mass function of a
+      distribution.
     contents:
       - get_distribution
       - get_parameters
       - get_pmf
-  - title: Modify distributions
-    desc: Functions to modify and combine probability distributions
+      - ndist
+  - title: Summarise distributions
+    desc: Summary statistics of a distribution.
+    contents:
+      - mean.dist_spec
+      - sd
+      - max.dist_spec
+      - is_constrained
+  - title: Combine and modify distributions
+    desc: Combine, convolve, discretise and fix the parameters of distributions.
     contents:
       - c.dist_spec
-      - +.dist_spec
+      - "`+.dist_spec`"
       - collapse.dist_spec
-      - bound_dist
       - discretise.dist_spec
+      - bound_dist
       - fix_parameters.dist_spec
-  - title: Query properties of distributions
-    desc: Functions used to query properties of probability distributions
+  - title: Sample from distributions
+    desc: Draw random samples from a distribution with fixed parameters.
     contents:
-      - max.dist_spec
-      - mean.dist_spec
-      - is_constrained
+      - sample_dist
   - title: Compare distributions
-    desc: Functions used to compare probability distributions
     contents:
       - "`==.dist_spec`"
       - "`!=.dist_spec`"
   - title: Visualise distributions
-    desc: Functions used to print or plot probability distributions
+    desc: Print or plot a distribution.
     contents:
       - print.dist_spec
       - plot.dist_spec
-  - title: Convert distribution parameters
-    desc: Functions used to convert between distribution parameterisations
+  - title: Parameter helpers
+    desc: Lower-level helpers for working with distribution parameters.
     contents:
+      - natural_params
+      - lower_bounds
       - convert_to_logmean
       - convert_to_logsd
