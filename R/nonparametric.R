@@ -24,7 +24,15 @@ sd.nonparametric <- function(x, ...) {
 
 #' @method max nonparametric
 #' @export
-max.nonparametric <- function(x, ...) length(x$pmf)
+max.nonparametric <- function(x, ...) {
+  ## an estimated distribution has no PMF; its support size is the length of
+  ## the Dirichlet prior it carries
+  if (inherits(x$pmf, "dist_spec")) {
+    length(get_parameters(x$pmf)$alpha)
+  } else {
+    length(x$pmf)
+  }
+}
 
 # Sample from the discrete support 0, 1, 2, ... with probabilities given by the
 # PMF. `sample.int()` avoids the length-1 pitfall of `sample()`.

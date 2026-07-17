@@ -117,9 +117,9 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
 ##' Get the probability mass function of a nonparametric distribution
 ##'
 ##' @details
-##' For an estimated (Dirichlet-backed) nonparametric distribution the returned
-##' PMF is the mean of the Dirichlet prior; `print()` marks such distributions
-##' as estimated. Use [fix_parameters()] to resolve one to a concrete PMF.
+##' An estimated (Dirichlet-backed) nonparametric distribution has no concrete
+##' PMF, so calling `get_pmf()` on one is an error. Resolve it to a fixed PMF
+##' first with [fix_parameters()] (e.g. `strategy = "mean"`).
 ##'
 ##' @inheritParams get_element
 ##' @return The pmf of the distribution
@@ -141,6 +141,15 @@ get_pmf <- function(x, id = NULL) {
     cli_abort(
       c(
         "!" = "To get PMF, distribution must be \"nonparametric\"."
+      )
+    )
+  }
+  if (inherits(get_element(x, id, "pmf"), "dist_spec")) {
+    cli_abort(
+      c(
+        "!" = "An estimated distribution has no fixed probability mass
+        function.",
+        "i" = "Resolve it first with {.fn fix_parameters}."
       )
     )
   }
