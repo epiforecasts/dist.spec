@@ -68,14 +68,17 @@ test_that("sample_dist errors on distributions with no sampler", {
   expect_error(sample_dist(Dirichlet(c(1, 2, 3)), 10), "sample from")
 })
 
-test_that("sample_dist of a composite sums independent draws from components", {
+test_that("sample_dist of a composite returns an n-by-k matrix of components", {
   set.seed(1)
   n <- 1e5
   composite <- Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1)
   samples <- sample_dist(composite, n)
-  expect_length(samples, n)
-  ## convolution mean = sum of component means (2 + 3)
-  expect_equal(mean(samples), 5, tolerance = 0.05)
+  expect_true(is.matrix(samples))
+  expect_equal(dim(samples), c(n, 2))
+  ## column means are the per-component means (2 and 3)
+  expect_equal(colMeans(samples), c(2, 3), tolerance = 0.05)
+  ## rowSums gives the combined (convolved) distribution, mean 2 + 3 = 5
+  expect_equal(mean(rowSums(samples)), 5, tolerance = 0.05)
 })
 
 test_that("sample_dist of a composite errors if a component is uncertain", {

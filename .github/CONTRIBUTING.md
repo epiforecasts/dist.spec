@@ -132,8 +132,8 @@ sd.mydist <- function(x, ...) {
 }
 
 # Optional: random draws, using the family's base-R generator. Omit if the
-# distribution cannot be sampled. A composite (convolved) distribution is
-# sampled automatically as the sum of its components.
+# distribution cannot be sampled. A composite (multi-component) distribution is
+# sampled per component automatically, with no per-type work needed.
 #' @importFrom stats rmydist
 #' @exportS3Method
 sample_dist.mydist <- function(x, n, ...) {

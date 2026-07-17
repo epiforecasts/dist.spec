@@ -20,7 +20,10 @@ sample_dist(x, n, ...)
 \item{...}{Not used.}
 }
 \value{
-A numeric vector of \code{n} samples.
+For a single distribution, a numeric vector of \code{n} samples. For a
+composite distribution of \code{k} components, an \code{n} by \code{k} matrix, one column
+of \code{n} samples per component (\code{rowSums()} gives \code{n} samples of the combined
+distribution).
 }
 \description{
 Draws random samples from a \verb{<dist_spec>} whose parameters are fixed numbers,
@@ -31,6 +34,11 @@ integer support.
 Only distributions with fixed parameters can be sampled. If any parameter is
 itself a distribution (a prior), there is no single distribution to sample
 from and an error is raised.
+
+A composite (multi-component) distribution is sampled per component, in
+keeping with \code{mean()}/\code{sd()}, which also return one value per component. Use
+\code{rowSums()} on the result to obtain samples of the combined (convolved)
+distribution.
 }
 \examples{
 # Samples from a fixed gamma distribution
@@ -41,4 +49,7 @@ sample_dist(discretise(Gamma(shape = 2, rate = 1, max = 20)), 10)
 
 # A fixed distribution always returns the same value
 sample_dist(Fixed(3), 5)
+
+# A composite: an n-by-k matrix, one column per component
+sample_dist(Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1), 10)
 }

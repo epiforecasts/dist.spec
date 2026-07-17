@@ -378,10 +378,18 @@ sd.default <- function(x, ...) {
 #' itself a distribution (a prior), there is no single distribution to sample
 #' from and an error is raised.
 #'
+#' A composite (multi-component) distribution is sampled per component, in
+#' keeping with `mean()`/`sd()`, which also return one value per component. Use
+#' `rowSums()` on the result to obtain samples of the combined (convolved)
+#' distribution.
+#'
 #' @param x A `<dist_spec>`.
 #' @param n The number of samples to draw.
 #' @param ... Not used.
-#' @return A numeric vector of `n` samples.
+#' @return For a single distribution, a numeric vector of `n` samples. For a
+#'   composite distribution of `k` components, an `n` by `k` matrix, one column
+#'   of `n` samples per component (`rowSums()` gives `n` samples of the combined
+#'   distribution).
 #' @export
 #' @examples
 #' # Samples from a fixed gamma distribution
@@ -392,6 +400,9 @@ sd.default <- function(x, ...) {
 #'
 #' # A fixed distribution always returns the same value
 #' sample_dist(Fixed(3), 5)
+#'
+#' # A composite: an n-by-k matrix, one column per component
+#' sample_dist(Gamma(shape = 2, rate = 1) + Gamma(shape = 3, rate = 1), 10)
 sample_dist <- function(x, n, ...) {
   UseMethod("sample_dist")
 }
@@ -435,10 +446,11 @@ sample_dist.dist_spec <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## a composite distribution is the convolution of its components, so a sample
-  ## is the sum of one independent sample from each component. An uncertain
-  ## component errors via its own `sample_dist.dist_spec()` method.
-  Reduce(`+`, lapply(x, sample_dist, n = n))
+  ## sample each component, mirroring `mean()`/`sd()` which return one value per
+  ## component; the result is an `n` by `k` matrix (one column per component).
+  ## `rowSums()` recovers samples of the combined (convolved) distribution.
+  ## An uncertain component errors via its own `sample_dist.dist_spec()` method.
+  vapply(x, sample_dist, numeric(n), n = n)
 }
 
 #' Returns the maximum of one or more delay distribution

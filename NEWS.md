@@ -1,9 +1,10 @@
 # distspec (development version)
 
 - Added `sample_dist()` to draw random samples from a distribution with fixed
-  parameters, including composite (convolved) distributions, which are sampled
-  as the sum of their components. Distributions with uncertain (prior)
-  parameters cannot be sampled and raise an error.
+  parameters. A composite distribution is sampled per component, returning an
+  `n` by `k` matrix (`rowSums()` gives samples of the combined distribution).
+  Distributions with uncertain (prior) parameters cannot be sampled and raise
+  an error.
 - The package has been renamed from `dist.spec` to `distspec`. The `dist_spec`
   object class is unchanged.
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
