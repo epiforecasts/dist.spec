@@ -22,6 +22,18 @@
 #'   mass of integer 1), the third entry corresponds to the (1, 3] interval
 #'   (probability mass of integer 2), etc.
 #'
+#' The maximum value truncates the distribution: mass beyond it is dropped and
+#' the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
+#' additionally trims the tail, removing the part of the distribution beyond its
+#' `1 - cdf_cutoff` quantile.
+#'
+#' ## Fixed distributions
+#'
+#' A `Fixed()` (point-mass) distribution is not discretised through a CDF but by
+#' its own method: an integer value places all of the mass on that integer,
+#' while a fractional value splits the mass proportionally across the two
+#' adjacent integers. For example `Fixed(2.25)` places 0.75 on 2 and 0.25 on 3.
+#'
 #' @references
 #' Charniga, K., et al. “Best practices for estimating and reporting
 #'   epidemiological delay distributions of infectious diseases using public
@@ -125,22 +137,26 @@ discretise <- function(x, ...) {
 #' @importFrom cli cli_abort
 #' @return A `<dist_spec>` where all distributions with constant parameters are
 #'   nonparametric.
+#' @seealso [collapse()] to convolve the discretised components of a composite
+#'   distribution into a single PMF, and [sample_dist()] to draw random samples.
 #' @export
 #' @method discretise dist_spec
 #' @examples
-#' # A fixed gamma distribution with mean 5 and sd 1.
+#' # A fixed gamma distribution with mean 5 and sd 1, discretised to a PMF.
 #' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
+#' get_pmf(discretise(dist1))
 #'
-#' # An uncertain lognormal distribution with meanlog and sdlog normally
-#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' # An uncertain lognormal distribution cannot be discretised, so with
+#' # `strict = FALSE` it is returned unchanged.
 #' dist2 <- LogNormal(
 #'   meanlog = Normal(3, 0.5),
 #'   sdlog = Normal(2, 0.5),
 #'   max = 20
 #' )
+#' discretise(dist2, strict = FALSE)
 #'
-#' # The maxf the sum of two distributions
-#' discretise(dist1 + dist2, strict = FALSE)
+#' # A fractional fixed value splits its mass across the two adjacent integers.
+#' get_pmf(discretise(Fixed(2.25)))
 discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
                                  ...) {
   ## discretise

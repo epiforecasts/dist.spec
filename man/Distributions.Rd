@@ -138,3 +138,8 @@ Dirichlet(prior = c(0.1, 0.3, 0.4, 0.2), concentration = 10)
 Beta(shape1 = 2, shape2 = 5)
 Beta(mean = 0.3, sd = 0.15)
 }
+\seealso{
+\code{\link[=discretise]{discretise()}} and \code{\link[=collapse]{collapse()}} to discretise and convolve
+distributions, \code{\link[=sample_dist]{sample_dist()}} to draw samples, and \code{\link[=get_parameters]{get_parameters()}} /
+\code{\link[=get_pmf]{get_pmf()}} to inspect them.
+}

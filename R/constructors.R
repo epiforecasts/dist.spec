@@ -39,6 +39,9 @@
 #' passed to [bound_dist()]
 #' @return A `dist_spec` representing a distribution of the given
 #' specification.
+#' @seealso [discretise()] and [collapse()] to discretise and convolve
+#'   distributions, [sample_dist()] to draw samples, and [get_parameters()] /
+#'   [get_pmf()] to inspect them.
 #' @export
 #' @rdname Distributions
 #' @name Distributions
