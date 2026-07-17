@@ -94,7 +94,7 @@ Each distribution's behaviour comes from a small set of S3 methods dispatched on
 
 ### How dispatch works
 
-A `<dist_spec>` carries its distribution type as the head of its S3 class (e.g. `c("gamma", "dist_spec")`), so your per-type methods dispatch on it directly and read parameters from `x$parameters` (or `x$pmf` for the nonparametric family). The framework handles the shared work: validating the number of samples, and resolving a distribution whose parameters are themselves priors. An uncertain distribution is given an extra `"uncertain"` class, so `mean.uncertain()`/`sample_dist.uncertain()` intercept it before your method runs. As a result **your per-type methods only ever see fixed, numeric parameters and are written as plain functions**.
+A `<dist_spec>` carries its distribution type as the head of its S3 class (e.g. `c("gamma", "dist_spec")`), so your per-type methods dispatch on it directly and read parameters from `x$parameters` (or `x$pmf` for the nonparametric family). The framework handles the shared work: validating the number of samples, and resolving a distribution whose parameters are themselves priors. An uncertain distribution is given an extra `"uncertain"` class, so `mean.uncertain()`/`sample_dist.uncertain()` intercept it before your method runs. Your per-type methods therefore only ever see fixed, numeric parameters, and are written as plain functions.
 
 ### The methods
 
