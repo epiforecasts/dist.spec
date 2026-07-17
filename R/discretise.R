@@ -1,0 +1,245 @@
+# Discretisation of distributions: computing discretised PMFs from a
+# <dist_spec> and setting the bounds (max / cdf_cutoff) that constrain them.
+
+#' Discretised probability mass function
+#'
+#' @description
+#' This function returns the probability mass function of a discretised and
+#' truncated distribution defined by distribution type, maximum value and model
+#' parameters.
+#'
+#' # Methodological details
+#'
+#' The probability mass function is computed using the `{primarycensored}`
+#' package, which provides double censored PMF calculations. This correctly
+#' represents the probability mass function of a double censored distribution
+#' arising from the difference of two censored events.
+#'
+#' The probability mass function of the discretised probability distribution is
+#'   a vector where the first entry corresponds to the integral over the (0,1]
+#'   interval of the corresponding continuous distribution (probability of
+#'   integer 0), the second entry corresponds to the (0,2] interval (probability
+#'   mass of integer 1), the third entry corresponds to the (1, 3] interval
+#'   (probability mass of integer 2), etc.
+#'
+#' @references
+#' Charniga, K., et al. “Best practices for estimating and reporting
+#'   epidemiological delay distributions of infectious diseases using public
+#'   health surveillance and healthcare data”, *arXiv e-prints*, 2024.
+#'   \doi{10.48550/arXiv.2405.08841}
+#' Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
+#'   infectious diseases", *medRxiv*, 2024.
+#'   \doi{https://doi.org/10.1101/2024.01.12.24301247}
+#' Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
+#'   2025. \doi{10.5281/zenodo.13632839}
+#'
+#' @importFrom primarycensored dprimarycensored
+#'
+#' @param x A `<dist_spec>`. Discretisation dispatches on the distribution type:
+#'   any type with a `dist_cdf()` method uses the default `.dist_spec` method,
+#'   while `"fixed"` is handled as a point mass by its own method.
+#'
+#' @param ... Additional arguments passed to methods.
+#'
+#' @param max_value Numeric, the maximum value to allow.
+#' Samples outside of this range are resampled.
+#'
+#' @param width Numeric, the width of each discrete bin.
+#
+#' @return A vector representing a probability distribution.
+#' @keywords internal
+#' @inheritParams bound_dist
+#' @importFrom stats pexp pgamma plnorm pnorm pweibull
+#' @importFrom primarycensored qprimarycensored
+discrete_pmf <- function(x, ...) {
+  UseMethod("discrete_pmf")
+}
+
+#' @exportS3Method
+discrete_pmf.dist_spec <- function(x, max_value, cdf_cutoff, width, ...) {
+  params <- get_parameters(x)
+
+  ## CDF function for the distribution type (a type without a `dist_cdf()`
+  ## method errors via `dist_cdf.default`; the point-mass `fixed` overrides this
+  ## method entirely)
+  cdf <- dist_cdf(x)
+
+  ## apply CDF cutoff if given
+  if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
+    ## max from CDF cutoff using primarycensored quantile function
+    cdf_cutoff_max <- do.call(
+      primarycensored::qprimarycensored,
+      c(
+        list(
+          p = 1 - cdf_cutoff,
+          pdist = cdf,
+          pwindow = width
+        ),
+        params
+      )
+    )
+    if (!is.na(cdf_cutoff_max) &&
+          (missing(max_value) || cdf_cutoff_max < max_value)) {
+      max_value <- cdf_cutoff_max
+    }
+  }
+
+  ## determine pmf using primarycensored
+  max_value <- ceiling(max_value)
+
+  ## compute double censored PMF using primarycensored
+  pmf <- do.call(
+    primarycensored::dprimarycensored,
+    c(
+      list(
+        x = seq(0, max_value - width, by = width),
+        pdist = cdf,
+        pwindow = width,
+        swindow = width,
+        D = max_value
+      ),
+      params
+    )
+  )
+
+  pmf
+}
+
+#' @export
+discretise <- function(x, ...) {
+  UseMethod("discretise")
+}
+#' Discretise a <dist_spec>
+#'
+#' @name discretise
+#' @inherit discrete_pmf sections references
+#' @param x A `<dist_spec>`
+#' @param strict Logical; If `TRUE` (default) an error will be thrown if a
+#' distribution cannot be discretised (e.g., because no finite maximum has been
+#' specified or parameters are uncertain). If `FALSE` then any distribution
+#' that cannot be discretised will be returned as is.
+#' @param remove_trailing_zeros Logical; If `TRUE` (default), trailing zeroes
+#'   in the resulting PMF will be removed. If `FALSE`, trailing zeroes will be
+#'   retained.
+#' @param ... ignored
+#' @importFrom cli cli_abort
+#' @return A `<dist_spec>` where all distributions with constant parameters are
+#'   nonparametric.
+#' @export
+#' @method discretise dist_spec
+#' @examples
+#' # A fixed gamma distribution with mean 5 and sd 1.
+#' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
+#'
+#' # An uncertain lognormal distribution with meanlog and sdlog normally
+#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist2 <- LogNormal(
+#'   meanlog = Normal(3, 0.5),
+#'   sdlog = Normal(2, 0.5),
+#'   max = 20
+#' )
+#'
+#' # The maxf the sum of two distributions
+#' discretise(dist1 + dist2, strict = FALSE)
+discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
+                                 ...) {
+  ## discretise
+  if (!is_constrained(x) && strict) {
+    cli_abort(
+      c(
+        "!" = "Cannot discretise a distribution with infinite support.",
+        "i" = "Either set a finite maximum or a tolerance greater than 0."
+      )
+    )
+  }
+  if (get_distribution(x) == "nonparametric") {
+    return(x)
+  }
+  if (!is.na(sd(x)) && is_constrained(x)) {
+    cdf_cutoff <- attr(x, "cdf_cutoff")
+    if (is.null(cdf_cutoff)) {
+      cdf_cutoff <- 0
+    }
+    dist_max <- attr(x, "max")
+    if (is.null(dist_max)) {
+      dist_max <- Inf
+    }
+    y <- new_single_dist_spec(
+      list(
+        pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
+      ),
+      "nonparametric"
+    )
+    preserve_attributes <- setdiff(
+      names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
+    )
+    for (attribute in preserve_attributes) {
+      attributes(y)[attribute] <- attributes(x)[attribute]
+    }
+    if (remove_trailing_zeros) {
+      non_zero_idx <- which(y$pmf != 0)
+      if (length(non_zero_idx) > 0) {
+        y$pmf <- y$pmf[seq_len(max(non_zero_idx))]
+      }
+    }
+    y
+  } else if (strict) {
+    cli_abort(
+      c(
+        "!" = "Cannot discretise a distribution with uncertain parameters."
+      )
+    )
+  } else {
+    x
+  }
+}
+#' @method discretise multi_dist_spec
+#' @export
+discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
+  ret <- lapply(x, discretise, strict = strict)
+  attributes(ret) <- attributes(x)
+  ret
+}
+#' @rdname discretise
+#' @export
+discretize <- discretise
+
+#' Define bounds of a `<dist_spec>`
+#'
+#' @description
+#' This sets attributes for further processing
+#' @param x A `<dist_spec>`.
+#' @param max Numeric, maximum value of the distribution. The distribution will
+#' be truncated at this value. Default: `Inf`, i.e. no maximum.
+#' @param cdf_cutoff Numeric; the desired CDF cutoff. Any part of the
+#' cumulative distribution function beyond 1 minus the value of this argument is
+#' removed. Default: `0`, i.e. use the full distribution.
+#' @importFrom cli cli_abort
+#' @return a `<dist_spec>` with relevant attributes set that define its bounds
+#' @export
+bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
+  if (!is(x, "dist_spec")) {
+    cli_abort(
+      c(
+        "!" = "{.var x} must be of class {.cls dist_spec}.",
+        "i" = "It is currently of class {.cls class(x)}."
+      )
+    )
+  }
+  ## if it is a single nonparametric distribution we apply the bounds directly
+  if (ndist(x) == 1 && get_distribution(x) == "nonparametric") {
+    pmf <- get_pmf(x)
+    if (cdf_cutoff > 0) {
+      cmf <- cumsum(pmf)
+      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= cdf_cutoff)]
+    }
+    if (is.finite(max) && (max + 1) > length(x$pmf)) {
+      pmf <- pmf[seq(1, max + 1)]
+    }
+    x$pmf <- pmf / sum(pmf)
+  } else {
+    if (is.finite(max)) attr(x, "max") <- max
+    if (cdf_cutoff > 0) attr(x, "cdf_cutoff") <- cdf_cutoff
+  }
+  x
+}
