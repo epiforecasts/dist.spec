@@ -19,16 +19,14 @@ set.seed(1)
 library(distspec)
 ```
 
-distspec represents a probability distribution as a `<dist_spec>` object. The
-same object can hold a distribution with fixed parameters or one whose
-parameters are themselves uncertain, and the same functions work on both. This
-vignette walks through the common tasks.
+In distspec, a probability distribution is a single object: a `<dist_spec>`. It
+can hold fixed parameters or uncertain ones, and the same functions work on
+either.
 
 ## Defining a distribution
 
-Each supported distribution has its own constructor. A distribution can be given
-by its natural parameters, or by its mean and standard deviation, which are
-converted for you:
+Each distribution has its own constructor. Give it the natural parameters, or a
+mean and standard deviation that distspec converts for you:
 
 ```{r define}
 Gamma(shape = 2, rate = 0.5)
@@ -45,9 +43,9 @@ Gamma(mean = 4, sd = 2, max = 20)
 
 ## Uncertain parameters
 
-Any parameter can be given as another `<dist_spec>` rather than a number, which
-expresses uncertainty about its value. Uncertain parameters must be supplied as
-the natural parameters:
+Any parameter can be a number or, to express uncertainty about its value,
+another `<dist_spec>`. Uncertain parameters must be given as the natural
+parameters:
 
 ```{r uncertain}
 uncertain <- Gamma(shape = Normal(2, 0.5), rate = Normal(0.5, 0.1))
@@ -58,8 +56,8 @@ mean(uncertain)
 mean(uncertain, ignore_uncertainty = TRUE)
 ```
 
-`fix_parameters()` resolves an uncertain distribution to a fixed one, either at
-the mean of each prior or by sampling from it:
+`fix_parameters()` resolves an uncertain distribution to a fixed one, taking
+either the mean of each prior or a sample from it:
 
 ```{r fix}
 fix_parameters(uncertain, strategy = "mean")
@@ -96,17 +94,16 @@ sample_dist(Gamma(mean = 4, sd = 2, max = 20), n = 5)
 
 ## Estimated nonparametric distributions
 
-A nonparametric distribution can be left to be estimated during model fitting by
-giving a `Dirichlet()` prior over its bins instead of a fixed PMF:
+Instead of a fixed PMF, a nonparametric distribution can carry a `Dirichlet()`
+prior over its bins, to be estimated during model fitting:
 
 ```{r estimated}
 est <- NonParametric(pmf = Dirichlet(c(0, 2, 4, 3)))
 est
 ```
 
-Such a distribution has no fixed PMF until it is resolved with
-`fix_parameters()`; `has_uncertainty()` reports whether any distribution carries
-a prior:
+It then has no concrete PMF until you resolve it with `fix_parameters()`.
+`has_uncertainty()` reports whether a distribution carries a prior:
 
 ```{r has-uncertainty}
 has_uncertainty(est)
