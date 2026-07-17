@@ -1,5 +1,9 @@
 # distspec (development version)
 
+- An estimated (Dirichlet-backed) nonparametric distribution is now marked as
+  estimated when printed, so it is distinguishable from a fixed nonparametric
+  distribution; its `get_pmf()` returns the Dirichlet prior mean, now documented
+  as such.
 - A distribution's type is now carried in the S3 class of its `<dist_spec>`
   (e.g. `c("gamma", "dist_spec")`), so per-type behaviour dispatches directly and
   each distribution's methods live in one place. The internal `distribution`

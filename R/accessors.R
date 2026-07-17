@@ -116,6 +116,11 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
 
 ##' Get the probability mass function of a nonparametric distribution
 ##'
+##' @details
+##' For an estimated (Dirichlet-backed) nonparametric distribution the returned
+##' PMF is the mean of the Dirichlet prior; `print()` marks such distributions
+##' as estimated. Use [fix_parameters()] to resolve one to a concrete PMF.
+##'
 ##' @inheritParams get_element
 ##' @return The pmf of the distribution
 ##' @importFrom cli cli_abort

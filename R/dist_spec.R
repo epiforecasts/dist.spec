@@ -423,9 +423,23 @@ print_dist_spec_indented <- function(x, indent, ...) {
   }
   for (i in seq_len(ndist(x))) {
     if (get_distribution(x, i) == "nonparametric") {
-      ## nonparametric
+      ## nonparametric; an estimated (Dirichlet-backed) one shows its prior-mean
+      ## PMF, so mark it as estimated to distinguish it from a fixed PMF
+      estimated <- isTRUE(extract_single_dist(x, i)$estimated)
+      header <- if (estimated) {
+        "- estimated nonparametric distribution"
+      } else {
+        "- nonparametric distribution"
+      }
+      cat(indent_str, header, "\n", sep = "")
+      if (estimated) {
+        cat(
+          indent_str, "  (Dirichlet prior; showing the prior-mean PMF)\n",
+          sep = ""
+        )
+      }
       cat(
-        indent_str, "- nonparametric distribution\n", indent_str, "  PMF: [",
+        indent_str, "  PMF: [",
         paste(signif(get_pmf(x, i), digits = 2), collapse = " "), "]\n",
         sep = ""
       )
