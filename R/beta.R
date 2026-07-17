@@ -26,3 +26,9 @@ sd.beta <- function(x, ...) {
   b <- x$params$shape2
   sqrt(a * b / ((a + b)^2 * (a + b + 1)))
 }
+
+#' @importFrom stats rbeta
+#' @exportS3Method
+sample_dist.beta <- function(x, n, ...) {
+  rbeta(n, shape1 = x$params$shape1, shape2 = x$params$shape2)
+}

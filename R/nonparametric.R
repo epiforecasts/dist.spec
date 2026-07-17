@@ -26,3 +26,11 @@ sd.nonparametric <- function(x, ...) {
 #' @method max nonparametric
 #' @export
 max.nonparametric <- function(x, ...) length(x$params$pmf)
+
+# Sample from the discrete support 0, 1, 2, ... with probabilities given by the
+# PMF. `sample.int()` avoids the length-1 pitfall of `sample()`.
+#' @exportS3Method
+sample_dist.nonparametric <- function(x, n, ...) {
+  pmf <- x$params$pmf
+  sample.int(length(pmf), size = n, replace = TRUE, prob = pmf) - 1L
+}

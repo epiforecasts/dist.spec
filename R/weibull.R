@@ -28,3 +28,9 @@ sd.weibull <- function(x, ...) {
   scale <- x$params$scale
   scale * sqrt(gamma(1 + 2 / shape) - gamma(1 + 1 / shape)^2)
 }
+
+#' @importFrom stats rweibull
+#' @exportS3Method
+sample_dist.weibull <- function(x, n, ...) {
+  rweibull(n, shape = x$params$shape, scale = x$params$scale)
+}

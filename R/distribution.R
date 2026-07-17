@@ -60,3 +60,16 @@ sd.distribution <- function(x, ...) {
     distribution."
   )
 }
+
+# --- sampling ---------------------------------------------------------------
+
+# The `sample_dist()` generic is defined alongside its `dist_spec` method in
+# `dist_spec.R` (as `sd()` is). A distribution can only be sampled if it
+# provides a per-type sampler; anything else (e.g. the Dirichlet prior) is not
+# a sampling distribution for delays.
+#' @exportS3Method
+sample_dist.distribution <- function(x, n, ...) {
+  cli::cli_abort(
+    "Don't know how to sample from {.val {class(x)[1]}} distribution."
+  )
+}
