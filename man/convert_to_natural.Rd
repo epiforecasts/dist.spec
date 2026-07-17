@@ -4,27 +4,17 @@
 \alias{convert_to_natural}
 \title{Internal function for converting parameters to natural parameters.}
 \usage{
-convert_to_natural(params, distribution)
+convert_to_natural(x)
 }
 \arguments{
-\item{params}{A numerical named parameter vector}
-
-\item{distribution}{Character; the distribution to use.}
+\item{x}{A \verb{<dist_spec>}.}
 }
 \value{
-A list with two elements, \code{params_mean} and \code{params_sd}, containing
-mean and sd of natural parameters.
+A named list of natural parameters.
 }
 \description{
-This is used for preprocessing before generating a \code{dist_spec} object
-from a given set of parameters and distribution
-}
-\examples{
-\dontrun{
-convert_to_natural(
-  params = list(mean = 2, sd = 1),
-  distribution = "gamma"
-)
-}
+Preprocessing before generating a \code{dist_spec}: converts a distribution's
+parameters to its natural parameters via the per-type \code{to_natural()} method,
+re-attaching uncertainty by sampling where parameters are uncertain.
 }
 \keyword{internal}

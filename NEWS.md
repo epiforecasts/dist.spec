@@ -1,12 +1,17 @@
 # distspec (development version)
 
+- A distribution's type is now carried in the S3 class of its `<dist_spec>`
+  (e.g. `c("gamma", "dist_spec")`), so per-type behaviour dispatches directly and
+  each distribution's methods live in one place. The internal `distribution`
+  dispatch class and `new_dist()` have been removed. The internal helpers
+  `natural_params()` and `lower_bounds()` now take a `<dist_spec>` rather than a
+  distribution-name string.
 - Added `sample_dist()` to draw random samples from a distribution with fixed
   parameters. A composite distribution is sampled per component, returning an
   `n` by `k` matrix (`rowSums()` gives samples of the combined distribution).
   Distributions with uncertain (prior) parameters cannot be sampled and raise
   an error.
-- The package has been renamed from `dist.spec` to `distspec`. The `dist_spec`
-  object class is unchanged.
+- The package has been renamed from `dist.spec` to `distspec`.
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Discretisation now uses the `primarycensored` package to compute double
   censored probability mass functions.

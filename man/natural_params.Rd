@@ -4,10 +4,10 @@
 \alias{natural_params}
 \title{Get the names of the natural parameters of a distribution}
 \usage{
-natural_params(distribution)
+natural_params(x)
 }
 \arguments{
-\item{distribution}{Character; the distribution to use.}
+\item{x}{A \verb{<dist_spec>}.}
 }
 \value{
 A character vector, the natural parameters.
@@ -18,6 +18,6 @@ representations are converted to these using \code{\link[=convert_to_natural]{co
 being passed to the stan models.
 }
 \examples{
-natural_params("gamma")
+natural_params(Gamma(shape = 1, rate = 1))
 }
 \keyword{internal}
