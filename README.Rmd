@@ -2,9 +2,70 @@
 output: github_document
 ---
 
-# Define and manipulate probability distributions with potentially uncertain parameters
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-This package is an experimental spin-out from the [EpiNow2](https://epiforecasts.io/EpiNow2) package.
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# distspec: probability distributions with certain or uncertain parameters
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/epiforecasts/distspec/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/epiforecasts/distspec/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/epiforecasts/distspec/graph/badge.svg)](https://app.codecov.io/gh/epiforecasts/distspec)
+<!-- badges: end -->
+
+distspec represents a probability distribution as a single object, a
+`<dist_spec>`, whose parameters can be either fixed or uncertain. It grew out of
+[EpiNow2](https://epiforecasts.io/EpiNow2) and targets the delay distributions
+that recur in infectious disease modelling — generation times, incubation
+periods, reporting delays — while remaining independent of any particular model.
+
+With distspec you can:
+
+- define a distribution with a named constructor (`Gamma()`, `LogNormal()`,
+  `Normal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()` or `NonParametric()`),
+  by its natural parameters or by its mean and standard deviation;
+- give any parameter an uncertain prior (for example
+  `Gamma(shape = Normal(2, 0.5), rate = 1)`), or leave a nonparametric mass
+  function to be estimated during model fitting via a `Dirichlet()` prior;
+- discretise a continuous distribution to a probability mass function
+  (`discretise()`), convolve distributions (`+`, `collapse()`), draw samples
+  (`sample_dist()`), and query means, standard deviations, bounds and PMFs.
+
+## Installation
+
+Install the development version from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("epiforecasts/distspec")
+```
+
+## Quick start
+
+```{r example}
+library(distspec)
+
+# A gamma delay with mean 4 and standard deviation 2, truncated at 20
+delay <- Gamma(mean = 4, sd = 2, max = 20)
+delay
+
+# Discretise it to a probability mass function
+get_pmf(discretise(delay))
+
+# A parameter can itself be a distribution, expressing uncertainty
+Gamma(shape = Normal(2, 0.5), rate = 1)
+```
+
+See `vignette("distspec")` to get started, and the
+[reference index](https://epiforecasts.io/distspec/reference/) for the full list
+of functions.
 
 Contributors
 ---
@@ -22,10 +83,10 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 ### Code
 
 
-<a href="https://github.com/epiforecasts/distspec/commits?author=sbfnk">sbfnk</a>, 
-<a href="https://github.com/epiforecasts/distspec/commits?author=dependabot[bot]">dependabot[bot]</a>, 
-<a href="https://github.com/epiforecasts/distspec/commits?author=github-merge-queue[bot]">github-merge-queue[bot]</a>, 
-<a href="https://github.com/epiforecasts/distspec/commits?author=seabbs">seabbs</a>, 
+<a href="https://github.com/epiforecasts/distspec/commits?author=sbfnk">sbfnk</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=dependabot[bot]">dependabot[bot]</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=github-merge-queue[bot]">github-merge-queue[bot]</a>,
+<a href="https://github.com/epiforecasts/distspec/commits?author=seabbs">seabbs</a>,
 <a href="https://github.com/epiforecasts/distspec/commits?author=github-actions[bot]">github-actions[bot]</a>
 
 
@@ -39,7 +100,3 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-
-
-

@@ -37,9 +37,12 @@ Imports:
     utils
 Suggests:
     covr,
+    knitr,
     rmarkdown,
     spelling,
     testthat
+VignetteBuilder:
+    knitr
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
