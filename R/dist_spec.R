@@ -446,9 +446,6 @@ sample_dist.dist_spec <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## sample each component, mirroring `mean()`/`sd()` which return one value per
-  ## component; the result is an `n` by `k` matrix (one column per component).
-  ## `rowSums()` recovers samples of the combined (convolved) distribution.
   ## An uncertain component errors via its own `sample_dist.dist_spec()` method.
   vapply(x, sample_dist, numeric(n), n = n)
 }
