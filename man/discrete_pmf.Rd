@@ -11,12 +11,9 @@ discrete_pmf(x, ...)
 any type with a \code{dist_cdf()} method uses the default \code{.dist_spec} method,
 while \code{"fixed"} is handled as a point mass by its own method.}
 
-\item{...}{Additional arguments passed to methods.}
-
-\item{max_value}{Numeric, the maximum value to allow.
-Samples outside of this range are resampled.}
-
-\item{width}{Numeric, the width of each discrete bin.}
+\item{...}{Additional arguments passed to methods. The default method takes
+\code{max_value} (the maximum value to allow), \code{cdf_cutoff} and \code{width} (the
+width of each discrete bin).}
 }
 \value{
 A vector representing a probability distribution.

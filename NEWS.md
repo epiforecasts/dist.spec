@@ -1,4 +1,8 @@
-# distspec (development version)
+# distspec 0.1.0
+
+First release. distspec provides the `<dist_spec>` interface for defining
+probability distributions with fixed or uncertain parameters, split out from
+EpiNow2.
 
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support

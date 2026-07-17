@@ -199,6 +199,7 @@ has_uncertainty <- function(x, id = NULL) {
 ##'
 ##' @inheritParams get_element
 ##' @importFrom cli cli_abort
+##' @importFrom methods is
 ##' @return A character string naming the distribution (or "nonparametric")
 ##' @export
 ##' @examples

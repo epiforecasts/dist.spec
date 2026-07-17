@@ -4,7 +4,7 @@
 \alias{mean.dist_spec}
 \title{Returns the mean of one or more delay distribution}
 \usage{
-\method{mean}{dist_spec}(x, ...)
+\method{mean}{dist_spec}(x, ..., ignore_uncertainty = FALSE)
 }
 \arguments{
 \item{x}{The \verb{<dist_spec>} to use}

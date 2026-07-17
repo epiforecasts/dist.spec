@@ -1,7 +1,7 @@
 Type: Package
 Package: distspec
 Title: Define probability distributions with certain or uncertain parameters
-Version: 0.0.9000
+Version: 0.1.0
 Authors@R: 
     c(person(given = "Sebastian",
              family = "Funk",
@@ -29,6 +29,7 @@ Depends:
 Imports:
     cli,
     ggplot2,
+    methods,
     primarycensored,
     rlang,
     stats,
