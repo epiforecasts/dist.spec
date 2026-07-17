@@ -232,7 +232,11 @@ discretize <- discretise
 #' removed. Default: `0`, i.e. use the full distribution.
 #' @importFrom cli cli_abort
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
+#' @seealso [discretise()], which applies these bounds when producing a PMF.
 #' @export
+#' @examples
+#' # Truncate a gamma distribution at 20
+#' bound_dist(Gamma(mean = 5, sd = 1), max = 20)
 bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
   if (!is(x, "dist_spec")) {
     cli_abort(

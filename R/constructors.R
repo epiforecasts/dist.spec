@@ -1,65 +1,66 @@
 # User-facing distribution constructors (LogNormal, Gamma, ...) and the shared
 # machinery that builds and validates <dist_spec> objects from parameters.
 
+#' Probability distributions
+#'
 #' @description
-#' Constructors for the probability distributions supported by
-#' EpiNow2 as `dist_spec` objects.
+#' distspec represents probability distributions (typically epidemiological
+#' delays, such as generation times or reporting delays) as `<dist_spec>`
+#' objects. Each supported distribution has its own constructor: [LogNormal()],
+#' [Gamma()], [Normal()], [Exp()], [Weibull()], [Beta()], [Fixed()],
+#' [NonParametric()] and [Dirichlet()].
 #'
 #' @details
-#' Probability distributions are ubiquitous in EpiNow2, usually representing
-#' epidemiological delays (e.g., the generation time for delays between
-#' becoming infecting and infecting others; or reporting delays)
+#' A parameter can be given either as a fixed numeric value or as an uncertain
+#' value (another `<dist_spec>`); currently only normally distributed uncertain
+#' parameters (from [Normal()]) are supported.
 #'
-#' They are generated using functions that have a name corresponding to the
-#' probability distribution that is being used. They generated `dist_spec`
-#' objects that are then passed to the models underlying EpiNow2.
-##
-#' All parameters can be given either as fixed values (a numeric value) or as
-#' uncertain values (a `dist_sepc`). If given as uncertain values, currently
-#' only normally distributed parameters (generated using `Normal()`) are
-#' supported.
+#' Each distribution has a "natural" parameterisation (the one used in the stan
+#' models) and can sometimes also be specified using other parameters, such as
+#' its mean and standard deviation, which are then converted to the natural
+#' parameters (by random sampling if they are uncertain).
 #'
-#' Each distribution has a representation in terms of "natural" parameters (the
-#' ones used in stan) but can sometimes also be specified using other
-#' parameters such as the mean or standard deviation of the distribution. If
-#' not given as natural parameters then these will be calculated from the given
-#' parameters. If they have uncertainty, this will be done by random sampling
-#' from the given uncertainty and converting resulting parameters to their
-#' natural representation.
-#'
-#' Currently available distributions are lognormal, gamma, normal, beta, fixed
-#' (delta), nonparametric, and estimated nonparametric. The nonparametric
-#' is a special case where the probability mass function is given directly
-#' as a numeric vector. The estimated nonparametric allows the PMF to be
-#' estimated during model fitting using a Dirichlet prior.
-#'
-#' @inheritParams stats::Lognormal
-#' @param mean,sd mean and standard deviation of the distribution
-#' @param ... arguments to define the limits of the distribution that will be
-#' passed to [bound_dist()]
-#' @return A `dist_spec` representing a distribution of the given
-#' specification.
 #' @seealso [discretise()] and [collapse()] to discretise and convolve
 #'   distributions, [sample_dist()] to draw samples, and [get_parameters()] /
 #'   [get_pmf()] to inspect them.
-#' @export
-#' @rdname Distributions
 #' @name Distributions
-#' @order 1
+NULL
+
+#' Lognormal distribution
+#'
+#' @description
+#' A lognormal distribution as a `<dist_spec>`, given either by its natural
+#' parameters `meanlog`/`sdlog` or by its `mean`/`sd`.
+#'
+#' @inheritParams stats::Lognormal
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `meanlog`/`sdlog`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
 #' @examples
 #' LogNormal(mean = 4, sd = 1)
 #' LogNormal(mean = 4, sd = 1, max = 10)
-#' # If specifying uncertain parameters, use the natural parameters
+#' # Uncertain parameters must be given as the natural parameters
 #' LogNormal(meanlog = Normal(1.5, 0.5), sdlog = 0.25, max = 10)
 LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
   params <- as.list(environment())
   new_dist_spec(params, "lognormal", ...)
 }
 
+#' Gamma distribution
+#'
+#' @description
+#' A gamma distribution as a `<dist_spec>`, given either by its natural
+#' parameters `shape`/`rate` (or `shape`/`scale`) or by its `mean`/`sd`.
+#'
 #' @inheritParams stats::GammaDist
-#' @rdname Distributions
-#' @title Probability distributions
-#' @order 2
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape`/`rate`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Gamma(mean = 4, sd = 1)
@@ -70,8 +71,16 @@ Gamma <- function(shape, rate, scale, mean, sd, ...) {
   new_dist_spec(params, "gamma", ...)
 }
 
-#' @rdname Distributions
-#' @order 3
+#' Normal distribution
+#'
+#' @description
+#' A normal distribution as a `<dist_spec>`, given by its `mean` and `sd`. Also
+#' used to give an uncertain parameter of another distribution.
+#'
+#' @param mean,sd Mean and standard deviation of the distribution.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Normal(mean = 4, sd = 1)
@@ -81,9 +90,18 @@ Normal <- function(mean, sd, ...) {
   new_dist_spec(params, "normal", ...)
 }
 
-#' @rdname Distributions
-#' @order 7
-#' @param shape1,shape2 shape parameters of the beta distribution
+#' Beta distribution
+#'
+#' @description
+#' A beta distribution as a `<dist_spec>`, given either by its shape parameters
+#' `shape1`/`shape2` or by its `mean`/`sd`. It is not discretised.
+#'
+#' @param shape1,shape2 Shape parameters of the beta distribution.
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape1`/`shape2`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Beta(shape1 = 2, shape2 = 5)
@@ -93,9 +111,17 @@ Beta <- function(shape1, shape2, mean, sd, ...) {
   new_dist_spec(params, "beta", ...)
 }
 
+#' Exponential distribution
+#'
+#' @description
+#' An exponential distribution as a `<dist_spec>`, given either by its `rate` or
+#' by its `mean`.
+#'
 #' @inheritParams stats::Exponential
-#' @rdname Distributions
-#' @order 4
+#' @param mean Mean of the distribution, as an alternative to `rate`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Exp(rate = 1)
@@ -105,9 +131,18 @@ Exp <- function(rate, mean, ...) {
   new_dist_spec(params, "exp", ...)
 }
 
+#' Weibull distribution
+#'
+#' @description
+#' A Weibull distribution as a `<dist_spec>`, given either by its
+#' `shape`/`scale` or by its `mean`/`sd`.
+#'
 #' @inheritParams stats::Weibull
-#' @rdname Distributions
-#' @order 5
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape`/`scale`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Weibull(shape = 1, scale = 1)
@@ -118,9 +153,16 @@ Weibull <- function(shape, scale, mean, sd, ...) {
   new_dist_spec(params, "weibull", ...)
 }
 
-#' @rdname Distributions
-#' @order 6
-#' @param value Value of the fixed (delta) distribution
+#' Fixed (point-mass) distribution
+#'
+#' @description
+#' A fixed (delta) distribution as a `<dist_spec>`, placing all of its mass on a
+#' single `value`.
+#'
+#' @param value Value of the fixed (delta) distribution.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' Fixed(value = 3)
@@ -130,19 +172,24 @@ Fixed <- function(value, ...) {
   new_dist_spec(params, "fixed")
 }
 
-#' @param pmf Probability mass of the given distribution; this is
-#'   passed as either a zero-indexed numeric vector (i.e. the fist entry
-#'   represents the probability mass of zero) or a `dist_spec` (e.g.
-#'   generated by `Dirichlet()`). If a numeric vector is not summing to one it
-#'   will be normalised to sum to one internally.
-#' @rdname Distributions
-#' @order 5
+#' Nonparametric distribution
+#'
+#' @description
+#' A nonparametric distribution as a `<dist_spec>`, defined directly by its
+#' probability mass function. The PMF can instead be estimated during model
+#' fitting by passing a [Dirichlet()] prior.
+#'
+#' @param pmf Probability mass function, as a zero-indexed numeric vector (the
+#'   first entry is the mass at zero) or a `<dist_spec>` (e.g. from
+#'   [Dirichlet()]). A numeric vector is normalised to sum to one.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
 #' NonParametric(c(0.1, 0.3, 0.2, 0.4))
-#' NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 #'
-#' # With a Dirichlet prior
+#' # With a Dirichlet prior (estimated during model fitting)
 #' NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
 NonParametric <- function(pmf, ...) {
   if (is.numeric(pmf)) {
@@ -153,6 +200,14 @@ NonParametric <- function(pmf, ...) {
   new_dist_spec(params, "nonparametric", ...)
 }
 
+#' Dirichlet prior for a nonparametric distribution
+#'
+#' @description
+#' A Dirichlet prior over the weights of a nonparametric probability mass
+#' function, used to specify an estimated [NonParametric()] distribution whose
+#' PMF is estimated during model fitting. Give either `alpha` directly, or a
+#' reference `prior` PMF together with a `concentration`.
+#'
 #' @param alpha A positive numeric vector of concentration parameters.
 #' @param prior Either a numeric PMF vector (zero-indexed, i.e. the
 #'   first entry represents probability mass at zero) or a
@@ -169,9 +224,10 @@ NonParametric <- function(pmf, ...) {
 #'   - `concentration = 5-20`: moderate flexibility around the
 #'     reference shape
 #'   - `concentration = 50+`: strong anchoring to the reference PMF
-#'
-#' @rdname Distributions
-#' @order 6
+#' @param ... Not used.
+#' @return A `<dist_spec>`.
+#' @seealso [NonParametric()] to use the prior, and [Distributions] for an
+#'   overview.
 #' @export
 #' @examples
 #' Dirichlet(c(1, 1, 1, 1))

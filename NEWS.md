@@ -1,6 +1,8 @@
 # distspec (development version)
 
-- The reference documentation now covers the full exported API, and the
+- Each distribution now has its own reference page (`Gamma()`, `LogNormal()`,
+  ...) rather than a single combined page, so each shows only its own
+  parameters. The reference index covers the full exported API, and the
   `discretise()` help page documents how discretisation works, including the
   fixed point-mass special case.
 - A distribution's type is now carried in the S3 class of its `<dist_spec>`
