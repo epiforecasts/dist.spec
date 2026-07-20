@@ -66,6 +66,9 @@ EpiNow2.
   arguments are no longer silently ignored for composites.
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
+- `collapse()` now correctly convolves runs of three or more consecutive
+  nonparametric distributions, and runs that do not begin at the first
+  component, rather than erroring or convolving the wrong component.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
   `lower_bounds()` so that dependent packages can reuse them.
 - `natural_params()` and `lower_bounds()` are now S3 generics, with each
