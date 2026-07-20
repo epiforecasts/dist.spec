@@ -25,7 +25,9 @@ A \code{dist_spec} of the given specification.
 }
 \description{
 This will convert all parameters to natural parameters before generating
-a \code{dist_spec}. If they have uncertainty this will be done using sampling.
+a \code{dist_spec}. If they are uncertain the uncertainty is propagated to the
+natural parameters with a first-order (delta-method) approximation (see
+\code{\link[=convert_to_natural]{convert_to_natural()}}).
 }
 \examples{
 new_dist_spec(
