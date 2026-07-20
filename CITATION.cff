@@ -9,8 +9,8 @@ type: software
 license: MIT
 title: 'distspec: Define Probability Distributions with Certain or Uncertain Parameters'
 version: 0.1.0
-abstract: Functions for defining probability distributions with potentially uncertain
-  parameters.
+abstract: Represents probability distributions with fixed or potentially uncertain
+  parameters, with tools to discretise, convolve, sample from and summarise them.
 authors:
 - family-names: Funk
   given-names: Sebastian
