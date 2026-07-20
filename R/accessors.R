@@ -70,9 +70,8 @@ get_element <- function(x, id = NULL, element) {
   if (!is.null(id) && id > ndist(x)) {
     cli_abort(
       c(
-        "!" = "{.var id} cannot be greater than the number of distributions
-      ({length(x)}).",
-        "i" = "{.var id} currently has length {length(id)}."
+        "!" = "{.var id} must be between 1 and {ndist(x)}.",
+        "i" = "You supplied {.var id} = {id}."
       )
     )
   }
@@ -117,11 +116,9 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
   if (get_distribution(x, id) == "nonparametric") {
     cli_abort(
       c(
-        "!" = "To get parameters, distribution cannot not be
-        \"nonparametric\".",
-        "i" = "Distribution must be one of
-        {col_blue(\"gamma\")}, {col_blue(\"lognormal\")},
-        {col_blue(\"normal\")} or {col_blue(\"fixed\")}."
+        "!" = "Parameters are available for parametric and fixed distributions,
+        but this one is nonparametric.",
+        "i" = "Use {.fn get_pmf} to extract its probability mass function."
       )
     )
   }

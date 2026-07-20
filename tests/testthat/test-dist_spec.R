@@ -287,11 +287,45 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
   expect_equal(length(plot$facet$params$facets), 1)
 })
 
+test_that("plot.dist_spec plots an unbounded parametric distribution", {
+  expect_s3_class(plot(Gamma(mean = 4, sd = 2)), "ggplot")
+  expect_s3_class(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "ggplot")
+})
+
+test_that("plot.dist_spec plots an unbounded uncertain distribution", {
+  dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5))
+  expect_s3_class(plot(dist), "ggplot")
+})
+
 test_that("fix_parameters works with composite delay distributions", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
   dist <- dist1 + dist2
   expect_equal(ndist(collapse(discretise(fix_parameters(dist)))), 1L)
+})
+
+test_that("fix_parameters forwards the sampling strategy to composites", {
+  g <- Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+  set.seed(1)
+  sampled <- fix_parameters(g + g, strategy = "sample")
+  averaged <- fix_parameters(g + g, strategy = "mean")
+  expect_equal(get_parameters(averaged, 1)$shape, 16)
+  expect_false(isTRUE(all.equal(get_parameters(sampled, 1)$shape, 16)))
+  expect_false(
+    isTRUE(all.equal(
+      get_parameters(sampled, 1)$shape, get_parameters(averaged, 1)$shape
+    ))
+  )
+})
+
+test_that("discretise forwards remove_trailing_zeros to composites", {
+  dist1 <- LogNormal(mean = 2, sd = 1, max = 30)
+  dist2 <- Gamma(mean = 3, sd = 1, max = 30)
+  comp <- dist1 + dist2
+  stripped <- discretise(comp)
+  retained <- discretise(comp, remove_trailing_zeros = FALSE)
+  expect_lt(length(get_pmf(stripped, 2)), length(get_pmf(retained, 2)))
+  expect_equal(length(get_pmf(retained, 2)), 30)
 })
 
 test_that("composite delay distributions can be disassembled", {
@@ -436,12 +470,20 @@ test_that("get functions report errors", {
   expect_error(get_parameters("test"), "no applicable method")
   expect_error(
     get_distribution(Gamma(mean = 4, sd = 1), 2),
-    "cannot be greater than the number of distributions"
+    "must be between 1 and 1"
+  )
+  expect_error(
+    get_distribution(Gamma(mean = 4, sd = 1), 2),
+    "You supplied .*id.* = 2"
   )
   expect_error(get_pmf(Gamma(mean = 4, sd = 1)), "parametric")
   expect_error(
     get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
     "nonparametric"
+  )
+  expect_error(
+    get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
+    "get_pmf"
   )
   expect_error(get_parameters(c(
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
@@ -518,6 +560,39 @@ test_that("bounding an estimated nonparametric distribution errors", {
   )
   ## an unbounded estimated distribution is fine
   expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
+})
+
+test_that("bound_dist truncates and renormalises a fixed nonparametric PMF", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `max` smaller than the support keeps bins 0..max and renormalises
+  bounded <- bound_dist(np, max = 2)
+  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
+  expect_equal(sum(get_pmf(bounded)), 1)
+  expect_equal(max(bounded), 3)
+})
+
+test_that("bound_dist leaves a fixed nonparametric PMF untouched beyond support", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `max` at or beyond the support is a no-op and introduces no NAs
+  expect_equal(get_pmf(bound_dist(np, max = 5)), c(0.1, 0.3, 0.4, 0.2))
+  expect_equal(get_pmf(bound_dist(np, max = 3)), c(0.1, 0.3, 0.4, 0.2))
+  expect_false(anyNA(get_pmf(bound_dist(np, max = 5))))
+})
+
+test_that("NonParametric applies max at construction", {
+  ## the same truncation is reachable through the constructor
+  expect_equal(
+    get_pmf(NonParametric(c(0.1, 0.3, 0.4, 0.2), max = 2)),
+    c(0.125, 0.375, 0.5)
+  )
+})
+
+test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `cdf_cutoff` is applied to the tail before `max` truncates and renormalises
+  bounded <- bound_dist(np, max = 2, cdf_cutoff = 0.05)
+  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
+  expect_equal(sum(get_pmf(bounded)), 1)
 })
 
 test_that("an estimated nonparametric distribution nests its prior on print", {
