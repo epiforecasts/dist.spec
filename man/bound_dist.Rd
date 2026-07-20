@@ -20,7 +20,10 @@ removed. Default: \code{0}, i.e. use the full distribution.}
 a \verb{<dist_spec>} with relevant attributes set that define its bounds
 }
 \description{
-This sets attributes for further processing
+Set the bounds that constrain a distribution when it is discretised: \code{max}
+truncates the support at that value, while \code{cdf_cutoff} trims the tail at the
+\code{1 - cdf_cutoff} quantile. Either bound drops the mass beyond it and
+renormalises the remaining PMF to sum to one.
 }
 \examples{
 # Truncate a gamma distribution at 20

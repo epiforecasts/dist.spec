@@ -26,7 +26,7 @@ retained.}
 }
 \value{
 A \verb{<dist_spec>} where all distributions with constant parameters are
-nonparametric.
+nonparametric. Extract the resulting PMF vector with \code{\link[=get_pmf]{get_pmf()}}.
 }
 \description{
 Discretise a <dist_spec>
@@ -88,4 +88,6 @@ Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
 \seealso{
 \code{\link[=collapse]{collapse()}} to convolve the discretised components of a composite
 distribution into a single PMF, and \code{\link[=sample_dist]{sample_dist()}} to draw random samples.
+The \code{vignette("distspec")} shows the full
+\code{get_pmf(collapse(discretise(d1 + d2)))} pipeline.
 }

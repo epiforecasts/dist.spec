@@ -2,8 +2,8 @@
 #'
 #' @description
 #' Convert from mean and standard deviation to the log mean of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' `estimate_infections()`, `epinow()`, and `regional_epinow()`.
+#' lognormal distribution. Useful for defining a [LogNormal()] distribution
+#' from a mean and standard deviation on the natural scale.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'
@@ -21,8 +21,8 @@ convert_to_logmean <- function(mean, sd) {
 #'
 #' @description
 #' Convert from mean and standard deviation to the log standard deviation of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' `estimate_infections()`, `epinow()`, and `regional_epinow()`.
+#' lognormal distribution. Useful for defining a [LogNormal()] distribution
+#' from a mean and standard deviation on the natural scale.
 #' @param mean Numeric, mean of a distribution
 #' @param sd Numeric, standard deviation of a distribution
 #'

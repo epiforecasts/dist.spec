@@ -7,6 +7,11 @@ EpiNow2.
 - `mean()` and `sd()` now emit an informative message when they return `NA`
   because a distribution has uncertain parameters, pointing to
   `mean(x, ignore_uncertainty = TRUE)` and `fix_parameters()`.
+- Documentation improvements: the getting-started vignette now shows the
+  end-to-end `get_pmf(collapse(discretise(d1 + d2)))` pipeline for combining two
+  delays into a single PMF, stale EpiNow2 and Stan references have been removed
+  from the roxygen, and the `bound_dist()`, `discretise()`, `fix_parameters()`
+  and `sd()` help pages have clearer descriptions and runnable examples.
 - `plot()` now handles an unbounded parametric distribution by defaulting to a
   finite range (up to the 99.9th percentile) for the plot only, rather than
   erroring when no finite maximum or `cdf_cutoff` is set.

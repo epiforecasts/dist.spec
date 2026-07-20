@@ -15,10 +15,11 @@ A parameter can be given either as a fixed numeric value or as an uncertain
 value (another \verb{<dist_spec>}); currently only normally distributed uncertain
 parameters (from \code{\link[=Normal]{Normal()}}) are supported.
 
-Each distribution has a "natural" parameterisation (the one used in the stan
-models) and can sometimes also be specified using other parameters, such as
-its mean and standard deviation, which are then converted to the natural
-parameters (by random sampling if they are uncertain).
+Each distribution has a "natural" (canonical) parameterisation, such as
+\code{shape} and \code{rate} for \code{\link[=Gamma]{Gamma()}} or \code{meanlog} and \code{sdlog} for \code{\link[=LogNormal]{LogNormal()}}.
+It can sometimes also be specified using other parameters, such as its mean
+and standard deviation, which are then converted to the natural parameters
+(by random sampling if they are uncertain).
 }
 \seealso{
 \code{\link[=discretise]{discretise()}} and \code{\link[=collapse]{collapse()}} to discretise and convolve

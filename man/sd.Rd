@@ -23,7 +23,6 @@ nonparametric) delay distributions combined in the passed <dist_spec>.
 If any of the parameters are themselves uncertain then \code{NA} is returned.
 }
 \examples{
-\dontrun{
 # A fixed lognormal distribution with mean 5 and sd 1.
 dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 sd(dist1)
@@ -34,6 +33,5 @@ sd(dist2)
 
 # The sd of the sum of two distributions
 sd(dist1 + dist2)
-}
 }
 \keyword{internal}
