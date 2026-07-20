@@ -20,9 +20,9 @@ independent of any particular model.
 With distspec you can:
 
 - define a distribution with a named constructor (`Gamma()`,
-  `LogNormal()`, `Normal()`, `Exp()`, `Weibull()`, `Beta()`, `Fixed()`
-  or `NonParametric()`), by its natural parameters or by its mean and
-  standard deviation;
+  `LogNormal()`, `Normal()`, `Exponential()`, `Weibull()`, `Beta()`,
+  `Fixed()` or `NonParametric()`), by its natural parameters or by its
+  mean and standard deviation;
 - give any parameter an uncertain prior (for example
   `Gamma(shape = Normal(2, 0.5), rate = 1)`), or leave a nonparametric
   mass function to be estimated during model fitting via a `Dirichlet()`

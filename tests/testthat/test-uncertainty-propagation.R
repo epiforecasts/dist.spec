@@ -86,7 +86,7 @@ test_that("lognormal (mean and sd uncertain) matches Monte Carlo", {
 test_that("exp (mean uncertain) matches Monte Carlo", {
   set.seed(14)
   mean_mu <- 4; mean_sd <- 0.5
-  d <- suppressWarnings(Exp(mean = Normal(mean_mu, mean_sd)))
+  d <- suppressWarnings(Exponential(mean = Normal(mean_mu, mean_sd)))
   m <- draw_truncnorm(n_mc, mean_mu, mean_sd)
   rate <- 1 / m
   expect_close(sd(get_parameters(d)$rate), sd(rate))

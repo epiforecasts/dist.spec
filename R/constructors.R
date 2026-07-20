@@ -7,7 +7,7 @@
 #' distspec represents probability distributions (typically epidemiological
 #' delays, such as generation times or reporting delays) as `<dist_spec>`
 #' objects. Each supported distribution has its own constructor: [LogNormal()],
-#' [Gamma()], [Normal()], [Exp()], [Weibull()], [Beta()], [Fixed()],
+#' [Gamma()], [Normal()], [Exponential()], [Weibull()], [Beta()], [Fixed()],
 #' [NonParametric()] and [Dirichlet()].
 #'
 #' @details
@@ -125,11 +125,18 @@ Beta <- function(shape1, shape2, mean, sd, ...) {
 #' @seealso [Distributions] for an overview and the other distributions.
 #' @export
 #' @examples
-#' Exp(rate = 1)
-#' Exp(mean = 4)
-Exp <- function(rate, mean, ...) {
+#' Exponential(rate = 1)
+#' Exponential(mean = 4)
+Exponential <- function(rate, mean, ...) {
   params <- as.list(environment())
   new_dist_spec(params, "exp", ...)
+}
+
+#' @rdname Exponential
+#' @export
+Exp <- function(...) {
+  .Deprecated("Exponential")
+  Exponential(...)
 }
 
 #' Weibull distribution
@@ -341,7 +348,15 @@ validate_fixed_value <- function(value) {
 #'   params = list(mean = 2, sd = 1),
 #'   distribution = "normal"
 #' )
-new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
+new_dist_spec <- function(params, distribution, max = Inf, tail_cutoff = 0,
+                          cdf_cutoff) {
+  if (!missing(cdf_cutoff)) {
+    cli::cli_warn(c(
+      "!" = "The {.arg cdf_cutoff} argument is deprecated.",
+      "i" = "Use {.arg tail_cutoff} instead."
+    ), .frequency = "regularly", .frequency_id = "cdf_cutoff_deprecated")
+    tail_cutoff <- cdf_cutoff
+  }
   if (distribution == "nonparametric") {
     ## nonparametric distribution
     if (inherits(params$pmf, "dist_spec")) {
@@ -442,7 +457,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   }
 
   ## apply bounds
-  ret <- bound_dist(ret, max, cdf_cutoff)
+  ret <- bound_dist(ret, max, tail_cutoff)
 
   ## mark uncertain distributions so the shared handlers dispatch
   mark_uncertainty(ret)
@@ -485,7 +500,7 @@ dist_prototype <- function(distribution) {
 constructor_name <- function(distribution) {
   names <- c(
     lognormal = "LogNormal", gamma = "Gamma", normal = "Normal",
-    beta = "Beta", exp = "Exp", weibull = "Weibull"
+    beta = "Beta", exp = "Exponential", weibull = "Weibull"
   )
   if (distribution %in% names(names)) names[[distribution]] else distribution
 }

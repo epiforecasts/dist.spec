@@ -6,7 +6,7 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
 ## New features
 
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
-- Added `Exp()` and `Weibull()` distributions.
+- Added `Exponential()` and `Weibull()` distributions.
 - Added `Dirichlet()` and support for estimated nonparametric distributions
   specified via a Dirichlet prior (`NonParametric(pmf = Dirichlet(...))`).
 - Added `sample_dist()` to draw random samples from a distribution with fixed
@@ -39,6 +39,12 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
   `natural_params()` and `lower_bounds()` now take a `<dist_spec>` rather than a
   distribution-name string.
 - `get_parameters()` is now an S3 generic.
+
+## Deprecations
+
+- `Exp()` is deprecated in favour of `Exponential()`.
+- The `cdf_cutoff` argument (to the distribution constructors and
+  `bound_dist()`) is deprecated in favour of `tail_cutoff`.
 
 ## Bug fixes
 

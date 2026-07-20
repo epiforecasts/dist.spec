@@ -10,7 +10,7 @@ test_that("sample_dist draws from the correct parametric family", {
   expect_equal(mean(sample_dist(Gamma(shape = 2, rate = 1), n)), 2,
     tolerance = 0.05
   )
-  expect_equal(mean(sample_dist(Exp(rate = 0.5), n)), 2, tolerance = 0.05)
+  expect_equal(mean(sample_dist(Exponential(rate = 0.5), n)), 2, tolerance = 0.05)
   expect_equal(mean(sample_dist(Normal(mean = 5, sd = 2), n)), 5,
     tolerance = 0.05
   )

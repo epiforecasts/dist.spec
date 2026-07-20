@@ -7,7 +7,7 @@
 distspec represents probability distributions (typically epidemiological
 delays, such as generation times or reporting delays) as \verb{<dist_spec>}
 objects. Each supported distribution has its own constructor: \code{\link[=LogNormal]{LogNormal()}},
-\code{\link[=Gamma]{Gamma()}}, \code{\link[=Normal]{Normal()}}, \code{\link[=Exp]{Exp()}}, \code{\link[=Weibull]{Weibull()}}, \code{\link[=Beta]{Beta()}}, \code{\link[=Fixed]{Fixed()}},
+\code{\link[=Gamma]{Gamma()}}, \code{\link[=Normal]{Normal()}}, \code{\link[=Exponential]{Exponential()}}, \code{\link[=Weibull]{Weibull()}}, \code{\link[=Beta]{Beta()}}, \code{\link[=Fixed]{Fixed()}},
 \code{\link[=NonParametric]{NonParametric()}} and \code{\link[=Dirichlet]{Dirichlet()}}.
 }
 \details{

@@ -1,5 +1,5 @@
 # Discretisation of distributions: computing discretised PMFs from a
-# <dist_spec> and setting the bounds (max / cdf_cutoff) that constrain them.
+# <dist_spec> and setting the bounds (max / tail_cutoff) that constrain them.
 
 #' Discretised probability mass function
 #'
@@ -25,7 +25,7 @@
 #' The maximum value truncates the distribution: mass beyond it is dropped and
 #' the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
 #' additionally trims the tail, removing the part of the distribution beyond its
-#' `1 - cdf_cutoff` quantile.
+#' `1 - tail_cutoff` quantile.
 #'
 #' ## Fixed distributions
 #'
@@ -52,7 +52,7 @@
 #'   while `"fixed"` is handled as a point mass by its own method.
 #'
 #' @param ... Additional arguments passed to methods. The default method takes
-#'   `max_value` (the maximum value to allow), `cdf_cutoff` and `width` (the
+#'   `max_value` (the maximum value to allow), `tail_cutoff` and `width` (the
 #'   width of each discrete bin).
 #'
 #' @return A vector representing a probability distribution.
@@ -64,7 +64,7 @@ discrete_pmf <- function(x, ...) {
 }
 
 #' @exportS3Method
-discrete_pmf.dist_spec <- function(x, max_value, cdf_cutoff, width, ...) {
+discrete_pmf.dist_spec <- function(x, max_value, tail_cutoff, width, ...) {
   params <- get_parameters(x)
 
   ## CDF function for the distribution type (a type without a `dist_cdf()`
@@ -73,22 +73,22 @@ discrete_pmf.dist_spec <- function(x, max_value, cdf_cutoff, width, ...) {
   cdf <- dist_cdf(x)
 
   ## apply CDF cutoff if given
-  if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
+  if (!missing(tail_cutoff) && tail_cutoff > 0) {
     ## max from CDF cutoff using primarycensored quantile function
-    cdf_cutoff_max <- do.call(
+    tail_cutoff_max <- do.call(
       primarycensored::qprimarycensored,
       c(
         list(
-          p = 1 - cdf_cutoff,
+          p = 1 - tail_cutoff,
           pdist = cdf,
           pwindow = width
         ),
         params
       )
     )
-    if (!is.na(cdf_cutoff_max) &&
-          (missing(max_value) || cdf_cutoff_max < max_value)) {
-      max_value <- cdf_cutoff_max
+    if (!is.na(tail_cutoff_max) &&
+          (missing(max_value) || tail_cutoff_max < max_value)) {
+      max_value <- tail_cutoff_max
     }
   }
 
@@ -170,16 +170,16 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     return(x)
   }
   if (!is.na(sd(x)) && is_constrained(x)) {
-    cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
+    tail_cutoff <- attr(x, "tail_cutoff") %||% 0
     dist_max <- attr(x, "max") %||% Inf
     y <- new_single_dist_spec(
       list(
-        pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
+        pmf = discrete_pmf(x, dist_max, tail_cutoff, width = 1)
       ),
       "nonparametric"
     )
     preserve_attributes <- setdiff(
-      names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
+      names(attributes(x)), c("tail_cutoff", "max", "names", "class")
     )
     attributes(y)[preserve_attributes] <- attributes(x)[preserve_attributes]
     if (remove_trailing_zeros) {
@@ -214,16 +214,17 @@ discretize <- discretise
 #'
 #' @description
 #' Set the bounds that constrain a distribution when it is discretised: `max`
-#' truncates the support at that value, while `cdf_cutoff` trims the tail at the
-#' `1 - cdf_cutoff` quantile. Either bound drops the mass beyond it and
+#' truncates the support at that value, while `tail_cutoff` trims the tail at
+#' the `1 - tail_cutoff` quantile. Either bound drops the mass beyond it and
 #' renormalises the remaining PMF to sum to one.
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
-#' @param cdf_cutoff Numeric; the desired CDF cutoff. Any part of the
+#' @param tail_cutoff Numeric; the desired CDF cutoff. Any part of the
 #' cumulative distribution function beyond 1 minus the value of this argument is
 #' removed. Default: `0`, i.e. use the full distribution.
-#' @importFrom cli cli_abort
+#' @param cdf_cutoff Deprecated; use `tail_cutoff`.
+#' @importFrom cli cli_abort cli_warn
 #' @importFrom rlang `%||%`
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @seealso [discretise()], which applies these bounds when producing a PMF.
@@ -231,7 +232,14 @@ discretize <- discretise
 #' @examples
 #' # Truncate a gamma distribution at 20
 #' bound_dist(Gamma(mean = 5, sd = 1), max = 20)
-bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
+bound_dist <- function(x, max = Inf, tail_cutoff = 0, cdf_cutoff) {
+  if (!missing(cdf_cutoff)) {
+    cli::cli_warn(c(
+      "!" = "The {.arg cdf_cutoff} argument is deprecated.",
+      "i" = "Use {.arg tail_cutoff} instead."
+    ), .frequency = "regularly", .frequency_id = "cdf_cutoff_deprecated")
+    tail_cutoff <- cdf_cutoff
+  }
   if (!is(x, "dist_spec")) {
     cli_abort(
       c(
@@ -244,10 +252,10 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
   ## fixed by the Dirichlet prior, so reject bounds rather than silently
   ## dropping them (`discretise()` would never apply them)
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
-        has_uncertainty(x) && (cdf_cutoff > 0 || is.finite(max))) {
+        has_uncertainty(x) && (tail_cutoff > 0 || is.finite(max))) {
     cli_abort(
       c(
-        "!" = "Can't apply {.arg max} or {.arg cdf_cutoff} to an estimated
+        "!" = "Can't apply {.arg max} or {.arg tail_cutoff} to an estimated
         nonparametric distribution.",
         "i" = "Its support is set by the {.fn Dirichlet} prior; choose the
         number of bins there, or resolve it with {.fn fix_parameters} first."
@@ -259,9 +267,9 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
         !has_uncertainty(x)) {
     pmf <- get_pmf(x)
-    if (cdf_cutoff > 0) {
+    if (tail_cutoff > 0) {
       cmf <- cumsum(pmf)
-      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= cdf_cutoff)]
+      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tail_cutoff)]
     }
     if (is.finite(max) && length(pmf) > (max + 1)) {
       pmf <- pmf[seq_len(max + 1)]
@@ -269,7 +277,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
     x$pmf <- pmf / sum(pmf)
   } else {
     if (is.finite(max)) attr(x, "max") <- max
-    if (cdf_cutoff > 0) attr(x, "cdf_cutoff") <- cdf_cutoff
+    if (tail_cutoff > 0) attr(x, "tail_cutoff") <- tail_cutoff
   }
   x
 }

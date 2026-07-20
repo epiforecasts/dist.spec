@@ -17,6 +17,6 @@ Calculate the number of distributions in a \verb{<dist_spec>}
 }
 \examples{
 ndist(Gamma(mean = 5, sd = 1))
-ndist(Gamma(mean = 5, sd = 1) + Exp(rate = 1))
+ndist(Gamma(mean = 5, sd = 1) + Exponential(rate = 1))
 }
 \keyword{internal}
