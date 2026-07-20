@@ -9,10 +9,18 @@ EpiNow2.
   delays into a single PMF, stale EpiNow2 and Stan references have been removed
   from the roxygen, and the `bound_dist()`, `discretise()`, `fix_parameters()`
   and `sd()` help pages have clearer descriptions and runnable examples.
+- `plot()` now handles an unbounded parametric distribution by defaulting to a
+  finite range (up to the 99.9th percentile) for the plot only, rather than
+  erroring when no finite maximum or `cdf_cutoff` is set.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
   ignored.
+- `bound_dist()` now truncates a fixed nonparametric PMF at `max` when the PMF
+  is longer than `max + 1`, renormalising the result, and leaves it untouched
+  when `max` reaches beyond the support. Previously the condition was inverted,
+  so the bound never applied when requested and produced an all-`NA` PMF when
+  `max` exceeded the support.
 - Added `has_uncertainty()`, a predicate for whether a `<dist_spec>` (or a
   component of a composite) carries a prior, so dependent packages and internal
   code can test for uncertainty in one place.
@@ -58,8 +66,14 @@ EpiNow2.
   any discretised distribution, since `discretise()` produces a nonparametric
   distribution.
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
+- `fix_parameters()` and `discretise()` now forward `strategy` and
+  `remove_trailing_zeros` to the components of a composite distribution, so these
+  arguments are no longer silently ignored for composites.
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
+- `collapse()` now correctly convolves runs of three or more consecutive
+  nonparametric distributions, and runs that do not begin at the first
+  component, rather than erroring or convolving the wrong component.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
   `lower_bounds()` so that dependent packages can reuse them.
 - `natural_params()` and `lower_bounds()` are now S3 generics, with each
@@ -71,4 +85,8 @@ EpiNow2.
   The internal per-distribution `switch()` statements have been collapsed to
   direct S3 dispatch; attempting to discretise a distribution that has no CDF
   now reports this directly.
+- Improved the error messages from `get_element()` and `get_parameters()`: an
+  out-of-range `id` now reports the offending value and valid range, and the
+  nonparametric error no longer implies that Weibull, Beta and Exponential
+  distributions lack parameters.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
