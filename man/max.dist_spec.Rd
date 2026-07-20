@@ -12,7 +12,7 @@
 \item{...}{Not used}
 }
 \value{
-A vector of means.
+A numeric vector of maxima, one per component.
 }
 \description{
 This works out the maximum of all the (parametric / nonparametric) delay

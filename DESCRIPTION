@@ -17,10 +17,14 @@ Authors@R:
              family = "Abbott",
              role = c("aut"),
              email = "sam.abbott@lshtm.ac.uk",
-             comment = c(ORCID = "0000-0001-8057-8037"))
+             comment = c(ORCID = "0000-0001-8057-8037")),
+      person(given = "EpiForecasts",
+             role = "cph")
     )
-Description: Functions for defining probability distributions with potentially
-    uncertain parameters.
+Description: Represents probability distributions with fixed or potentially
+    uncertain parameters, typically epidemiological delays such as generation
+    times or reporting delays, with tools to discretise, convolve, sample from
+    and summarise them.
 License: MIT + file LICENSE
 URL: https://epiforecasts.io/distspec/
 BugReports: https://github.com/epiforecasts/distspec/issues

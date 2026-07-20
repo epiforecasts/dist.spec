@@ -6,7 +6,7 @@
 \alias{distspec-package}
 \title{distspec: Define Probability Distributions with Certain or Uncertain Parameters}
 \description{
-Functions for defining probability distributions with potentially uncertain parameters.
+Represents probability distributions with fixed or potentially uncertain parameters, typically epidemiological delays such as generation times or reporting delays, with tools to discretise, convolve, sample from and summarise them.
 }
 \seealso{
 Useful links:
@@ -23,6 +23,11 @@ Authors:
 \itemize{
   \item James M. Azam \email{james.azam@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-5782-7330}{ORCID})
   \item Sam Abbott \email{sam.abbott@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item EpiForecasts [copyright holder]
 }
 
 }
