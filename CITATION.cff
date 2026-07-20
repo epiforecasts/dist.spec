@@ -7,7 +7,7 @@ cff-version: 1.2.0
 message: 'To cite package "distspec" in publications use:'
 type: software
 license: MIT
-title: 'distspec: Define probability distributions with certain or uncertain parameters'
+title: 'distspec: Define Probability Distributions with Certain or Uncertain Parameters'
 version: 0.1.0
 abstract: Functions for defining probability distributions with potentially uncertain
   parameters.
@@ -25,7 +25,7 @@ authors:
   email: sam.abbott@lshtm.ac.uk
   orcid: https://orcid.org/0000-0001-8057-8037
 repository-code: https://github.com/epiforecasts/distspec
-url: https://epiforecasts.io/distspec
+url: https://epiforecasts.io/distspec/
 contact:
 - family-names: Funk
   given-names: Sebastian
