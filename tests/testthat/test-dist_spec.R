@@ -539,6 +539,17 @@ test_that("estimated nonparametric distributions compare by their prior", {
   expect_false(a == NonParametric(pmf = c(0.2, 0.4, 0.4)))
 })
 
+test_that("distributions with vector-valued parameters compare correctly", {
+  expect_true(Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 2), sd = 1))
+  expect_false(Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 3), sd = 1))
+  expect_false(
+    Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 2, 3), sd = 1)
+  )
+  expect_true(
+    Normal(mean = c(1, 2), sd = 1) != Normal(mean = c(1, 3), sd = 1)
+  )
+})
+
 test_that("has_uncertainty distinguishes fixed and uncertain distributions", {
   expect_false(has_uncertainty(Gamma(shape = 1, rate = 1)))
   expect_true(has_uncertainty(Gamma(shape = Normal(1, 0.5), rate = 1)))

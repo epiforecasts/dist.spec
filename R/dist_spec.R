@@ -78,8 +78,15 @@
         if ((is(params1[[param]], "dist_spec") &&
           is(params2[[param]], "dist_spec")) ||
           (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
-          ## if parameters are the same type they need to be same value
-          if (!(params1[[param]] == params2[[param]])) {
+          ## if parameters are the same type they need to be same value;
+          ## numeric parameters may be vectors, so compare whole values
+          same <- if (is(params1[[param]], "dist_spec")) {
+            params1[[param]] == params2[[param]]
+          } else {
+            length(params1[[param]]) == length(params2[[param]]) &&
+              all(params1[[param]] == params2[[param]])
+          }
+          if (!same) {
             return(FALSE)
           }
         } else {
