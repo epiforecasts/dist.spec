@@ -4,14 +4,14 @@
 \name{distspec-package}
 \alias{distspec}
 \alias{distspec-package}
-\title{distspec: Define probability distributions with certain or uncertain parameters}
+\title{distspec: Define Probability Distributions with Certain or Uncertain Parameters}
 \description{
 Functions for defining probability distributions with potentially uncertain parameters.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://epiforecasts.io/distspec}
+  \item \url{https://epiforecasts.io/distspec/}
   \item Report bugs at \url{https://github.com/epiforecasts/distspec/issues}
 }
 
