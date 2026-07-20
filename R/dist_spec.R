@@ -185,6 +185,9 @@ c.dist_spec <- function(...) {
 #' @param ignore_uncertainty Logical; whether to ignore any uncertainty in
 #'   parameters. If set to FALSE (the default) then the mean of any uncertain
 #'   parameters will be returned as NA.
+#' @return A numeric vector of means, one per component of the `<dist_spec>`;
+#'   `NA` for any component with uncertain parameters unless
+#'   `ignore_uncertainty = TRUE`.
 #' @importFrom cli cli_abort
 #' @method mean dist_spec
 #' @importFrom utils head
@@ -391,7 +394,7 @@ sample_dist.multi_dist_spec <- function(x, n, ...) {
 #'
 #' @param x The <dist_spec> to use
 #' @param ... Not used
-#' @return A vector of means.
+#' @return A numeric vector of maxima, one per component.
 #' @method max dist_spec
 #' @export
 #' @examples
@@ -543,6 +546,8 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' A component must have a finite range to be plotted. One with no finite `max`
 #' and no `cdf_cutoff` of its own raises an error; bound it first (e.g. with
 #' [bound_dist()]).
+#' @return A `{ggplot2}` object showing the PMF (and, if `cumulative = TRUE`,
+#'   the CDF) of each component, faceted by distribution.
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave

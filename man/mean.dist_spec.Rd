@@ -15,6 +15,11 @@
 parameters. If set to FALSE (the default) then the mean of any uncertain
 parameters will be returned as NA.}
 }
+\value{
+A numeric vector of means, one per component of the \verb{<dist_spec>};
+\code{NA} for any component with uncertain parameters unless
+\code{ignore_uncertainty = TRUE}.
+}
 \description{
 This works out the mean of all the (parametric / nonparametric) delay
 distributions combined in the passed <dist_spec>.
