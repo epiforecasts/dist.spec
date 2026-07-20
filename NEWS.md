@@ -53,6 +53,9 @@ EpiNow2.
   any discretised distribution, since `discretise()` produces a nonparametric
   distribution.
 - `discretise()` gains a `remove_trailing_zeros` argument (default `TRUE`).
+- `fix_parameters()` and `discretise()` now forward `strategy` and
+  `remove_trailing_zeros` to the components of a composite distribution, so these
+  arguments are no longer silently ignored for composites.
 - `get_parameters()` is now an S3 generic.
 - Convolution in `collapse()` now uses a numerically stable implementation.
 - Exported the lower-level helpers `sd()`, `ndist()`, `natural_params()` and
