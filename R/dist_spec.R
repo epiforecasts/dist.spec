@@ -78,8 +78,15 @@
         if ((is(params1[[param]], "dist_spec") &&
           is(params2[[param]], "dist_spec")) ||
           (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
-          ## if parameters are the same type they need to be same value
-          if (!(params1[[param]] == params2[[param]])) {
+          ## if parameters are the same type they need to be same value;
+          ## numeric parameters may be vectors, so compare whole values
+          same <- if (is(params1[[param]], "dist_spec")) {
+            params1[[param]] == params2[[param]]
+          } else {
+            length(params1[[param]]) == length(params2[[param]]) &&
+              all(params1[[param]] == params2[[param]])
+          }
+          if (!same) {
             return(FALSE)
           }
         } else {
@@ -102,8 +109,8 @@
 #' Combines multiple delay distributions for further processing
 #'
 #' @description
-#' This combines the parameters so that they can be fed as multiple delay
-#' distributions to `epinow()` or `estimate_infections()`.
+#' This combines the given distributions into a single composite `<dist_spec>`
+#' holding multiple delay distributions.
 #'
 #' Note that distributions that already are combinations of other distributions
 #' cannot be combined with other combinations of distributions.
@@ -239,7 +246,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @keywords internal
 #' @export
 #' @examples
-#' \dontrun{
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' sd(dist1)
@@ -250,7 +256,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #'
 #' # The sd of the sum of two distributions
 #' sd(dist1 + dist2)
-#' }
 sd <- function(x, ...) {
   UseMethod("sd")
 }
@@ -509,6 +514,10 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #'   discretisation).
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
+#' @param cdf_cutoff Numeric; fallback CDF cutoff used to bound the plotting
+#'   range of a component that has neither a finite `max` nor its own
+#'   `cdf_cutoff` (default: 0.001, i.e. plot up to the 99.9th percentile).
+#'   A component's own bounds take precedence and are left untouched.
 #' @param ... ignored
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
@@ -536,7 +545,8 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # Multiple distributions with 0.1 discretisation window and do not plot the
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
-plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
+plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
+                           cdf_cutoff = 0.001, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
@@ -550,23 +560,36 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
+      attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
-        if (is.infinite(max(y))) {
-          cli_abort(
-            c(
-              "!" = "All distributions in {.var x} must have a finite
-              maximum value.",
-              "i" = "You can set a finite maximum or CDF cutoff
-              when defining the distribution."
-            )
-          )
+        ## For plotting, an unbounded component with no bound of its own is
+        ## trimmed at the `cdf_cutoff` quantile so a sensible finite range
+        ## can be shown; the input object's own bounds take precedence and
+        ## are left untouched.
+        max_value <- attr(y, "max")
+        plot_cutoff <- attr_cutoff
+        if (is.infinite(max(y)) && attr_cutoff == 0) {
+          plot_cutoff <- cdf_cutoff
         }
-        x <- discrete_pmf(
-          y,
-          max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
+        pmf_args <- list(y, cdf_cutoff = plot_cutoff, width = res)
+        if (!is.null(max_value)) {
+          pmf_args$max_value <- max_value
+        }
+        pmf <- tryCatch(
+          do.call(discrete_pmf, pmf_args),
+          error = function(e) {
+            cli_abort(
+              c(
+                "!" = "Can't determine a finite range to plot for a
+                {.val {get_distribution(x, i)}} distribution.",
+                "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
+                when defining the distribution."
+              ),
+              parent = e
+            )
+          }
         )
-        data.frame(x = (seq_along(x) - 1) * res, p = x)
+        data.frame(x = (seq_along(pmf) - 1) * res, p = pmf)
       })
       pmf_dt <- do.call(rbind, Map(function(dt, s) {
         dt$sample <- s
@@ -659,6 +682,10 @@ fix_parameters <- function(x, ...) {
 #' @description
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
+#'
+#' Call this before [sample_dist()] or [get_pmf()] on an uncertain
+#' distribution, as neither can operate on a distribution that still carries a
+#' prior.
 #' @return A `<dist_spec>` object without uncertainty
 #' @export
 #' @param x A `<dist_spec>`
@@ -720,11 +747,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
 #' @export
 #' @method fix_parameters multi_dist_spec
-fix_parameters.multi_dist_spec <- function(x, strategy =
-                                             c("mean", "sample"), ...) {
-  for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_parameters(x[[i]])
-  }
+fix_parameters.multi_dist_spec <- function(x, ...) {
+  x[] <- lapply(x, fix_parameters, ...)
   x
 }
 

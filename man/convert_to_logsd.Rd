@@ -16,8 +16,8 @@ The log standard deviation of a lognormal distribution
 }
 \description{
 Convert from mean and standard deviation to the log standard deviation of the
-lognormal distribution. Useful for defining distributions supported by
-\code{estimate_infections()}, \code{epinow()}, and \code{regional_epinow()}.
+lognormal distribution. Useful for defining a \code{\link[=LogNormal]{LogNormal()}} distribution
+from a mean and standard deviation on the natural scale.
 }
 \examples{
 
