@@ -13,8 +13,7 @@ lower_bounds.beta <- function(x) {
 
 #' @importFrom cli cli_abort
 #' @exportS3Method
-to_natural.beta <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.beta <- function(x, ux) {
   if (!all(c("mean", "sd") %in% names(ux))) {
     return(list(shape1 = ux$shape1, shape2 = ux$shape2))
   }

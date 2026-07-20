@@ -78,8 +78,15 @@
         if ((is(params1[[param]], "dist_spec") &&
           is(params2[[param]], "dist_spec")) ||
           (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
-          ## if parameters are the same type they need to be same value
-          if (!(params1[[param]] == params2[[param]])) {
+          ## if parameters are the same type they need to be same value;
+          ## numeric parameters may be vectors, so compare whole values
+          same <- if (is(params1[[param]], "dist_spec")) {
+            params1[[param]] == params2[[param]]
+          } else {
+            length(params1[[param]]) == length(params2[[param]]) &&
+              all(params1[[param]] == params2[[param]])
+          }
+          if (!same) {
             return(FALSE)
           }
         } else {
@@ -102,8 +109,8 @@
 #' Combines multiple delay distributions for further processing
 #'
 #' @description
-#' This combines the parameters so that they can be fed as multiple delay
-#' distributions to `epinow()` or `estimate_infections()`.
+#' This combines the given distributions into a single composite `<dist_spec>`
+#' holding multiple delay distributions.
 #'
 #' Note that distributions that already are combinations of other distributions
 #' cannot be combined with other combinations of distributions.
@@ -134,7 +141,7 @@ c.dist_spec <- function(...) {
   if (length(dist_specs) == 1) {
     return(dist_specs[[1]])
   }
-  if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
+  if (!all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1)))) {
     cli_abort(
       c(
         "!" = "All distributions must be of class {.cls dist_spec}."
@@ -145,9 +152,10 @@ c.dist_spec <- function(...) {
     dist_specs, is, "multi_dist_spec",
     FUN.VALUE = logical(1)
   )
+  n_convolutions <- sum(convolutions)
   ## can only have one `multi_dist_spec`
-  if (sum(convolutions) > 0) {
-    if (sum(convolutions) > 1) {
+  if (n_convolutions > 0) {
+    if (n_convolutions > 1) {
       cli_abort(
         c(
           "!" = "Can't convolve convolutions with other convolutions"
@@ -205,6 +213,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 }
 
 #' @method mean uncertain
+#' @importFrom cli cli_inform
 #' @export
 mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
   ## an uncertain distribution carries a prior, so its mean is `NA` unless we
@@ -212,6 +221,16 @@ mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
   ## `fix_parameters()` and take that distribution's mean. This handles both an
   ## uncertain parametric distribution and an estimated nonparametric one.
   if (!ignore_uncertainty) {
+    cli_inform(
+      c(
+        "Returning NA: this distribution has uncertain parameters.",
+        "i" = "Use {.code mean(x, ignore_uncertainty = TRUE)} for the mean of
+        the point estimates, or resolve the uncertainty first with
+        {.fn fix_parameters}."
+      ),
+      .frequency = "regularly",
+      .frequency_id = "uncertain_mean_na"
+    )
     return(NA_real_)
   }
   mean(fix_parameters(x, strategy = "mean"))
@@ -238,7 +257,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @keywords internal
 #' @export
 #' @examples
-#' \dontrun{
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' sd(dist1)
@@ -249,7 +267,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #'
 #' # The sd of the sum of two distributions
 #' sd(dist1 + dist2)
-#' }
 sd <- function(x, ...) {
   UseMethod("sd")
 }
@@ -264,8 +281,19 @@ sd.dist_spec <- function(x, ...) {
   )
 }
 
+#' @importFrom cli cli_inform
 #' @export
-sd.uncertain <- function(x, ...) NA_real_
+sd.uncertain <- function(x, ...) {
+  cli_inform(
+    c(
+      "Returning NA: this distribution has uncertain parameters.",
+      "i" = "Resolve the uncertainty first with {.fn fix_parameters}."
+    ),
+    .frequency = "regularly",
+    .frequency_id = "uncertain_sd_na"
+  )
+  NA_real_
+}
 
 #' @export
 sd.multi_dist_spec <- function(x, ...) {
@@ -392,7 +420,7 @@ max.dist_spec <- function(x, ...) {
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
     nonparametric = max(x),
-    ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
+    attr(x, "max") %||% Inf
   )
 }
 
@@ -450,16 +478,16 @@ print_dist_spec_indented <- function(x, indent, ...) {
       }
     } else if (get_distribution(x, i) == "fixed") {
       ## fixed
+      params_i <- get_parameters(x, i)
       cat(indent_str, "- fixed value:\n", sep = "")
-      if (is.numeric(get_parameters(x, i)$value)) {
-        cat(indent_str, "  ", get_parameters(x, i)$value, "\n", sep = "")
+      if (is.numeric(params_i$value)) {
+        cat(indent_str, "  ", params_i$value, "\n", sep = "")
       } else {
-        print_dist_spec_indented(
-          get_parameters(x, i)$value, indent = indent + 4
-        )
+        print_dist_spec_indented(params_i$value, indent = indent + 4)
       }
     } else {
       ## parametric
+      params_i <- get_parameters(x, i)
       cat(indent_str, "- ", get_distribution(x, i), " distribution", sep = "")
       single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
@@ -476,24 +504,19 @@ print_dist_spec_indented <- function(x, indent, ...) {
       }
       cat(":\n")
       ## loop over natural parameters and print
-      for (param in names(get_parameters(x, i))) {
+      for (param in names(params_i)) {
         cat(
           indent_str, "  ", param, ":\n",
           sep = ""
         )
-        if (is.numeric(get_parameters(x, i)[[param]])) {
+        if (is.numeric(params_i[[param]])) {
           cat(
             indent_str, "    ",
-            paste(
-              signif(get_parameters(x, i)[[param]], digits = 2),
-              collapse = " "
-            ), "\n",
+            paste(signif(params_i[[param]], digits = 2), collapse = " "), "\n",
             sep = ""
           )
         } else {
-          print_dist_spec_indented(
-            get_parameters(x, i)[[param]], indent = indent + 4
-          )
+          print_dist_spec_indented(params_i[[param]], indent = indent + 4)
         }
       }
     }
@@ -513,11 +536,15 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #'   discretisation).
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
+#' @param cdf_cutoff Numeric; fallback CDF cutoff used to bound the plotting
+#'   range of a component that has neither a finite `max` nor its own
+#'   `cdf_cutoff` (default: 0.001, i.e. plot up to the 99.9th percentile).
+#'   A component's own bounds take precedence and are left untouched.
 #' @param ... ignored
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
-#' @importFrom rlang .data
+#' @importFrom rlang .data `%||%`
 #' @importFrom cli cli_abort
 #' @export
 #' @examples
@@ -540,46 +567,51 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # Multiple distributions with 0.1 discretisation window and do not plot the
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
-plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
+plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
+                           cdf_cutoff = 0.001, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
       pmf_dt <- nonparametric_pmf_data(x, i, samples)
     } else {
       # parametric
-      uncertain <- vapply(get_parameters(x, i), function(y) {
-        if (is.numeric(y)) {
-          return(FALSE)
-        }
-        sd_dist <- sd(y)
-        is.na(sd_dist) || sd_dist > 0
-      }, logical(1))
-      if (!any(uncertain)) {
+      uncertain <- has_uncertainty(x, i)
+      if (!uncertain) {
         samples <- 1 ## only need 1 sample if fixed
       }
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      cdf_cutoff <- attr(x, "cdf_cutoff")
-      if (is.null(cdf_cutoff)) {
-        cdf_cutoff <- 0
-      }
+      attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
-        if (is.infinite(max(y))) {
-          cli_abort(
-            c(
-              "!" = "All distributions in {.var x} must have a finite
-              maximum value.",
-              "i" = "You can set a finite maximum or CDF cutoff
-              when defining the distribution."
-            )
-          )
+        ## For plotting, an unbounded component with no bound of its own is
+        ## trimmed at the `cdf_cutoff` quantile so a sensible finite range
+        ## can be shown; the input object's own bounds take precedence and
+        ## are left untouched.
+        max_value <- attr(y, "max")
+        plot_cutoff <- attr_cutoff
+        if (is.infinite(max(y)) && attr_cutoff == 0) {
+          plot_cutoff <- cdf_cutoff
         }
-        x <- discrete_pmf(
-          y,
-          max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
+        pmf_args <- list(y, cdf_cutoff = plot_cutoff, width = res)
+        if (!is.null(max_value)) {
+          pmf_args$max_value <- max_value
+        }
+        pmf <- tryCatch(
+          do.call(discrete_pmf, pmf_args),
+          error = function(e) {
+            cli_abort(
+              c(
+                "!" = "Can't determine a finite range to plot for a
+                {.val {get_distribution(x, i)}} distribution.",
+                "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
+                when defining the distribution."
+              ),
+              parent = e
+            )
+          }
         )
-        data.frame(x = (seq_along(x) - 1) * res, p = x)
+        data.frame(x = (seq_along(pmf) - 1) * res, p = pmf)
       })
       pmf_dt <- do.call(rbind, Map(function(dt, s) {
         dt$sample <- s
@@ -587,7 +619,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       }, pmf_dt, seq_along(pmf_dt)))
 
       dist_name <- paste0(
-        ifelse(any(uncertain), "Uncertain ", ""),
+        ifelse(uncertain, "Uncertain ", ""),
         get_distribution(x, i), " (ID: ", i, ")"
       )
       pmf_dt$distribution <- dist_name
@@ -672,6 +704,10 @@ fix_parameters <- function(x, ...) {
 #' @description
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
+#'
+#' Call this before [sample_dist()] or [get_pmf()] on an uncertain
+#' distribution, as neither can operate on a distribution that still carries a
+#' prior.
 #' @return A `<dist_spec>` object without uncertainty
 #' @export
 #' @param x A `<dist_spec>`
@@ -733,11 +769,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
 #' @export
 #' @method fix_parameters multi_dist_spec
-fix_parameters.multi_dist_spec <- function(x, strategy =
-                                             c("mean", "sample"), ...) {
-  for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_parameters(x[[i]])
-  }
+fix_parameters.multi_dist_spec <- function(x, ...) {
+  x[] <- lapply(x, fix_parameters, ...)
   x
 }
 

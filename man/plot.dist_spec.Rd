@@ -4,7 +4,7 @@
 \alias{plot.dist_spec}
 \title{Plot PMF and CDF for a dist_spec object}
 \usage{
-\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, ...)
+\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, cdf_cutoff = 0.001, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>} object}
@@ -17,6 +17,11 @@ discretisation).}
 
 \item{cumulative}{Logical; whether to plot the cumulative distribution in
 addition to the probability mass function}
+
+\item{cdf_cutoff}{Numeric; fallback CDF cutoff used to bound the plotting
+range of a component that has neither a finite \code{max} nor its own
+\code{cdf_cutoff} (default: 0.001, i.e. plot up to the 99.9th percentile).
+A component's own bounds take precedence and are left untouched.}
 
 \item{...}{ignored}
 }

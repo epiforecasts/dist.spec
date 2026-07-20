@@ -15,8 +15,7 @@ dist_cdf.weibull <- function(x) pweibull
 
 #' @importFrom stats uniroot
 #' @exportS3Method
-to_natural.weibull <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.weibull <- function(x, ux) {
   if (all(c("mean", "sd") %in% names(ux))) {
     log_cv2_p1 <- log1p((ux$sd / ux$mean)^2)
     shape <- uniroot(

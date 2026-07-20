@@ -14,8 +14,7 @@ lower_bounds.lognormal <- function(x) {
 dist_cdf.lognormal <- function(x) plnorm
 
 #' @exportS3Method
-to_natural.lognormal <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.lognormal <- function(x, ux) {
   if (all(c("mean", "sd") %in% names(ux))) {
     list(
       meanlog = log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2)),

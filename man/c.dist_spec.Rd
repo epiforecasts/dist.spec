@@ -13,8 +13,8 @@
 Combined delay distributions (with class \verb{<dist_spec>})
 }
 \description{
-This combines the parameters so that they can be fed as multiple delay
-distributions to \code{epinow()} or \code{estimate_infections()}.
+This combines the given distributions into a single composite \verb{<dist_spec>}
+holding multiple delay distributions.
 
 Note that distributions that already are combinations of other distributions
 cannot be combined with other combinations of distributions.

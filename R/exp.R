@@ -14,8 +14,7 @@ lower_bounds.exp <- function(x) {
 dist_cdf.exp <- function(x) pexp
 
 #' @exportS3Method
-to_natural.exp <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.exp <- function(x, ux) {
   list(rate = if ("mean" %in% names(ux)) 1 / ux$mean else ux$rate)
 }
 

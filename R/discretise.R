@@ -132,9 +132,11 @@ discretise <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom cli cli_abort
 #' @return A `<dist_spec>` where all distributions with constant parameters are
-#'   nonparametric.
+#'   nonparametric. Extract the resulting PMF vector with [get_pmf()].
 #' @seealso [collapse()] to convolve the discretised components of a composite
 #'   distribution into a single PMF, and [sample_dist()] to draw random samples.
+#'   The `vignette("distspec")` shows the full
+#'   `get_pmf(collapse(discretise(d1 + d2)))` pipeline.
 #' @export
 #' @method discretise dist_spec
 #' @examples
@@ -168,14 +170,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     return(x)
   }
   if (!is.na(sd(x)) && is_constrained(x)) {
-    cdf_cutoff <- attr(x, "cdf_cutoff")
-    if (is.null(cdf_cutoff)) {
-      cdf_cutoff <- 0
-    }
-    dist_max <- attr(x, "max")
-    if (is.null(dist_max)) {
-      dist_max <- Inf
-    }
+    cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
+    dist_max <- attr(x, "max") %||% Inf
     y <- new_single_dist_spec(
       list(
         pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
@@ -185,9 +181,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     preserve_attributes <- setdiff(
       names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
     )
-    for (attribute in preserve_attributes) {
-      attributes(y)[attribute] <- attributes(x)[attribute]
-    }
+    attributes(y)[preserve_attributes] <- attributes(x)[preserve_attributes]
     if (remove_trailing_zeros) {
       non_zero_idx <- which(y$pmf != 0)
       if (length(non_zero_idx) > 0) {
@@ -207,8 +201,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
 }
 #' @method discretise multi_dist_spec
 #' @export
-discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
-  ret <- lapply(x, discretise, strict = strict)
+discretise.multi_dist_spec <- function(x, ...) {
+  ret <- lapply(x, discretise, ...)
   attributes(ret) <- attributes(x)
   ret
 }
@@ -219,7 +213,10 @@ discretize <- discretise
 #' Define bounds of a `<dist_spec>`
 #'
 #' @description
-#' This sets attributes for further processing
+#' Set the bounds that constrain a distribution when it is discretised: `max`
+#' truncates the support at that value, while `cdf_cutoff` trims the tail at the
+#' `1 - cdf_cutoff` quantile. Either bound drops the mass beyond it and
+#' renormalises the remaining PMF to sum to one.
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
@@ -227,6 +224,7 @@ discretize <- discretise
 #' cumulative distribution function beyond 1 minus the value of this argument is
 #' removed. Default: `0`, i.e. use the full distribution.
 #' @importFrom cli cli_abort
+#' @importFrom rlang `%||%`
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @seealso [discretise()], which applies these bounds when producing a PMF.
 #' @export
@@ -265,8 +263,8 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
       cmf <- cumsum(pmf)
       pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= cdf_cutoff)]
     }
-    if (is.finite(max) && (max + 1) > length(x$pmf)) {
-      pmf <- pmf[seq(1, max + 1)]
+    if (is.finite(max) && length(pmf) > (max + 1)) {
+      pmf <- pmf[seq_len(max + 1)]
     }
     x$pmf <- pmf / sum(pmf)
   } else {

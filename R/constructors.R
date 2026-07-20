@@ -15,11 +15,11 @@
 #' value (another `<dist_spec>`); currently only normally distributed uncertain
 #' parameters (from [Normal()]) are supported.
 #'
-#' Each distribution has a "natural" parameterisation (the one used in the stan
-#' models) and can sometimes also be specified using other parameters, such as
-#' its mean and standard deviation, which are then converted to the natural
-#' parameters (propagating any uncertainty with a first-order delta-method
-#' approximation).
+#' Each distribution has a "natural" (canonical) parameterisation, such as
+#' `shape` and `rate` for [Gamma()] or `meanlog` and `sdlog` for [LogNormal()].
+#' It can sometimes also be specified using other parameters, such as its mean
+#' and standard deviation, which are then converted to the natural parameters
+#' (propagating any uncertainty with a first-order delta-method approximation).
 #'
 #' @seealso [discretise()] and [collapse()] to discretise and convolve
 #'   distributions, [sample_dist()] to draw samples, and [get_parameters()] /
@@ -290,7 +290,7 @@ rdirichlet <- function(alpha) {
 #' @importFrom cli cli_abort
 #' @keywords internal
 extract_params <- function(params, distribution) {
-  params <- params[!vapply(params, inherits, "name", FUN.VALUE = TRUE)]
+  params <- Filter(Negate(is.name), params)
   n_params <- length(natural_params(dist_prototype(distribution)))
   if (length(params) != n_params) {
     cli_abort(
@@ -366,6 +366,17 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       validate_fixed_value(params[["value"]])
       ret <- new_single_dist_spec(list(parameters = params), "fixed")
     } else {
+      ## a parameter given as a certain distribution (standard deviation 0, e.g.
+      ## `Normal(x, 0)`, which collapses to `Fixed(x)`) carries no uncertainty,
+      ## so resolve it to its point value; it then behaves exactly like passing
+      ## the number, and only genuine (sd > 0 / unknown) priors are kept
+      params <- lapply(params, function(p) {
+        if (is.numeric(p)) {
+          return(p)
+        }
+        p_sd <- sd(p)
+        if (!is.na(p_sd) && p_sd == 0) mean(p) else p
+      })
       ## parametric probability distribution. Build the object first so that the
       ## per-type metadata methods can dispatch on it (there is no separate
       ## dispatch token); parameters are validated and converted in place.
@@ -389,15 +400,8 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       ## convert any unnatural parameters
       unnatural_params <- setdiff(names(params), natural_params(ret))
       if (length(unnatural_params) > 0) {
-        ## sample parameters if they are uncertain
-        uncertain <- vapply(params, function(x) {
-          if (is.numeric(x)) {
-            return(FALSE)
-          }
-          sd_dist <- sd(x)
-          is.na(sd_dist) || sd_dist > 0
-        }, logical(1))
-        if (any(uncertain)) {
+        ## warn if any parameter carries genuine uncertainty
+        if (has_uncertainty(ret)) {
           np <- natural_params(ret)
           # used inside the cli glue string below (object_usage_linter does not
           # see the interpolation)
@@ -405,6 +409,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
             constructor_name(distribution), "(",
             paste0(np, " = Normal(...)", collapse = ", "), ")"
           )
+          # nolint start: duplicate_argument_linter
           cli_warn(
             c(
               "!" = "Uncertain {distribution} distribution specified in terms
@@ -420,6 +425,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
               {.code {example}}."
             )
           )
+          # nolint end
         }
         ## generate natural parameters
         ret$parameters <- convert_to_natural(ret)
@@ -484,12 +490,20 @@ constructor_name <- function(distribution) {
   if (distribution %in% names(names)) names[[distribution]] else distribution
 }
 
-# Per-type conversion of a distribution's parameters to its natural parameters.
-# Dispatched on the distribution type; each method reads the raw parameters from
-# `x$parameters`, takes their means, and returns the natural parameters as a
-# named list (see e.g. `to_natural.gamma`). The shared pre/post-processing lives
-# in `convert_to_natural()`.
-to_natural <- function(x) UseMethod("to_natural")
+#' Convert a distribution's parameters to its natural parameters (per-type)
+#'
+#' @description
+#' Per-type conversion of a distribution's parameters to its natural parameters.
+#' Dispatched on the distribution type; each method reads the parameter means
+#' from `ux` and returns the natural parameters as a named list (see e.g.
+#' `to_natural.gamma`). The shared pre- and post-processing lives in
+#' [convert_to_natural()], which computes `ux` once and passes it in.
+#'
+#' @param x A single `<dist_spec>`.
+#' @param ux The parameter means, as returned by `lapply(x$parameters, mean)`.
+#' @return A named list of natural parameters.
+#' @keywords internal
+to_natural <- function(x, ux) UseMethod("to_natural")
 
 #' Internal function for converting parameters to natural parameters.
 #'
@@ -536,7 +550,7 @@ convert_to_natural <- function(x) {
   sds[is.na(sds)] <- 0
   ## convert the parameter means to natural parameters (per-type dispatch);
   ## drop any that could not be derived so the sort below flags them as missing
-  natural <- to_natural(x)
+  natural <- to_natural(x, ux)
   natural <- natural[!vapply(natural, is.null, logical(1))]
   ## sort into the canonical natural-parameter order
   natural <- natural[natural_params(x)]
@@ -605,10 +619,10 @@ delta_method_sd <- function(x, sds, natural, h_rel = 1e-4) {
   ## map a numeric vector of unnatural parameters to the natural-parameter
   ## vector (in canonical order) via the per-type `to_natural()` method
   to_natural_vec <- function(values) {
+    ux <- as.list(stats::setNames(values, param_names))
     tmp <- x
-    tmp$parameters <- as.list(stats::setNames(values, param_names))
-    nat <- to_natural(tmp)
-    unlist(nat[natural_names])
+    tmp$parameters <- ux
+    unlist(to_natural(tmp, ux)[natural_names])
   }
   variances <- stats::setNames(numeric(length(natural_names)), natural_names)
   for (i in seq_along(param_names)) {

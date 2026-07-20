@@ -4,9 +4,11 @@
 #' Get the names of the natural parameters of a distribution
 #'
 #' @description
-#' These are the parameters used in the stan models. All other parameter
-#' representations are converted to these using [convert_to_natural()] before
-#' being passed to the stan models.
+#' These are the natural (canonical) parameters of a distribution, such as
+#' `shape` and `rate` for a gamma distribution or `meanlog` and `sdlog` for a
+#' lognormal distribution. All other parameter representations (for example a
+#' mean and standard deviation) are converted to these using
+#' [convert_to_natural()].
 #' @param x A `<dist_spec>`.
 #' @return A character vector, the natural parameters.
 #' @keywords internal
@@ -70,9 +72,8 @@ get_element <- function(x, id = NULL, element) {
   if (!is.null(id) && id > ndist(x)) {
     cli_abort(
       c(
-        "!" = "{.var id} cannot be greater than the number of distributions
-      ({length(x)}).",
-        "i" = "{.var id} currently has length {length(id)}."
+        "!" = "{.var id} must be between 1 and {ndist(x)}.",
+        "i" = "You supplied {.var id} = {id}."
       )
     )
   }
@@ -117,11 +118,9 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
   if (get_distribution(x, id) == "nonparametric") {
     cli_abort(
       c(
-        "!" = "To get parameters, distribution cannot not be
-        \"nonparametric\".",
-        "i" = "Distribution must be one of
-        {col_blue(\"gamma\")}, {col_blue(\"lognormal\")},
-        {col_blue(\"normal\")} or {col_blue(\"fixed\")}."
+        "!" = "Parameters are available for parametric and fixed distributions,
+        but this one is nonparametric.",
+        "i" = "Use {.fn get_pmf} to extract its probability mass function."
       )
     )
   }
