@@ -374,6 +374,31 @@ test_that("plot.dist_spec errors on an unbounded uncertain distribution", {
   expect_error(plot(dist), "no finite range")
 })
 
+test_that("plot.dist_spec warns when res is applied to a nonparametric component", {
+  rlang::reset_warning_verbosity("plot_res_nonparametric")
+  dist <- Gamma(mean = 4, sd = 2, max = 20) +
+    NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  expect_warning(
+    p <- plot(dist, res = 0.1),
+    "does not apply to nonparametric"
+  )
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("plot.dist_spec warns for a lone nonparametric component with res", {
+  rlang::reset_warning_verbosity("plot_res_nonparametric")
+  expect_warning(
+    plot(NonParametric(c(0.1, 0.3, 0.4, 0.2)), res = 0.1),
+    "does not apply to nonparametric"
+  )
+})
+
+test_that("plot.dist_spec does not warn with the default res", {
+  dist <- Gamma(mean = 4, sd = 2, max = 20) +
+    NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  expect_no_warning(plot(dist))
+})
+
 test_that("fix_parameters works with composite delay distributions", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)

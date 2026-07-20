@@ -533,7 +533,9 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' @param samples Integer; Number of samples to generate for distributions
 #' with uncertain parameters (default: 50).
 #' @param res Numeric; Resolution of the PMF and CDF (default: 1, i.e. integer
-#'   discretisation).
+#'   discretisation). This applies only to components discretised from a
+#'   continuous distribution; a nonparametric component is already discretised
+#'   on its integer support and is unaffected by `res`.
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
 #' @param ... ignored
@@ -545,7 +547,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
 #' @importFrom rlang .data `%||%`
-#' @importFrom cli cli_abort
+#' @importFrom cli cli_abort cli_warn
 #' @export
 #' @examples
 #' # A fixed lognormal distribution with mean 5 and sd 1.
@@ -571,6 +573,18 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
+      if (res != 1) {
+        cli_warn(
+          c(
+            "!" = "{.arg res} does not apply to nonparametric components.",
+            "i" = "A nonparametric component is already discretised on its
+            integer support, so this facet is drawn on integer support
+            regardless of {.arg res}."
+          ),
+          .frequency = "regularly",
+          .frequency_id = "plot_res_nonparametric"
+        )
+      }
       pmf_dt <- nonparametric_pmf_data(x, i, samples)
     } else {
       # parametric
