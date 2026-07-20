@@ -135,7 +135,7 @@ Exponential <- function(rate, mean, ...) {
 #' @rdname Exponential
 #' @export
 Exp <- function(...) {
-  .Deprecated("Exponential")
+  lifecycle::deprecate_warn("0.1.0", "Exp()", "Exponential()")
   Exponential(...)
 }
 
@@ -349,12 +349,11 @@ validate_fixed_value <- function(value) {
 #'   distribution = "normal"
 #' )
 new_dist_spec <- function(params, distribution, max = Inf, tail_cutoff = 0,
-                          cdf_cutoff) {
-  if (!missing(cdf_cutoff)) {
-    cli::cli_warn(c(
-      "!" = "The {.arg cdf_cutoff} argument is deprecated.",
-      "i" = "Use {.arg tail_cutoff} instead."
-    ), .frequency = "regularly", .frequency_id = "cdf_cutoff_deprecated")
+                          cdf_cutoff = lifecycle::deprecated()) {
+  if (lifecycle::is_present(cdf_cutoff)) {
+    lifecycle::deprecate_warn(
+      "0.1.0", "new_dist_spec(cdf_cutoff)", "new_dist_spec(tail_cutoff)"
+    )
     tail_cutoff <- cdf_cutoff
   }
   if (distribution == "nonparametric") {

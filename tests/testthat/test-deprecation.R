@@ -1,5 +1,5 @@
 test_that("Exp() is deprecated in favour of Exponential()", {
-  expect_warning(Exp(rate = 1), "deprecated")
+  lifecycle::expect_deprecated(Exp(rate = 1))
   expect_equal(
     suppressWarnings(Exp(rate = 1)),
     Exponential(rate = 1)
@@ -8,21 +8,15 @@ test_that("Exp() is deprecated in favour of Exponential()", {
 })
 
 test_that("cdf_cutoff is deprecated in favour of tail_cutoff", {
-  rlang::reset_warning_verbosity("cdf_cutoff_deprecated")
-  expect_warning(
-    bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01),
-    "deprecated"
+  lifecycle::expect_deprecated(
+    bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01)
   )
   expect_equal(
     suppressWarnings(bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01)),
     bound_dist(Gamma(mean = 4, sd = 1), tail_cutoff = 0.01)
   )
 
-  rlang::reset_warning_verbosity("cdf_cutoff_deprecated")
-  expect_warning(
-    Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01),
-    "deprecated"
-  )
+  lifecycle::expect_deprecated(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01))
   expect_equal(
     suppressWarnings(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01)),
     Gamma(mean = 4, sd = 1, tail_cutoff = 0.01)

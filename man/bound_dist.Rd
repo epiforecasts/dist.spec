@@ -4,7 +4,7 @@
 \alias{bound_dist}
 \title{Define bounds of a \verb{<dist_spec>}}
 \usage{
-bound_dist(x, max = Inf, tail_cutoff = 0, cdf_cutoff)
+bound_dist(x, max = Inf, tail_cutoff = 0, cdf_cutoff = lifecycle::deprecated())
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
@@ -16,7 +16,7 @@ be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
 
-\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff}.}
+\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff} instead.}
 }
 \value{
 a \verb{<dist_spec>} with relevant attributes set that define its bounds

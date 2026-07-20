@@ -223,8 +223,8 @@ discretize <- discretise
 #' @param tail_cutoff Numeric; the desired CDF cutoff. Any part of the
 #' cumulative distribution function beyond 1 minus the value of this argument is
 #' removed. Default: `0`, i.e. use the full distribution.
-#' @param cdf_cutoff Deprecated; use `tail_cutoff`.
-#' @importFrom cli cli_abort cli_warn
+#' @param cdf_cutoff Deprecated; use `tail_cutoff` instead.
+#' @importFrom cli cli_abort
 #' @importFrom rlang `%||%`
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @seealso [discretise()], which applies these bounds when producing a PMF.
@@ -232,12 +232,12 @@ discretize <- discretise
 #' @examples
 #' # Truncate a gamma distribution at 20
 #' bound_dist(Gamma(mean = 5, sd = 1), max = 20)
-bound_dist <- function(x, max = Inf, tail_cutoff = 0, cdf_cutoff) {
-  if (!missing(cdf_cutoff)) {
-    cli::cli_warn(c(
-      "!" = "The {.arg cdf_cutoff} argument is deprecated.",
-      "i" = "Use {.arg tail_cutoff} instead."
-    ), .frequency = "regularly", .frequency_id = "cdf_cutoff_deprecated")
+bound_dist <- function(x, max = Inf, tail_cutoff = 0,
+                       cdf_cutoff = lifecycle::deprecated()) {
+  if (lifecycle::is_present(cdf_cutoff)) {
+    lifecycle::deprecate_warn(
+      "0.1.0", "bound_dist(cdf_cutoff)", "bound_dist(tail_cutoff)"
+    )
     tail_cutoff <- cdf_cutoff
   }
   if (!is(x, "dist_spec")) {

@@ -5,7 +5,13 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(params, distribution, max = Inf, tail_cutoff = 0, cdf_cutoff)
+new_dist_spec(
+  params,
+  distribution,
+  max = Inf,
+  tail_cutoff = 0,
+  cdf_cutoff = lifecycle::deprecated()
+)
 }
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}
@@ -20,7 +26,7 @@ be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
 
-\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff}.}
+\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff} instead.}
 }
 \value{
 A \code{dist_spec} of the given specification.
