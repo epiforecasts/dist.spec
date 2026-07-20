@@ -8,6 +8,11 @@ EpiNow2.
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
   ignored.
+- `bound_dist()` now truncates a fixed nonparametric PMF at `max` when the PMF
+  is longer than `max + 1`, renormalising the result, and leaves it untouched
+  when `max` reaches beyond the support. Previously the condition was inverted,
+  so the bound never applied when requested and produced an all-`NA` PMF when
+  `max` exceeded the support.
 - Added `has_uncertainty()`, a predicate for whether a `<dist_spec>` (or a
   component of a composite) carries a prior, so dependent packages and internal
   code can test for uncertainty in one place.

@@ -576,6 +576,39 @@ test_that("bounding an estimated nonparametric distribution errors", {
   expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
 })
 
+test_that("bound_dist truncates and renormalises a fixed nonparametric PMF", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `max` smaller than the support keeps bins 0..max and renormalises
+  bounded <- bound_dist(np, max = 2)
+  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
+  expect_equal(sum(get_pmf(bounded)), 1)
+  expect_equal(max(bounded), 3)
+})
+
+test_that("bound_dist leaves a fixed nonparametric PMF untouched beyond support", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `max` at or beyond the support is a no-op and introduces no NAs
+  expect_equal(get_pmf(bound_dist(np, max = 5)), c(0.1, 0.3, 0.4, 0.2))
+  expect_equal(get_pmf(bound_dist(np, max = 3)), c(0.1, 0.3, 0.4, 0.2))
+  expect_false(anyNA(get_pmf(bound_dist(np, max = 5))))
+})
+
+test_that("NonParametric applies max at construction", {
+  ## the same truncation is reachable through the constructor
+  expect_equal(
+    get_pmf(NonParametric(c(0.1, 0.3, 0.4, 0.2), max = 2)),
+    c(0.125, 0.375, 0.5)
+  )
+})
+
+test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  ## `cdf_cutoff` is applied to the tail before `max` truncates and renormalises
+  bounded <- bound_dist(np, max = 2, cdf_cutoff = 0.05)
+  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
+  expect_equal(sum(get_pmf(bounded)), 1)
+})
+
 test_that("an estimated nonparametric distribution nests its prior on print", {
   result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## printed like any uncertain distribution: the PMF shown as a nested prior,

@@ -265,8 +265,8 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
       cmf <- cumsum(pmf)
       pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= cdf_cutoff)]
     }
-    if (is.finite(max) && (max + 1) > length(x$pmf)) {
-      pmf <- pmf[seq(1, max + 1)]
+    if (is.finite(max) && length(pmf) > (max + 1)) {
+      pmf <- pmf[seq_len(max + 1)]
     }
     x$pmf <- pmf / sum(pmf)
   } else {
