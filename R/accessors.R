@@ -4,9 +4,11 @@
 #' Get the names of the natural parameters of a distribution
 #'
 #' @description
-#' These are the parameters used in the stan models. All other parameter
-#' representations are converted to these using [convert_to_natural()] before
-#' being passed to the stan models.
+#' These are the natural (canonical) parameters of a distribution, such as
+#' `shape` and `rate` for a gamma distribution or `meanlog` and `sdlog` for a
+#' lognormal distribution. All other parameter representations (for example a
+#' mean and standard deviation) are converted to these using
+#' [convert_to_natural()].
 #' @param x A `<dist_spec>`.
 #' @return A character vector, the natural parameters.
 #' @keywords internal

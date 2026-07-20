@@ -22,6 +22,10 @@ A \verb{<dist_spec>} object without uncertainty
 \description{
 If the given \verb{<dist_spec>} has any uncertainty, it is removed and the
 corresponding distribution converted into a fixed one.
+
+Call this before \code{\link[=sample_dist]{sample_dist()}} or \code{\link[=get_pmf]{get_pmf()}} on an uncertain
+distribution, as neither can operate on a distribution that still carries a
+prior.
 }
 \examples{
 # An uncertain gamma distribution with shape and rate normally distributed

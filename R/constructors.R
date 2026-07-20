@@ -15,10 +15,11 @@
 #' value (another `<dist_spec>`); currently only normally distributed uncertain
 #' parameters (from [Normal()]) are supported.
 #'
-#' Each distribution has a "natural" parameterisation (the one used in the stan
-#' models) and can sometimes also be specified using other parameters, such as
-#' its mean and standard deviation, which are then converted to the natural
-#' parameters (by random sampling if they are uncertain).
+#' Each distribution has a "natural" (canonical) parameterisation, such as
+#' `shape` and `rate` for [Gamma()] or `meanlog` and `sdlog` for [LogNormal()].
+#' It can sometimes also be specified using other parameters, such as its mean
+#' and standard deviation, which are then converted to the natural parameters
+#' (by random sampling if they are uncertain).
 #'
 #' @seealso [discretise()] and [collapse()] to discretise and convolve
 #'   distributions, [sample_dist()] to draw samples, and [get_parameters()] /
