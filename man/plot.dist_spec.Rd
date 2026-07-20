@@ -25,9 +25,9 @@ This function takes a \verb{<dist_spec>} object and plots its probability mass
 function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}.
 }
 \details{
-A component with no finite \code{max} and no \code{cdf_cutoff} of its own is plotted up
-to its 99.9th percentile, so it has a finite range. Bound the distribution
-(e.g. with \code{\link[=bound_dist]{bound_dist()}}) to change the plotted range.
+A component must have a finite range to be plotted. One with no finite \code{max}
+and no \code{cdf_cutoff} of its own raises an error; bound it first (e.g. with
+\code{\link[=bound_dist]{bound_dist()}}).
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.

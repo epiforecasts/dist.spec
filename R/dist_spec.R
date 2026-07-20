@@ -538,9 +538,9 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #'   addition to the probability mass function
 #' @param ... ignored
 #' @details
-#' A component with no finite `max` and no `cdf_cutoff` of its own is plotted up
-#' to its 99.9th percentile, so it has a finite range. Bound the distribution
-#' (e.g. with [bound_dist()]) to change the plotted range.
+#' A component must have a finite range to be plotted. One with no finite `max`
+#' and no `cdf_cutoff` of its own raises an error; bound it first (e.g. with
+#' [bound_dist()]).
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
@@ -583,33 +583,24 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       })
       attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
-        ## For plotting, an unbounded component with no bound of its own is
-        ## trimmed at its 99.9th percentile so a sensible finite range can be
-        ## shown; the input object's own bounds take precedence and are left
-        ## untouched.
         max_value <- attr(y, "max")
-        plot_cutoff <- attr_cutoff
+        ## an unbounded component has no finite range to plot; require the user
+        ## to bound it rather than picking a range silently
         if (is.infinite(max(y)) && attr_cutoff == 0) {
-          plot_cutoff <- 0.001 ## 99.9th percentile
+          cli_abort(
+            c(
+              "!" = "Can't plot a {.val {get_distribution(x, i)}} distribution
+              with no finite range.",
+              "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
+              (for example with {.fn bound_dist})."
+            )
+          )
         }
-        pmf_args <- list(y, cdf_cutoff = plot_cutoff, width = res)
+        pmf_args <- list(y, cdf_cutoff = attr_cutoff, width = res)
         if (!is.null(max_value)) {
           pmf_args$max_value <- max_value
         }
-        pmf <- tryCatch(
-          do.call(discrete_pmf, pmf_args),
-          error = function(e) {
-            cli_abort(
-              c(
-                "!" = "Can't determine a finite range to plot for a
-                {.val {get_distribution(x, i)}} distribution.",
-                "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
-                when defining the distribution."
-              ),
-              parent = e
-            )
-          }
-        )
+        pmf <- do.call(discrete_pmf, pmf_args)
         data.frame(x = (seq_along(pmf) - 1) * res, p = pmf)
       })
       pmf_dt <- do.call(rbind, Map(function(dt, s) {
