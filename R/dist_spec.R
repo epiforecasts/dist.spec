@@ -78,8 +78,15 @@
         if ((is(params1[[param]], "dist_spec") &&
           is(params2[[param]], "dist_spec")) ||
           (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
-          ## if parameters are the same type they need to be same value
-          if (!(params1[[param]] == params2[[param]])) {
+          ## if parameters are the same type they need to be same value;
+          ## numeric parameters may be vectors, so compare whole values
+          same <- if (is(params1[[param]], "dist_spec")) {
+            params1[[param]] == params2[[param]]
+          } else {
+            length(params1[[param]]) == length(params2[[param]]) &&
+              all(params1[[param]] == params2[[param]])
+          }
+          if (!same) {
             return(FALSE)
           }
         } else {
@@ -535,6 +542,10 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #'   discretisation).
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
+#' @param cdf_cutoff Numeric; fallback CDF cutoff used to bound the plotting
+#'   range of a component that has neither a finite `max` nor its own
+#'   `cdf_cutoff` (default: 0.001, i.e. plot up to the 99.9th percentile).
+#'   A component's own bounds take precedence and are left untouched.
 #' @param ... ignored
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
@@ -562,7 +573,8 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # Multiple distributions with 0.1 discretisation window and do not plot the
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
-plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
+plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
+                           cdf_cutoff = 0.001, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
@@ -582,26 +594,39 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      cdf_cutoff <- attr(x, "cdf_cutoff")
-      if (is.null(cdf_cutoff)) {
-        cdf_cutoff <- 0
+      attr_cutoff <- attr(x, "cdf_cutoff")
+      if (is.null(attr_cutoff)) {
+        attr_cutoff <- 0
       }
       pmf_dt <- lapply(dists, function(y) {
-        if (is.infinite(max(y))) {
-          cli_abort(
-            c(
-              "!" = "All distributions in {.var x} must have a finite
-              maximum value.",
-              "i" = "You can set a finite maximum or CDF cutoff
-              when defining the distribution."
-            )
-          )
+        ## For plotting, an unbounded component with no bound of its own is
+        ## trimmed at the `cdf_cutoff` quantile so a sensible finite range
+        ## can be shown; the input object's own bounds take precedence and
+        ## are left untouched.
+        max_value <- attr(y, "max")
+        plot_cutoff <- attr_cutoff
+        if (is.infinite(max(y)) && attr_cutoff == 0) {
+          plot_cutoff <- cdf_cutoff
         }
-        x <- discrete_pmf(
-          y,
-          max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
+        pmf_args <- list(y, cdf_cutoff = plot_cutoff, width = res)
+        if (!is.null(max_value)) {
+          pmf_args$max_value <- max_value
+        }
+        pmf <- tryCatch(
+          do.call(discrete_pmf, pmf_args),
+          error = function(e) {
+            cli_abort(
+              c(
+                "!" = "Can't determine a finite range to plot for a
+                {.val {get_distribution(x, i)}} distribution.",
+                "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
+                when defining the distribution."
+              ),
+              parent = e
+            )
+          }
         )
-        data.frame(x = (seq_along(x) - 1) * res, p = x)
+        data.frame(x = (seq_along(pmf) - 1) * res, p = pmf)
       })
       pmf_dt <- do.call(rbind, Map(function(dt, s) {
         dt$sample <- s
@@ -755,11 +780,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
 #' @export
 #' @method fix_parameters multi_dist_spec
-fix_parameters.multi_dist_spec <- function(x, strategy =
-                                             c("mean", "sample"), ...) {
-  for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_parameters(x[[i]])
-  }
+fix_parameters.multi_dist_spec <- function(x, ...) {
+  x[] <- lapply(x, fix_parameters, ...)
   x
 }
 
