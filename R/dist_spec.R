@@ -581,12 +581,12 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
+      cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
         max_value <- attr(y, "max")
         ## an unbounded component has no finite range to plot; require the user
         ## to bound it rather than picking a range silently
-        if (is.infinite(max(y)) && attr_cutoff == 0) {
+        if (is.infinite(max(y)) && cdf_cutoff == 0) {
           cli_abort(
             c(
               "!" = "Can't plot a {.val {get_distribution(x, i)}} distribution
@@ -596,7 +596,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
             )
           )
         }
-        pmf_args <- list(y, cdf_cutoff = attr_cutoff, width = res)
+        pmf_args <- list(y, cdf_cutoff = cdf_cutoff, width = res)
         if (!is.null(max_value)) {
           pmf_args$max_value <- max_value
         }
