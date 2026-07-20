@@ -8,6 +8,9 @@ development:
   mode: auto
 
 reference:
+  - title: Package overview
+    contents:
+      - distspec-package
   - title: Defining probability distributions
     desc: Constructors for the supported probability distributions.
     contents:

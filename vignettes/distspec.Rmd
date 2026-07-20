@@ -1,0 +1,111 @@
+---
+title: "Getting started with distspec"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with distspec}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed(1)
+```
+
+```{r setup}
+library(distspec)
+```
+
+In distspec, a probability distribution is a single object: a `<dist_spec>`. It
+can hold fixed parameters or uncertain ones, and the same functions work on
+either.
+
+## Defining a distribution
+
+Each distribution has its own constructor. Give it the natural parameters, or a
+mean and standard deviation that distspec converts for you:
+
+```{r define}
+Gamma(shape = 2, rate = 0.5)
+Gamma(mean = 4, sd = 2)
+LogNormal(meanlog = 1, sdlog = 0.5)
+```
+
+A finite maximum (and, for parametric distributions, a `cdf_cutoff`) truncates
+the support:
+
+```{r bound}
+Gamma(mean = 4, sd = 2, max = 20)
+```
+
+## Uncertain parameters
+
+Any parameter can be a number or, to express uncertainty about its value,
+another `<dist_spec>`. Uncertain parameters must be given as the natural
+parameters:
+
+```{r uncertain}
+uncertain <- Gamma(shape = Normal(2, 0.5), rate = Normal(0.5, 0.1))
+uncertain
+
+# the mean of an uncertain distribution is unknown unless we ignore uncertainty
+mean(uncertain)
+mean(uncertain, ignore_uncertainty = TRUE)
+```
+
+`fix_parameters()` resolves an uncertain distribution to a fixed one, taking
+either the mean of each prior or a sample from it:
+
+```{r fix}
+fix_parameters(uncertain, strategy = "mean")
+```
+
+## Discretising
+
+`discretise()` turns a continuous distribution into a nonparametric probability
+mass function over `0, 1, 2, ...`:
+
+```{r discretise}
+pmf <- discretise(Gamma(mean = 4, sd = 2, max = 20))
+get_pmf(pmf)
+```
+
+## Combining distributions
+
+Adding distributions convolves them; `collapse()` reduces a composite to a
+single discretised PMF:
+
+```{r combine}
+combined <- Gamma(mean = 4, sd = 2, max = 20) +
+  LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
+mean(collapse(discretise(combined)))
+```
+
+## Sampling
+
+`sample_dist()` draws random samples from a distribution with fixed parameters:
+
+```{r sample}
+sample_dist(Gamma(mean = 4, sd = 2, max = 20), n = 5)
+```
+
+## Estimated nonparametric distributions
+
+Instead of a fixed PMF, a nonparametric distribution can carry a `Dirichlet()`
+prior over its bins, to be estimated during model fitting:
+
+```{r estimated}
+est <- NonParametric(pmf = Dirichlet(c(0, 2, 4, 3)))
+est
+```
+
+It then has no concrete PMF until you resolve it with `fix_parameters()`.
+`has_uncertainty()` reports whether a distribution carries a prior:
+
+```{r has-uncertainty}
+has_uncertainty(est)
+has_uncertainty(Gamma(shape = 2, rate = 0.5))
+```

@@ -327,7 +327,8 @@ validate_fixed_value <- function(value) {
 #' This will convert all parameters to natural parameters before generating
 #' a `dist_spec`. If they have uncertainty this will be done using sampling.
 #' @param params Parameters of the distribution (including `max`)
-#' @inheritParams extract_params
+#' @param distribution Character; the distribution type (e.g. `"gamma"`,
+#'   `"lognormal"`, `"nonparametric"`).
 #' @inheritParams bound_dist
 #' @importFrom cli cli_abort cli_warn
 #' @return A `dist_spec` of the given specification.

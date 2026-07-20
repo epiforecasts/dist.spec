@@ -197,7 +197,7 @@ c.dist_spec <- function(...) {
 #'
 #' # The mean of the sum of two distributions
 #' mean(dist1 + dist2)
-mean.dist_spec <- function(x, ...) {
+mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   cli_abort(
     "Don't know how to calculate the mean of a {.val {get_distribution(x)}}
     distribution."

@@ -51,16 +51,12 @@
 #'   any type with a `dist_cdf()` method uses the default `.dist_spec` method,
 #'   while `"fixed"` is handled as a point mass by its own method.
 #'
-#' @param ... Additional arguments passed to methods.
+#' @param ... Additional arguments passed to methods. The default method takes
+#'   `max_value` (the maximum value to allow), `cdf_cutoff` and `width` (the
+#'   width of each discrete bin).
 #'
-#' @param max_value Numeric, the maximum value to allow.
-#' Samples outside of this range are resampled.
-#'
-#' @param width Numeric, the width of each discrete bin.
-#
 #' @return A vector representing a probability distribution.
 #' @keywords internal
-#' @inheritParams bound_dist
 #' @importFrom stats pexp pgamma plnorm pnorm pweibull
 #' @importFrom primarycensored qprimarycensored
 discrete_pmf <- function(x, ...) {

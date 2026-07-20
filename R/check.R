@@ -6,6 +6,7 @@
 #' @param span The number of consecutive indices in the tail to check
 #' @param tol The value which to consider the tail as sparse
 #' @importFrom cli cli_warn col_blue
+#' @importFrom utils tail
 #'
 #' @return Called for its side effects.
 #' @keywords internal
