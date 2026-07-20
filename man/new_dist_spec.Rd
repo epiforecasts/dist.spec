@@ -5,13 +5,7 @@
 \title{Internal function for generating a \code{dist_spec} given parameters and a
 distribution.}
 \usage{
-new_dist_spec(
-  params,
-  distribution,
-  max = Inf,
-  tail_cutoff = 0,
-  cdf_cutoff = lifecycle::deprecated()
-)
+new_dist_spec(params, distribution, max = Inf, cdf_cutoff = 1)
 }
 \arguments{
 \item{params}{Parameters of the distribution (including \code{max})}
@@ -22,11 +16,12 @@ new_dist_spec(
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
-\item{tail_cutoff}{Numeric; the desired CDF cutoff. Any part of the
-cumulative distribution function beyond 1 minus the value of this argument is
-removed. Default: \code{0}, i.e. use the full distribution.}
-
-\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff} instead.}
+\item{cdf_cutoff}{Numeric in \verb{(0, 1]}; the cumulative probability up to which
+the distribution is kept, i.e. it is truncated at the \code{cdf_cutoff} quantile.
+For example \code{cdf_cutoff = 0.999} keeps the distribution up to its 99.9th
+percentile. Default: \code{1}, i.e. keep the full distribution. A value below
+\code{0.5} is rejected, as it is almost certainly the tail probability to \emph{drop}
+rather than the CDF level to keep (use \code{1 - x} instead).}
 }
 \value{
 A \code{dist_spec} of the given specification.

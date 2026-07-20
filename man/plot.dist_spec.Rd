@@ -28,7 +28,7 @@ function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}
 }
 \details{
 A component must have a finite range to be plotted. One with no finite \code{max}
-and no \code{tail_cutoff} of its own raises an error; bound it first (e.g. with
+and no \code{cdf_cutoff} of its own raises an error; bound it first (e.g. with
 \code{\link[=bound_dist]{bound_dist()}}).
 }
 \examples{

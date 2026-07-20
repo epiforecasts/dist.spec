@@ -348,14 +348,7 @@ validate_fixed_value <- function(value) {
 #'   params = list(mean = 2, sd = 1),
 #'   distribution = "normal"
 #' )
-new_dist_spec <- function(params, distribution, max = Inf, tail_cutoff = 0,
-                          cdf_cutoff = lifecycle::deprecated()) {
-  if (lifecycle::is_present(cdf_cutoff)) {
-    lifecycle::deprecate_warn(
-      "0.1.0", "new_dist_spec(cdf_cutoff)", "new_dist_spec(tail_cutoff)"
-    )
-    tail_cutoff <- cdf_cutoff
-  }
+new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 1) {
   if (distribution == "nonparametric") {
     ## nonparametric distribution
     if (inherits(params$pmf, "dist_spec")) {
@@ -456,7 +449,7 @@ new_dist_spec <- function(params, distribution, max = Inf, tail_cutoff = 0,
   }
 
   ## apply bounds
-  ret <- bound_dist(ret, max, tail_cutoff)
+  ret <- bound_dist(ret, max, cdf_cutoff)
 
   ## mark uncertain distributions so the shared handlers dispatch
   mark_uncertainty(ret)

@@ -7,23 +7,17 @@ test_that("Exp() is deprecated in favour of Exponential()", {
   expect_s3_class(suppressWarnings(Exp(rate = 1)), "dist_spec")
 })
 
-test_that("cdf_cutoff is deprecated in favour of tail_cutoff", {
-  lifecycle::expect_deprecated(
-    bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01)
+test_that("cdf_cutoff below 0.5 is rejected with a helpful error", {
+  expect_error(
+    bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01),
+    "keep less than half"
   )
-  expect_equal(
-    suppressWarnings(bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 0.01)),
-    bound_dist(Gamma(mean = 4, sd = 1), tail_cutoff = 0.01)
+  expect_error(
+    Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01),
+    "keep less than half"
   )
-
-  lifecycle::expect_deprecated(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01))
-  expect_equal(
-    suppressWarnings(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.01)),
-    Gamma(mean = 4, sd = 1, tail_cutoff = 0.01)
+  expect_error(
+    bound_dist(Gamma(mean = 4, sd = 1), cdf_cutoff = 1.5),
+    "must be a single number"
   )
-})
-
-test_that("tail_cutoff does not warn", {
-  expect_no_warning(bound_dist(Gamma(mean = 4, sd = 1), tail_cutoff = 0.01))
-  expect_no_warning(Gamma(mean = 4, sd = 1, tail_cutoff = 0.01))
 })

@@ -1,5 +1,5 @@
 # Discretisation of distributions: computing discretised PMFs from a
-# <dist_spec> and setting the bounds (max / tail_cutoff) that constrain them.
+# <dist_spec> and setting the bounds (max / cdf_cutoff) that constrain them.
 
 #' Discretised probability mass function
 #'
@@ -23,9 +23,9 @@
 #'   (probability mass of integer 2), etc.
 #'
 #' The maximum value truncates the distribution: mass beyond it is dropped and
-#' the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
-#' additionally trims the tail, removing the part of the distribution beyond its
-#' `1 - tail_cutoff` quantile.
+#' the remaining PMF is renormalised to sum to one. A `cdf_cutoff` below `1`
+#' additionally trims the tail, keeping the distribution only up to its
+#' `cdf_cutoff` quantile.
 #'
 #' ## Fixed distributions
 #'
@@ -52,7 +52,7 @@
 #'   while `"fixed"` is handled as a point mass by its own method.
 #'
 #' @param ... Additional arguments passed to methods. The default method takes
-#'   `max_value` (the maximum value to allow), `tail_cutoff` and `width` (the
+#'   `max_value` (the maximum value to allow), `cdf_cutoff` and `width` (the
 #'   width of each discrete bin).
 #'
 #' @return A vector representing a probability distribution.
@@ -64,7 +64,7 @@ discrete_pmf <- function(x, ...) {
 }
 
 #' @exportS3Method
-discrete_pmf.dist_spec <- function(x, max_value, tail_cutoff, width, ...) {
+discrete_pmf.dist_spec <- function(x, max_value, cdf_cutoff, width, ...) {
   params <- get_parameters(x)
 
   ## CDF function for the distribution type (a type without a `dist_cdf()`
@@ -72,23 +72,23 @@ discrete_pmf.dist_spec <- function(x, max_value, tail_cutoff, width, ...) {
   ## method entirely)
   cdf <- dist_cdf(x)
 
-  ## apply CDF cutoff if given
-  if (!missing(tail_cutoff) && tail_cutoff > 0) {
-    ## max from CDF cutoff using primarycensored quantile function
-    tail_cutoff_max <- do.call(
+  ## truncate at the `cdf_cutoff` quantile if one is set (1 = keep everything)
+  if (!missing(cdf_cutoff) && cdf_cutoff < 1) {
+    ## max value from the cutoff using the primarycensored quantile function
+    cdf_cutoff_max <- do.call(
       primarycensored::qprimarycensored,
       c(
         list(
-          p = 1 - tail_cutoff,
+          p = cdf_cutoff,
           pdist = cdf,
           pwindow = width
         ),
         params
       )
     )
-    if (!is.na(tail_cutoff_max) &&
-          (missing(max_value) || tail_cutoff_max < max_value)) {
-      max_value <- tail_cutoff_max
+    if (!is.na(cdf_cutoff_max) &&
+          (missing(max_value) || cdf_cutoff_max < max_value)) {
+      max_value <- cdf_cutoff_max
     }
   }
 
@@ -170,16 +170,16 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     return(x)
   }
   if (!is.na(sd(x)) && is_constrained(x)) {
-    tail_cutoff <- attr(x, "tail_cutoff") %||% 0
+    cdf_cutoff <- attr(x, "cdf_cutoff") %||% 1
     dist_max <- attr(x, "max") %||% Inf
     y <- new_single_dist_spec(
       list(
-        pmf = discrete_pmf(x, dist_max, tail_cutoff, width = 1)
+        pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
       ),
       "nonparametric"
     )
     preserve_attributes <- setdiff(
-      names(attributes(x)), c("tail_cutoff", "max", "names", "class")
+      names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
     )
     attributes(y)[preserve_attributes] <- attributes(x)[preserve_attributes]
     if (remove_trailing_zeros) {
@@ -214,16 +214,18 @@ discretize <- discretise
 #'
 #' @description
 #' Set the bounds that constrain a distribution when it is discretised: `max`
-#' truncates the support at that value, while `tail_cutoff` trims the tail at
-#' the `1 - tail_cutoff` quantile. Either bound drops the mass beyond it and
-#' renormalises the remaining PMF to sum to one.
+#' truncates the support at that value, while `cdf_cutoff` trims the tail by
+#' keeping the distribution only up to its `cdf_cutoff` quantile. Either bound
+#' drops the mass beyond it and renormalises the remaining PMF to sum to one.
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.
-#' @param tail_cutoff Numeric; the desired CDF cutoff. Any part of the
-#' cumulative distribution function beyond 1 minus the value of this argument is
-#' removed. Default: `0`, i.e. use the full distribution.
-#' @param cdf_cutoff Deprecated; use `tail_cutoff` instead.
+#' @param cdf_cutoff Numeric in `(0, 1]`; the cumulative probability up to which
+#' the distribution is kept, i.e. it is truncated at the `cdf_cutoff` quantile.
+#' For example `cdf_cutoff = 0.999` keeps the distribution up to its 99.9th
+#' percentile. Default: `1`, i.e. keep the full distribution. A value below
+#' `0.5` is rejected, as it is almost certainly the tail probability to *drop*
+#' rather than the CDF level to keep (use `1 - x` instead).
 #' @importFrom cli cli_abort
 #' @importFrom rlang `%||%`
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
@@ -232,14 +234,9 @@ discretize <- discretise
 #' @examples
 #' # Truncate a gamma distribution at 20
 #' bound_dist(Gamma(mean = 5, sd = 1), max = 20)
-bound_dist <- function(x, max = Inf, tail_cutoff = 0,
-                       cdf_cutoff = lifecycle::deprecated()) {
-  if (lifecycle::is_present(cdf_cutoff)) {
-    lifecycle::deprecate_warn(
-      "0.1.0", "bound_dist(cdf_cutoff)", "bound_dist(tail_cutoff)"
-    )
-    tail_cutoff <- cdf_cutoff
-  }
+#' # Keep it up to its 99.9th percentile
+#' bound_dist(Gamma(mean = 5, sd = 1), cdf_cutoff = 0.999)
+bound_dist <- function(x, max = Inf, cdf_cutoff = 1) {
   if (!is(x, "dist_spec")) {
     cli_abort(
       c(
@@ -248,14 +245,36 @@ bound_dist <- function(x, max = Inf, tail_cutoff = 0,
       )
     )
   }
+  ## `cdf_cutoff` is the cumulative probability to keep up to (1 = keep the full
+  ## distribution); guard against the tail-probability-to-drop convention
+  if (!is.numeric(cdf_cutoff) || length(cdf_cutoff) != 1 ||
+        cdf_cutoff <= 0 || cdf_cutoff > 1) {
+    cli_abort(
+      c(
+        "!" = "{.arg cdf_cutoff} must be a single number in `(0, 1]`.",
+        "i" = "It is the cumulative probability to keep up to (e.g.
+        {.val {0.999}}); `1` keeps the full distribution."
+      )
+    )
+  }
+  if (cdf_cutoff < 0.5) {
+    cli_abort(
+      c(
+        "!" = "{.arg cdf_cutoff} = {cdf_cutoff} would keep less than half of the
+        distribution.",
+        "i" = "{.arg cdf_cutoff} is the CDF level to keep up to (e.g.
+        {.val {0.999}}). Did you mean {.code cdf_cutoff = {1 - cdf_cutoff}}?"
+      )
+    )
+  }
   ## an estimated nonparametric has no concrete PMF to bound, and its support is
   ## fixed by the Dirichlet prior, so reject bounds rather than silently
   ## dropping them (`discretise()` would never apply them)
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
-        has_uncertainty(x) && (tail_cutoff > 0 || is.finite(max))) {
+        has_uncertainty(x) && (cdf_cutoff < 1 || is.finite(max))) {
     cli_abort(
       c(
-        "!" = "Can't apply {.arg max} or {.arg tail_cutoff} to an estimated
+        "!" = "Can't apply {.arg max} or {.arg cdf_cutoff} to an estimated
         nonparametric distribution.",
         "i" = "Its support is set by the {.fn Dirichlet} prior; choose the
         number of bins there, or resolve it with {.fn fix_parameters} first."
@@ -267,9 +286,9 @@ bound_dist <- function(x, max = Inf, tail_cutoff = 0,
   if (ndist(x) == 1 && get_distribution(x) == "nonparametric" &&
         !has_uncertainty(x)) {
     pmf <- get_pmf(x)
-    if (tail_cutoff > 0) {
+    if (cdf_cutoff < 1) {
       cmf <- cumsum(pmf)
-      pmf <- pmf[c(TRUE, (1 - cmf[-length(cmf)]) >= tail_cutoff)]
+      pmf <- pmf[c(TRUE, cmf[-length(cmf)] <= cdf_cutoff)]
     }
     if (is.finite(max) && length(pmf) > (max + 1)) {
       pmf <- pmf[seq_len(max + 1)]
@@ -277,7 +296,7 @@ bound_dist <- function(x, max = Inf, tail_cutoff = 0,
     x$pmf <- pmf / sum(pmf)
   } else {
     if (is.finite(max)) attr(x, "max") <- max
-    if (tail_cutoff > 0) attr(x, "tail_cutoff") <- tail_cutoff
+    if (cdf_cutoff < 1) attr(x, "cdf_cutoff") <- cdf_cutoff
   }
   x
 }

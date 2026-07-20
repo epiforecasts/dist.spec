@@ -39,12 +39,15 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
   `natural_params()` and `lower_bounds()` now take a `<dist_spec>` rather than a
   distribution-name string.
 - `get_parameters()` is now an S3 generic.
+- The `cdf_cutoff` argument (on the distribution constructors and `bound_dist()`)
+  is the cumulative probability to keep up to: `cdf_cutoff = 0.999` truncates at
+  the 99.9th percentile, and the default `1` keeps the full distribution. A value
+  below `0.5` is rejected, as it is almost certainly the tail probability to drop
+  (use `1 - x`).
 
 ## Deprecations
 
 - `Exp()` is deprecated in favour of `Exponential()`.
-- The `cdf_cutoff` argument (to the distribution constructors and
-  `bound_dist()`) is deprecated in favour of `tail_cutoff`.
 
 ## Bug fixes
 
