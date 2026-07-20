@@ -4,7 +4,7 @@
 \alias{bound_dist}
 \title{Define bounds of a \verb{<dist_spec>}}
 \usage{
-bound_dist(x, max = Inf, cdf_cutoff = 0)
+bound_dist(x, max = Inf, tail_cutoff = 0, cdf_cutoff = lifecycle::deprecated())
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
@@ -12,17 +12,19 @@ bound_dist(x, max = Inf, cdf_cutoff = 0)
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
-\item{cdf_cutoff}{Numeric; the desired CDF cutoff. Any part of the
+\item{tail_cutoff}{Numeric; the desired CDF cutoff. Any part of the
 cumulative distribution function beyond 1 minus the value of this argument is
 removed. Default: \code{0}, i.e. use the full distribution.}
+
+\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff} instead.}
 }
 \value{
 a \verb{<dist_spec>} with relevant attributes set that define its bounds
 }
 \description{
 Set the bounds that constrain a distribution when it is discretised: \code{max}
-truncates the support at that value, while \code{cdf_cutoff} trims the tail at the
-\code{1 - cdf_cutoff} quantile. Either bound drops the mass beyond it and
+truncates the support at that value, while \code{tail_cutoff} trims the tail at
+the \code{1 - tail_cutoff} quantile. Either bound drops the mass beyond it and
 renormalises the remaining PMF to sum to one.
 }
 \examples{

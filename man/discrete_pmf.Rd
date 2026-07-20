@@ -12,7 +12,7 @@ any type with a \code{dist_cdf()} method uses the default \code{.dist_spec} meth
 while \code{"fixed"} is handled as a point mass by its own method.}
 
 \item{...}{Additional arguments passed to methods. The default method takes
-\code{max_value} (the maximum value to allow), \code{cdf_cutoff} and \code{width} (the
+\code{max_value} (the maximum value to allow), \code{tail_cutoff} and \code{width} (the
 width of each discrete bin).}
 }
 \value{
@@ -39,7 +39,7 @@ mass of integer 1), the third entry corresponds to the (1, 3] interval
 The maximum value truncates the distribution: mass beyond it is dropped and
 the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
 additionally trims the tail, removing the part of the distribution beyond its
-\code{1 - cdf_cutoff} quantile.
+\code{1 - tail_cutoff} quantile.
 \subsection{Fixed distributions}{
 
 A \code{Fixed()} (point-mass) distribution is not discretised through a CDF but by

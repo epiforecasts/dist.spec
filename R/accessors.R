@@ -224,7 +224,7 @@ get_distribution <- function(x, id = NULL) {
 #' @export
 #' @examples
 #' ndist(Gamma(mean = 5, sd = 1))
-#' ndist(Gamma(mean = 5, sd = 1) + Exp(rate = 1))
+#' ndist(Gamma(mean = 5, sd = 1) + Exponential(rate = 1))
 ndist <- function(x) {
   if (is(x, "multi_dist_spec")) {
     length(x)

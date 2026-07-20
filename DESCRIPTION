@@ -29,6 +29,7 @@ Depends:
 Imports:
     cli,
     ggplot2,
+    lifecycle,
     methods,
     primarycensored,
     rlang,

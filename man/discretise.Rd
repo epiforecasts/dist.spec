@@ -47,7 +47,7 @@ mass of integer 1), the third entry corresponds to the (1, 3] interval
 The maximum value truncates the distribution: mass beyond it is dropped and
 the remaining PMF is renormalised to sum to one. A non-zero CDF cutoff
 additionally trims the tail, removing the part of the distribution beyond its
-\code{1 - cdf_cutoff} quantile.
+\code{1 - tail_cutoff} quantile.
 \subsection{Fixed distributions}{
 
 A \code{Fixed()} (point-mass) distribution is not discretised through a CDF but by
