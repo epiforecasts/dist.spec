@@ -436,12 +436,20 @@ test_that("get functions report errors", {
   expect_error(get_parameters("test"), "no applicable method")
   expect_error(
     get_distribution(Gamma(mean = 4, sd = 1), 2),
-    "cannot be greater than the number of distributions"
+    "must be between 1 and 1"
+  )
+  expect_error(
+    get_distribution(Gamma(mean = 4, sd = 1), 2),
+    "You supplied .*id.* = 2"
   )
   expect_error(get_pmf(Gamma(mean = 4, sd = 1)), "parametric")
   expect_error(
     get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
     "nonparametric"
+  )
+  expect_error(
+    get_parameters(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
+    "get_pmf"
   )
   expect_error(get_parameters(c(
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
