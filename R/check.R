@@ -17,7 +17,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
         "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller
         than {col_blue(tol)}.",
         "i" = "This will increase run times with very small increases in
-        accuracy. Consider using the `tail_cutoff` argument when constructing
+        accuracy. Consider using the `cdf_cutoff` argument when constructing
         the distribution object, or using the `bound_dist()` function."
       ),
       .frequency = "regularly",

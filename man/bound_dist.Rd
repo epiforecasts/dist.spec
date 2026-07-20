@@ -4,7 +4,7 @@
 \alias{bound_dist}
 \title{Define bounds of a \verb{<dist_spec>}}
 \usage{
-bound_dist(x, max = Inf, tail_cutoff = 0, cdf_cutoff = lifecycle::deprecated())
+bound_dist(x, max = Inf, cdf_cutoff = 1)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>}.}
@@ -12,24 +12,27 @@ bound_dist(x, max = Inf, tail_cutoff = 0, cdf_cutoff = lifecycle::deprecated())
 \item{max}{Numeric, maximum value of the distribution. The distribution will
 be truncated at this value. Default: \code{Inf}, i.e. no maximum.}
 
-\item{tail_cutoff}{Numeric; the desired CDF cutoff. Any part of the
-cumulative distribution function beyond 1 minus the value of this argument is
-removed. Default: \code{0}, i.e. use the full distribution.}
-
-\item{cdf_cutoff}{Deprecated; use \code{tail_cutoff} instead.}
+\item{cdf_cutoff}{Numeric in \verb{(0, 1]}; the cumulative probability up to which
+the distribution is kept, i.e. it is truncated at the \code{cdf_cutoff} quantile.
+For example \code{cdf_cutoff = 0.999} keeps the distribution up to its 99.9th
+percentile. Default: \code{1}, i.e. keep the full distribution. A value below
+\code{0.5} is rejected, as it is almost certainly the tail probability to \emph{drop}
+rather than the CDF level to keep (use \code{1 - x} instead).}
 }
 \value{
 a \verb{<dist_spec>} with relevant attributes set that define its bounds
 }
 \description{
 Set the bounds that constrain a distribution when it is discretised: \code{max}
-truncates the support at that value, while \code{tail_cutoff} trims the tail at
-the \code{1 - tail_cutoff} quantile. Either bound drops the mass beyond it and
-renormalises the remaining PMF to sum to one.
+truncates the support at that value, while \code{cdf_cutoff} trims the tail by
+keeping the distribution only up to its \code{cdf_cutoff} quantile. Either bound
+drops the mass beyond it and renormalises the remaining PMF to sum to one.
 }
 \examples{
 # Truncate a gamma distribution at 20
 bound_dist(Gamma(mean = 5, sd = 1), max = 20)
+# Keep it up to its 99.9th percentile
+bound_dist(Gamma(mean = 5, sd = 1), cdf_cutoff = 0.999)
 }
 \seealso{
 \code{\link[=discretise]{discretise()}}, which applies these bounds when producing a PMF.

@@ -498,9 +498,9 @@ print_dist_spec_indented <- function(x, indent, ...) {
             is.finite(attr(single_dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(single_dist))
       }
-      if (!is.null(attr(single_dist, "tail_cutoff"))) {
-        constrain_str["tail_cutoff"] <-
-          paste("tail_cutoff:", attr(single_dist, "tail_cutoff"))
+      if (!is.null(attr(single_dist, "cdf_cutoff"))) {
+        constrain_str["cdf_cutoff"] <-
+          paste("cdf_cutoff:", attr(single_dist, "cdf_cutoff"))
       }
       if (length(constrain_str) > 0) {
         cat(" (", toString(constrain_str), ")", sep = "")
@@ -544,7 +544,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' @param ... ignored
 #' @details
 #' A component must have a finite range to be plotted. One with no finite `max`
-#' and no `tail_cutoff` of its own raises an error; bound it first (e.g. with
+#' and no `cdf_cutoff` of its own raises an error; bound it first (e.g. with
 #' [bound_dist()]).
 #' @return A `{ggplot2}` object showing the PMF (and, if `cumulative = TRUE`, the
 #'   CDF) of each component, faceted by distribution.
@@ -600,22 +600,22 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      tail_cutoff <- attr(x, "tail_cutoff") %||% 0
+      cdf_cutoff <- attr(x, "cdf_cutoff") %||% 1
       pmf_dt <- lapply(dists, function(y) {
         max_value <- attr(y, "max")
         ## an unbounded component has no finite range to plot; require the user
         ## to bound it rather than picking a range silently
-        if (is.infinite(max(y)) && tail_cutoff == 0) {
+        if (is.infinite(max(y)) && cdf_cutoff == 1) {
           cli_abort(
             c(
               "!" = "Can't plot a {.val {get_distribution(x, i)}} distribution
               with no finite range.",
-              "i" = "Set a finite {.arg max} or a positive {.arg tail_cutoff}
+              "i" = "Set a finite {.arg max} or a {.arg cdf_cutoff} below 1
               (for example with {.fn bound_dist})."
             )
           )
         }
-        pmf_args <- list(y, tail_cutoff = tail_cutoff, width = res)
+        pmf_args <- list(y, cdf_cutoff = cdf_cutoff, width = res)
         if (!is.null(max_value)) {
           pmf_args$max_value <- max_value
         }
@@ -815,8 +815,8 @@ is_constrained.dist_spec <- function(x, ...) {
   if (get_distribution(x) %in% c("nonparametric", "fixed")) {
     return(TRUE)
   }
-  tail_cutoff <- attr(x, "tail_cutoff")
-  tol_constrained <- !is.null(tail_cutoff) && tail_cutoff > 0
+  cdf_cutoff <- attr(x, "cdf_cutoff")
+  tol_constrained <- !is.null(cdf_cutoff) && cdf_cutoff < 1
   max_dist <- attr(x, "max")
   max_constrained <- !is.null(max_dist) && is.finite(max_dist)
   tol_constrained || max_constrained
