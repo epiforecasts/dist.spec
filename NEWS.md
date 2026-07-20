@@ -17,6 +17,9 @@ EpiNow2.
   attribute-copy loop in `discretise()`, used `%||%` for null-default attribute
   guards, and extracted repeated `get_parameters()` calls and `sum(convolutions)`
   into local variables.
+- `mean()` and `sd()` now emit an informative message when they return `NA`
+  because a distribution has uncertain parameters, pointing to
+  `mean(x, ignore_uncertainty = TRUE)` and `fix_parameters()`.
 - Documentation improvements: the getting-started vignette now shows the
   end-to-end `get_pmf(collapse(discretise(d1 + d2)))` pipeline for combining two
   delays into a single PMF, stale EpiNow2 and Stan references have been removed
