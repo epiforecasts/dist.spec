@@ -4,6 +4,9 @@ First release. distspec provides the `<dist_spec>` interface for defining
 probability distributions with fixed or uncertain parameters, split out from
 EpiNow2.
 
+- `mean()` and `sd()` now emit an informative message when they return `NA`
+  because a distribution has uncertain parameters, pointing to
+  `mean(x, ignore_uncertainty = TRUE)` and `fix_parameters()`.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
