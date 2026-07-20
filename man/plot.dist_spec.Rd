@@ -13,7 +13,9 @@
 with uncertain parameters (default: 50).}
 
 \item{res}{Numeric; Resolution of the PMF and CDF (default: 1, i.e. integer
-discretisation).}
+discretisation). This applies only to components discretised from a
+continuous distribution; a nonparametric component is already discretised
+on its integer support and is unaffected by \code{res}.}
 
 \item{cumulative}{Logical; whether to plot the cumulative distribution in
 addition to the probability mass function}
