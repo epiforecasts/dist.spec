@@ -14,8 +14,7 @@ lower_bounds.normal <- function(x) {
 dist_cdf.normal <- function(x) pnorm
 
 #' @exportS3Method
-to_natural.normal <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.normal <- function(x, ux) {
   list(mean = ux$mean, sd = ux$sd)
 }
 

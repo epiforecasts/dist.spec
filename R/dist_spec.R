@@ -141,7 +141,7 @@ c.dist_spec <- function(...) {
   if (length(dist_specs) == 1) {
     return(dist_specs[[1]])
   }
-  if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
+  if (!all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1)))) {
     cli_abort(
       c(
         "!" = "All distributions must be of class {.cls dist_spec}."
@@ -152,9 +152,10 @@ c.dist_spec <- function(...) {
     dist_specs, is, "multi_dist_spec",
     FUN.VALUE = logical(1)
   )
+  n_convolutions <- sum(convolutions)
   ## can only have one `multi_dist_spec`
-  if (sum(convolutions) > 0) {
-    if (sum(convolutions) > 1) {
+  if (n_convolutions > 0) {
+    if (n_convolutions > 1) {
       cli_abort(
         c(
           "!" = "Can't convolve convolutions with other convolutions"
@@ -419,7 +420,7 @@ max.dist_spec <- function(x, ...) {
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
     nonparametric = max(x),
-    ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
+    attr(x, "max") %||% Inf
   )
 }
 
@@ -477,16 +478,16 @@ print_dist_spec_indented <- function(x, indent, ...) {
       }
     } else if (get_distribution(x, i) == "fixed") {
       ## fixed
+      params_i <- get_parameters(x, i)
       cat(indent_str, "- fixed value:\n", sep = "")
-      if (is.numeric(get_parameters(x, i)$value)) {
-        cat(indent_str, "  ", get_parameters(x, i)$value, "\n", sep = "")
+      if (is.numeric(params_i$value)) {
+        cat(indent_str, "  ", params_i$value, "\n", sep = "")
       } else {
-        print_dist_spec_indented(
-          get_parameters(x, i)$value, indent = indent + 4
-        )
+        print_dist_spec_indented(params_i$value, indent = indent + 4)
       }
     } else {
       ## parametric
+      params_i <- get_parameters(x, i)
       cat(indent_str, "- ", get_distribution(x, i), " distribution", sep = "")
       single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
@@ -503,24 +504,19 @@ print_dist_spec_indented <- function(x, indent, ...) {
       }
       cat(":\n")
       ## loop over natural parameters and print
-      for (param in names(get_parameters(x, i))) {
+      for (param in names(params_i)) {
         cat(
           indent_str, "  ", param, ":\n",
           sep = ""
         )
-        if (is.numeric(get_parameters(x, i)[[param]])) {
+        if (is.numeric(params_i[[param]])) {
           cat(
             indent_str, "    ",
-            paste(
-              signif(get_parameters(x, i)[[param]], digits = 2),
-              collapse = " "
-            ), "\n",
+            paste(signif(params_i[[param]], digits = 2), collapse = " "), "\n",
             sep = ""
           )
         } else {
-          print_dist_spec_indented(
-            get_parameters(x, i)[[param]], indent = indent + 4
-          )
+          print_dist_spec_indented(params_i[[param]], indent = indent + 4)
         }
       }
     }
@@ -548,7 +544,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
-#' @importFrom rlang .data
+#' @importFrom rlang .data `%||%`
 #' @importFrom cli cli_abort
 #' @export
 #' @examples
@@ -579,23 +575,14 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
       pmf_dt <- nonparametric_pmf_data(x, i, samples)
     } else {
       # parametric
-      uncertain <- vapply(get_parameters(x, i), function(y) {
-        if (is.numeric(y)) {
-          return(FALSE)
-        }
-        sd_dist <- sd(y)
-        is.na(sd_dist) || sd_dist > 0
-      }, logical(1))
-      if (!any(uncertain)) {
+      uncertain <- has_uncertainty(x, i)
+      if (!uncertain) {
         samples <- 1 ## only need 1 sample if fixed
       }
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      attr_cutoff <- attr(x, "cdf_cutoff")
-      if (is.null(attr_cutoff)) {
-        attr_cutoff <- 0
-      }
+      attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
         ## For plotting, an unbounded component with no bound of its own is
         ## trimmed at the `cdf_cutoff` quantile so a sensible finite range
@@ -632,7 +619,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
       }, pmf_dt, seq_along(pmf_dt)))
 
       dist_name <- paste0(
-        ifelse(any(uncertain), "Uncertain ", ""),
+        ifelse(uncertain, "Uncertain ", ""),
         get_distribution(x, i), " (ID: ", i, ")"
       )
       pmf_dt$distribution <- dist_name

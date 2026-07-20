@@ -742,3 +742,24 @@ test_that("beta rejects an infeasible mean/sd and out-of-range shapes", {
   expect_error(Beta(mean = 1.2, sd = 0.1), "must be between 0 and 1")
   expect_error(Beta(shape1 = -1, shape2 = 2), "lower bound")
 })
+
+test_that("a certain (sd 0) distribution parameter is treated as fixed", {
+  ## a natural parameter given as `Normal(x, 0)` collapses to a point mass and
+  ## should behave exactly like passing the number `x`
+  d <- Gamma(shape = Normal(3, 0), rate = 2)
+  expect_false(has_uncertainty(d))
+  expect_false(is(d, "uncertain"))
+  expect_true(is.numeric(get_parameters(d)$shape))
+  expect_equal(mean(d), 1.5)
+  expect_equal(sd(d), sqrt(3) / 2)
+  ## identical to specifying the fixed parameter directly
+  expect_equal(mean(d), mean(Gamma(shape = 3, rate = 2)))
+})
+
+test_that("certain parameters do not trigger a spurious conversion warning", {
+  ## uncertainty of exactly zero in the mean/sd parameterisation must not warn
+  expect_no_warning(Gamma(mean = Normal(4, 0), sd = 1))
+  expect_equal(mean(Gamma(mean = Normal(4, 0), sd = 1)), 4)
+  ## genuine uncertainty is still detected and still warns
+  expect_true(has_uncertainty(Gamma(shape = Normal(16, 2), rate = Normal(4, 1))))
+})

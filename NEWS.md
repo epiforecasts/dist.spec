@@ -4,6 +4,19 @@ First release. distspec provides the `<dist_spec>` interface for defining
 probability distributions with fixed or uncertain parameters, split out from
 EpiNow2.
 
+- A distribution parameter given as a certain distribution (standard deviation
+  0, e.g. `Normal(x, 0)`, which collapses to `Fixed(x)`) is now resolved to its
+  point value at construction, so it behaves exactly like passing the number.
+  Previously such a parameter left the distribution marked uncertain, so
+  `mean()` and `sd()` returned `NA` for an otherwise fully-fixed distribution
+  (e.g. `Gamma(shape = Normal(3, 0), rate = 2)`).
+- Internal idiomatic cleanups: switched the uncertain-parameter checks to the
+  existing `has_uncertainty()` predicate (removing a near-duplicate helper),
+  threaded pre-computed parameter means through `to_natural()` to avoid
+  redundant `lapply(x$parameters, mean)` calls in every method, vectorised the
+  attribute-copy loop in `discretise()`, used `%||%` for null-default attribute
+  guards, and extracted repeated `get_parameters()` calls and `sum(convolutions)`
+  into local variables.
 - `mean()` and `sd()` now emit an informative message when they return `NA`
   because a distribution has uncertain parameters, pointing to
   `mean(x, ignore_uncertainty = TRUE)` and `fix_parameters()`.
