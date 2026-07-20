@@ -102,8 +102,8 @@
 #' Combines multiple delay distributions for further processing
 #'
 #' @description
-#' This combines the parameters so that they can be fed as multiple delay
-#' distributions to `epinow()` or `estimate_infections()`.
+#' This combines the given distributions into a single composite `<dist_spec>`
+#' holding multiple delay distributions.
 #'
 #' Note that distributions that already are combinations of other distributions
 #' cannot be combined with other combinations of distributions.
@@ -238,7 +238,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @keywords internal
 #' @export
 #' @examples
-#' \dontrun{
 #' # A fixed lognormal distribution with mean 5 and sd 1.
 #' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' sd(dist1)
@@ -249,7 +248,6 @@ mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #'
 #' # The sd of the sum of two distributions
 #' sd(dist1 + dist2)
-#' }
 sd <- function(x, ...) {
   UseMethod("sd")
 }
@@ -672,6 +670,10 @@ fix_parameters <- function(x, ...) {
 #' @description
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
+#'
+#' Call this before [sample_dist()] or [get_pmf()] on an uncertain
+#' distribution, as neither can operate on a distribution that still carries a
+#' prior.
 #' @return A `<dist_spec>` object without uncertainty
 #' @export
 #' @param x A `<dist_spec>`

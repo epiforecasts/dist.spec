@@ -13,9 +13,11 @@ natural_params(x)
 A character vector, the natural parameters.
 }
 \description{
-These are the parameters used in the stan models. All other parameter
-representations are converted to these using \code{\link[=convert_to_natural]{convert_to_natural()}} before
-being passed to the stan models.
+These are the natural (canonical) parameters of a distribution, such as
+\code{shape} and \code{rate} for a gamma distribution or \code{meanlog} and \code{sdlog} for a
+lognormal distribution. All other parameter representations (for example a
+mean and standard deviation) are converted to these using
+\code{\link[=convert_to_natural]{convert_to_natural()}}.
 }
 \examples{
 natural_params(Gamma(shape = 1, rate = 1))

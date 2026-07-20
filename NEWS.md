@@ -4,6 +4,11 @@ First release. distspec provides the `<dist_spec>` interface for defining
 probability distributions with fixed or uncertain parameters, split out from
 EpiNow2.
 
+- Documentation improvements: the getting-started vignette now shows the
+  end-to-end `get_pmf(collapse(discretise(d1 + d2)))` pipeline for combining two
+  delays into a single PMF, stale EpiNow2 and Stan references have been removed
+  from the roxygen, and the `bound_dist()`, `discretise()`, `fix_parameters()`
+  and `sd()` help pages have clearer descriptions and runnable examples.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently

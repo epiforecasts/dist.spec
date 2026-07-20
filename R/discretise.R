@@ -132,9 +132,11 @@ discretise <- function(x, ...) {
 #' @param ... ignored
 #' @importFrom cli cli_abort
 #' @return A `<dist_spec>` where all distributions with constant parameters are
-#'   nonparametric.
+#'   nonparametric. Extract the resulting PMF vector with [get_pmf()].
 #' @seealso [collapse()] to convolve the discretised components of a composite
 #'   distribution into a single PMF, and [sample_dist()] to draw random samples.
+#'   The `vignette("distspec")` shows the full
+#'   `get_pmf(collapse(discretise(d1 + d2)))` pipeline.
 #' @export
 #' @method discretise dist_spec
 #' @examples
@@ -219,7 +221,10 @@ discretize <- discretise
 #' Define bounds of a `<dist_spec>`
 #'
 #' @description
-#' This sets attributes for further processing
+#' Set the bounds that constrain a distribution when it is discretised: `max`
+#' truncates the support at that value, while `cdf_cutoff` trims the tail at the
+#' `1 - cdf_cutoff` quantile. Either bound drops the mass beyond it and
+#' renormalises the remaining PMF to sum to one.
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
 #' be truncated at this value. Default: `Inf`, i.e. no maximum.

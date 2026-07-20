@@ -17,6 +17,9 @@ collapse <- function(x, ...) {
 #' have been convolved
 #' @importFrom cli cli_abort
 #' @method collapse dist_spec
+#' @seealso [discretise()] to produce the nonparametric components this
+#'   convolves. The `vignette("distspec")` shows the full
+#'   `get_pmf(collapse(discretise(d1 + d2)))` pipeline.
 #' @export
 #' @examples
 #' # A fixed gamma distribution with mean 5 and sd 1.
@@ -30,7 +33,7 @@ collapse <- function(x, ...) {
 #'   max = 20
 #' )
 #'
-#' # The maxf the sum of two distributions
+#' # The sum of two distributions
 #' collapse(discretise(dist1 + dist2, strict = FALSE))
 collapse.dist_spec <- function(x, ...) {
   x

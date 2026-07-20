@@ -32,6 +32,11 @@ dist2 <- LogNormal(
   max = 20
 )
 
-# The maxf the sum of two distributions
+# The sum of two distributions
 collapse(discretise(dist1 + dist2, strict = FALSE))
+}
+\seealso{
+\code{\link[=discretise]{discretise()}} to produce the nonparametric components this
+convolves. The \code{vignette("distspec")} shows the full
+\code{get_pmf(collapse(discretise(d1 + d2)))} pipeline.
 }

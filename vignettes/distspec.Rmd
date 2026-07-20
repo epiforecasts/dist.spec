@@ -75,12 +75,22 @@ get_pmf(pmf)
 
 ## Combining distributions
 
-Adding distributions convolves them; `collapse()` reduces a composite to a
-single discretised PMF:
+Adding two distributions convolves them into a composite `<dist_spec>`. To turn
+that composite into a single probability mass function, discretise each
+component, `collapse()` them into one nonparametric distribution, and read off
+the PMF vector with `get_pmf()`:
 
 ```{r combine}
 combined <- Gamma(mean = 4, sd = 2, max = 20) +
   LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
+get_pmf(collapse(discretise(combined)))
+```
+
+This `get_pmf(collapse(discretise(d1 + d2)))` pipeline is the usual way to
+combine two delays into a single PMF. The result is itself a `<dist_spec>`, so
+the same summaries work on it:
+
+```{r combine-mean}
 mean(collapse(discretise(combined)))
 ```
 
