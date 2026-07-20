@@ -212,6 +212,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 }
 
 #' @method mean uncertain
+#' @importFrom cli cli_inform
 #' @export
 mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
   ## an uncertain distribution carries a prior, so its mean is `NA` unless we
@@ -219,6 +220,16 @@ mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
   ## `fix_parameters()` and take that distribution's mean. This handles both an
   ## uncertain parametric distribution and an estimated nonparametric one.
   if (!ignore_uncertainty) {
+    cli_inform(
+      c(
+        "Returning NA: this distribution has uncertain parameters.",
+        "i" = "Use {.code mean(x, ignore_uncertainty = TRUE)} for the mean of
+        the point estimates, or resolve the uncertainty first with
+        {.fn fix_parameters}."
+      ),
+      .frequency = "regularly",
+      .frequency_id = "uncertain_mean_na"
+    )
     return(NA_real_)
   }
   mean(fix_parameters(x, strategy = "mean"))
@@ -269,8 +280,19 @@ sd.dist_spec <- function(x, ...) {
   )
 }
 
+#' @importFrom cli cli_inform
 #' @export
-sd.uncertain <- function(x, ...) NA_real_
+sd.uncertain <- function(x, ...) {
+  cli_inform(
+    c(
+      "Returning NA: this distribution has uncertain parameters.",
+      "i" = "Resolve the uncertainty first with {.fn fix_parameters}."
+    ),
+    .frequency = "regularly",
+    .frequency_id = "uncertain_sd_na"
+  )
+  NA_real_
+}
 
 #' @export
 sd.multi_dist_spec <- function(x, ...) {

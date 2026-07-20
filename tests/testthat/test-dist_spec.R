@@ -275,13 +275,31 @@ test_that("mean returns correct output for sum of two distributions", {
 })
 
 test_that("mean returns NA when applied to uncertain distributions", {
+  rlang::local_options(rlib_message_verbosity = "verbose")
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_true(is.na(mean(dist)))
+  result <- NA
+  expect_message(
+    result <- mean(dist),
+    "uncertain parameters"
+  )
+  expect_true(is.na(result))
+})
+
+test_that("mean does not message when ignoring uncertainty", {
+  rlang::local_options(rlib_message_verbosity = "verbose")
+  dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
+  expect_no_message(mean(dist, ignore_uncertainty = TRUE))
 })
 
 test_that("sd returns NA when applied to uncertain distributions", {
+  rlang::local_options(rlib_message_verbosity = "verbose")
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_true(is.na(sd(dist)))
+  result <- NA
+  expect_message(
+    result <- sd(dist),
+    "uncertain parameters"
+  )
+  expect_true(is.na(result))
 })
 
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
@@ -585,7 +603,7 @@ test_that("an estimated nonparametric distribution has no concrete PMF", {
   ## `get_pmf()` and sampling error; the mean is uncertain
   expect_error(get_pmf(result), "no fixed probability mass function")
   expect_error(sample_dist(result, 5), "fixed parameters")
-  expect_true(is.na(mean(result)))
+  expect_true(is.na(suppressMessages(mean(result))))
   expect_equal(mean(result, ignore_uncertainty = TRUE), sum((0:3) * prior))
   expect_equal(max(result), length(prior))
 })
