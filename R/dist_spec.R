@@ -536,11 +536,11 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #'   discretisation).
 #' @param cumulative Logical; whether to plot the cumulative distribution in
 #'   addition to the probability mass function
-#' @param cdf_cutoff Numeric; fallback CDF cutoff used to bound the plotting
-#'   range of a component that has neither a finite `max` nor its own
-#'   `cdf_cutoff` (default: 0.001, i.e. plot up to the 99.9th percentile).
-#'   A component's own bounds take precedence and are left untouched.
 #' @param ... ignored
+#' @details
+#' A component must have a finite range to be plotted. One with no finite `max`
+#' and no `cdf_cutoff` of its own raises an error; bound it first (e.g. with
+#' [bound_dist()]).
 #' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
 #' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
@@ -567,8 +567,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # Multiple distributions with 0.1 discretisation window and do not plot the
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
-plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
-                           cdf_cutoff = 0.001, ...) {
+plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
@@ -582,35 +581,26 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE,
       dists <- lapply(seq_len(samples), function(y) {
         fix_parameters(extract_single_dist(x, i), strategy = "sample")
       })
-      attr_cutoff <- attr(x, "cdf_cutoff") %||% 0
+      cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
       pmf_dt <- lapply(dists, function(y) {
-        ## For plotting, an unbounded component with no bound of its own is
-        ## trimmed at the `cdf_cutoff` quantile so a sensible finite range
-        ## can be shown; the input object's own bounds take precedence and
-        ## are left untouched.
         max_value <- attr(y, "max")
-        plot_cutoff <- attr_cutoff
-        if (is.infinite(max(y)) && attr_cutoff == 0) {
-          plot_cutoff <- cdf_cutoff
+        ## an unbounded component has no finite range to plot; require the user
+        ## to bound it rather than picking a range silently
+        if (is.infinite(max(y)) && cdf_cutoff == 0) {
+          cli_abort(
+            c(
+              "!" = "Can't plot a {.val {get_distribution(x, i)}} distribution
+              with no finite range.",
+              "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
+              (for example with {.fn bound_dist})."
+            )
+          )
         }
-        pmf_args <- list(y, cdf_cutoff = plot_cutoff, width = res)
+        pmf_args <- list(y, cdf_cutoff = cdf_cutoff, width = res)
         if (!is.null(max_value)) {
           pmf_args$max_value <- max_value
         }
-        pmf <- tryCatch(
-          do.call(discrete_pmf, pmf_args),
-          error = function(e) {
-            cli_abort(
-              c(
-                "!" = "Can't determine a finite range to plot for a
-                {.val {get_distribution(x, i)}} distribution.",
-                "i" = "Set a finite {.arg max} or a positive {.arg cdf_cutoff}
-                when defining the distribution."
-              ),
-              parent = e
-            )
-          }
-        )
+        pmf <- do.call(discrete_pmf, pmf_args)
         data.frame(x = (seq_along(pmf) - 1) * res, p = pmf)
       })
       pmf_dt <- do.call(rbind, Map(function(dt, s) {

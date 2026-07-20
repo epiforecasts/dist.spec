@@ -361,14 +361,17 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
   expect_equal(length(plot$facet$params$facets), 1)
 })
 
-test_that("plot.dist_spec plots an unbounded parametric distribution", {
-  expect_s3_class(plot(Gamma(mean = 4, sd = 2)), "ggplot")
-  expect_s3_class(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "ggplot")
+test_that("plot.dist_spec errors on an unbounded distribution", {
+  expect_error(plot(Gamma(mean = 4, sd = 2)), "no finite range")
+  expect_error(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "no finite range")
+  ## a bounded distribution plots fine, either via max or cdf_cutoff
+  expect_s3_class(plot(Gamma(mean = 4, sd = 2, max = 20)), "ggplot")
+  expect_s3_class(plot(Gamma(mean = 4, sd = 2, cdf_cutoff = 0.001)), "ggplot")
 })
 
-test_that("plot.dist_spec plots an unbounded uncertain distribution", {
+test_that("plot.dist_spec errors on an unbounded uncertain distribution", {
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5))
-  expect_s3_class(plot(dist), "ggplot")
+  expect_error(plot(dist), "no finite range")
 })
 
 test_that("fix_parameters works with composite delay distributions", {

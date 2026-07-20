@@ -30,9 +30,9 @@ EpiNow2.
   delays into a single PMF, stale EpiNow2 and Stan references have been removed
   from the roxygen, and the `bound_dist()`, `discretise()`, `fix_parameters()`
   and `sd()` help pages have clearer descriptions and runnable examples.
-- `plot()` now handles an unbounded parametric distribution by defaulting to a
-  finite range (up to the 99.9th percentile) for the plot only, rather than
-  erroring when no finite maximum or `cdf_cutoff` is set.
+- `plot()` gives an actionable error when asked to plot a distribution with no
+  finite range (no finite `max` and no `cdf_cutoff`), pointing to `bound_dist()`,
+  rather than a cryptic message or a silently chosen default range.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
