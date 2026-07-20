@@ -168,6 +168,62 @@ test_that("collapse returns correct output for sum of two nonparametric distribu
   )
 })
 
+test_that("collapse convolves three consecutive nonparametric distributions", {
+  np1 <- NonParametric(c(0, 0.5, 0.5))
+  np2 <- NonParametric(c(0, 0.3, 0.7))
+  np3 <- NonParametric(c(0, 0.4, 0.6))
+  result <- collapse(np1 + np2 + np3)
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_equal(ndist(result), 1)
+  ## should equal the pairwise convolution of all three PMFs
+  expected <- stable_convolve(
+    stable_convolve(c(0, 0.5, 0.5), rev(c(0, 0.3, 0.7))),
+    rev(c(0, 0.4, 0.6))
+  )
+  expect_equal(get_pmf(result), expected)
+  expect_equal(sum(get_pmf(result)), 1)
+})
+
+test_that("collapse handles a nonparametric run not starting at position one", {
+  np1 <- NonParametric(c(0, 0.5, 0.5))
+  np2 <- NonParametric(c(0, 0.3, 0.7))
+  gamma <- Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+  result <- collapse(gamma + np1 + np2)
+  expect_equal(ndist(result), 2)
+  expect_equal(get_distribution(result, 1), "gamma")
+  expect_equal(get_distribution(result, 2), "nonparametric")
+  ## np1 + np2 gives PMF 0, 0, 0.15, 0.5, 0.35
+  expect_equal(get_pmf(result, 2), c(0, 0, 0.15, 0.5, 0.35))
+})
+
+test_that("collapse handles two nonparametric runs separated by a parametric", {
+  np1 <- NonParametric(c(0, 0.5, 0.5))
+  np2 <- NonParametric(c(0, 0.3, 0.7))
+  np3 <- NonParametric(c(0, 0.4, 0.6))
+  gamma <- Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+  result <- collapse(np1 + np2 + gamma + np3 + np1)
+  ## the two nonparametric runs each collapse; the gamma remains
+  expect_equal(ndist(result), 3)
+  expect_equal(get_distribution(result, 1), "nonparametric")
+  expect_equal(get_distribution(result, 2), "gamma")
+  expect_equal(get_distribution(result, 3), "nonparametric")
+  expect_equal(get_pmf(result, 1), c(0, 0, 0.15, 0.5, 0.35))
+  expect_equal(
+    get_pmf(result, 3),
+    stable_convolve(c(0, 0.4, 0.6), rev(c(0, 0.5, 0.5)))
+  )
+})
+
+test_that("collapse still convolves two consecutive nonparametric distributions", {
+  np1 <- NonParametric(c(0, 0.5, 0.5))
+  np2 <- NonParametric(c(0, 0.3, 0.7))
+  result <- collapse(np1 + np2)
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_equal(ndist(result), 1)
+  expect_equal(get_pmf(result), c(0, 0, 0.15, 0.5, 0.35))
+  expect_equal(sum(get_pmf(result)), 1)
+})
+
 test_that("`bound_dist` function can be applied to a convolution", {
   # Create distributions
   dist1 <- LogNormal(meanlog = 1.6, sdlog = 1, max = 19)

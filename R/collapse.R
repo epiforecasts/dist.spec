@@ -45,24 +45,26 @@ collapse.multi_dist_spec <- function(x, ...) {
   ) == "nonparametric"
   ## find consecutive nonparametric distributions
   consecutive <- rle(nonparametric)
-  ids <- unique(c(1, cumsum(consecutive$lengths[-length(consecutive$lengths)])))
-  ## find ids of nonparametric distributions that are collapsable
-  ## (i.e. have other nonparametric distributions followign them)
-  collapseable <- ids[consecutive$values & (consecutive$lengths > 1)]
-  ## identify ids of distributions that follow the collapseable distributions
-  next_ids <- lapply(collapseable, function(id) {
-    ids[id] + seq_len(consecutive$lengths[id] - 1)
-  })
-  for (id in collapseable) {
-    ## collapse distributions
-    for (next_id in next_ids[id]) {
-      x[[ids[id]]]$pmf <- stable_convolve(
-        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]]))
+  ## position of the first distribution in each run
+  run_starts <- c(
+    1L, cumsum(consecutive$lengths[-length(consecutive$lengths)]) + 1L
+  )
+  ## runs of two or more nonparametric distributions can be collapsed
+  to_collapse <- which(consecutive$values & consecutive$lengths > 1L)
+  for (run_i in to_collapse) {
+    first <- run_starts[run_i]
+    ## convolve each following distribution in the run into the first
+    for (j in first + seq_len(consecutive$lengths[run_i] - 1L)) {
+      x[[first]]$pmf <- stable_convolve(
+        get_pmf(x[[first]]), rev(get_pmf(x[[j]]))
       )
     }
   }
   ## remove collapsed pmfs
-  x[unlist(next_ids)] <- NULL
+  drop <- unlist(lapply(to_collapse, function(run_i) {
+    run_starts[run_i] + seq_len(consecutive$lengths[run_i] - 1L)
+  }))
+  if (length(drop)) x[drop] <- NULL
   ## if wev have collapsed all we turn into a single dist_spec
   if ((length(x) == 1) && is(x[[1]], "dist_spec")) x <- x[[1]]
   x
