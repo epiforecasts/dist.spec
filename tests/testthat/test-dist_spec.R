@@ -287,6 +287,16 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
   expect_equal(length(plot$facet$params$facets), 1)
 })
 
+test_that("plot.dist_spec plots an unbounded parametric distribution", {
+  expect_s3_class(plot(Gamma(mean = 4, sd = 2)), "ggplot")
+  expect_s3_class(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "ggplot")
+})
+
+test_that("plot.dist_spec plots an unbounded uncertain distribution", {
+  dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5))
+  expect_s3_class(plot(dist), "ggplot")
+})
+
 test_that("fix_parameters works with composite delay distributions", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)

@@ -4,6 +4,9 @@ First release. distspec provides the `<dist_spec>` interface for defining
 probability distributions with fixed or uncertain parameters, split out from
 EpiNow2.
 
+- `plot()` now handles an unbounded parametric distribution by defaulting to a
+  finite range (up to the 99.9th percentile) for the plot only, rather than
+  erroring when no finite maximum or `cdf_cutoff` is set.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
