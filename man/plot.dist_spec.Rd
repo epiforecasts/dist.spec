@@ -4,7 +4,7 @@
 \alias{plot.dist_spec}
 \title{Plot PMF and CDF for a dist_spec object}
 \usage{
-\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, cdf_cutoff = 0.001, ...)
+\method{plot}{dist_spec}(x, samples = 50L, res = 1, cumulative = TRUE, ...)
 }
 \arguments{
 \item{x}{A \verb{<dist_spec>} object}
@@ -18,16 +18,16 @@ discretisation).}
 \item{cumulative}{Logical; whether to plot the cumulative distribution in
 addition to the probability mass function}
 
-\item{cdf_cutoff}{Numeric; fallback CDF cutoff used to bound the plotting
-range of a component that has neither a finite \code{max} nor its own
-\code{cdf_cutoff} (default: 0.001, i.e. plot up to the 99.9th percentile).
-A component's own bounds take precedence and are left untouched.}
-
 \item{...}{ignored}
 }
 \description{
 This function takes a \verb{<dist_spec>} object and plots its probability mass
 function (PMF) and cumulative distribution function (CDF) using \code{{ggplot2}}.
+}
+\details{
+A component with no finite \code{max} and no \code{cdf_cutoff} of its own is plotted up
+to its 99.9th percentile, so it has a finite range. Bound the distribution
+(e.g. with \code{\link[=bound_dist]{bound_dist()}}) to change the plotted range.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.
