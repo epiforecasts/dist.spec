@@ -4,6 +4,11 @@ First release. distspec provides the `<dist_spec>` interface for defining
 probability distributions with fixed or uncertain parameters, split out from
 EpiNow2.
 
+- Uncertainty in a distribution specified with non-natural parameters (e.g.
+  `Gamma(mean = Normal(4, 0.5), sd = 1)`) is now propagated to the natural
+  parameters with a first-order delta-method approximation. This replaces an
+  ad-hoc rule that understated the natural-parameter standard deviations several
+  times over.
 - Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently

@@ -18,7 +18,8 @@ parameters (from \code{\link[=Normal]{Normal()}}) are supported.
 Each distribution has a "natural" parameterisation (the one used in the stan
 models) and can sometimes also be specified using other parameters, such as
 its mean and standard deviation, which are then converted to the natural
-parameters (by random sampling if they are uncertain).
+parameters (propagating any uncertainty with a first-order delta-method
+approximation).
 }
 \seealso{
 \code{\link[=discretise]{discretise()}} and \code{\link[=collapse]{collapse()}} to discretise and convolve
