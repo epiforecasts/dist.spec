@@ -751,11 +751,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
 #' @export
 #' @method fix_parameters multi_dist_spec
-fix_parameters.multi_dist_spec <- function(x, strategy =
-                                             c("mean", "sample"), ...) {
-  for (i in seq_len(ndist(x))) {
-    x[[i]] <- fix_parameters(x[[i]])
-  }
+fix_parameters.multi_dist_spec <- function(x, ...) {
+  x[] <- lapply(x, fix_parameters, ...)
   x
 }
 

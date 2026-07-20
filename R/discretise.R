@@ -207,8 +207,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
 }
 #' @method discretise multi_dist_spec
 #' @export
-discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
-  ret <- lapply(x, discretise, strict = strict)
+discretise.multi_dist_spec <- function(x, ...) {
+  ret <- lapply(x, discretise, ...)
   attributes(ret) <- attributes(x)
   ret
 }

@@ -304,6 +304,30 @@ test_that("fix_parameters works with composite delay distributions", {
   expect_equal(ndist(collapse(discretise(fix_parameters(dist)))), 1L)
 })
 
+test_that("fix_parameters forwards the sampling strategy to composites", {
+  g <- Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+  set.seed(1)
+  sampled <- fix_parameters(g + g, strategy = "sample")
+  averaged <- fix_parameters(g + g, strategy = "mean")
+  expect_equal(get_parameters(averaged, 1)$shape, 16)
+  expect_false(isTRUE(all.equal(get_parameters(sampled, 1)$shape, 16)))
+  expect_false(
+    isTRUE(all.equal(
+      get_parameters(sampled, 1)$shape, get_parameters(averaged, 1)$shape
+    ))
+  )
+})
+
+test_that("discretise forwards remove_trailing_zeros to composites", {
+  dist1 <- LogNormal(mean = 2, sd = 1, max = 30)
+  dist2 <- Gamma(mean = 3, sd = 1, max = 30)
+  comp <- dist1 + dist2
+  stripped <- discretise(comp)
+  retained <- discretise(comp, remove_trailing_zeros = FALSE)
+  expect_lt(length(get_pmf(stripped, 2)), length(get_pmf(retained, 2)))
+  expect_equal(length(get_pmf(retained, 2)), 30)
+})
+
 test_that("composite delay distributions can be disassembled", {
   dist1 <- LogNormal(meanlog = Normal(1, 0.1), sdlog = 1, max = 19)
   dist2 <- Gamma(mean = 3, sd = 2, max = 19)
