@@ -18,8 +18,7 @@ lower_bounds.gamma <- function(x) {
 dist_cdf.gamma <- function(x) pgamma
 
 #' @exportS3Method
-to_natural.gamma <- function(x) {
-  ux <- lapply(x$parameters, mean)
+to_natural.gamma <- function(x, ux) {
   if (all(c("mean", "sd") %in% names(ux))) {
     shape <- ux$mean^2 / ux$sd^2
     list(shape = shape, rate = shape / ux$mean)

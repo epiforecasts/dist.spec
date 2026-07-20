@@ -168,14 +168,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     return(x)
   }
   if (!is.na(sd(x)) && is_constrained(x)) {
-    cdf_cutoff <- attr(x, "cdf_cutoff")
-    if (is.null(cdf_cutoff)) {
-      cdf_cutoff <- 0
-    }
-    dist_max <- attr(x, "max")
-    if (is.null(dist_max)) {
-      dist_max <- Inf
-    }
+    cdf_cutoff <- attr(x, "cdf_cutoff") %||% 0
+    dist_max <- attr(x, "max") %||% Inf
     y <- new_single_dist_spec(
       list(
         pmf = discrete_pmf(x, dist_max, cdf_cutoff, width = 1)
@@ -185,9 +179,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     preserve_attributes <- setdiff(
       names(attributes(x)), c("cdf_cutoff", "max", "names", "class")
     )
-    for (attribute in preserve_attributes) {
-      attributes(y)[attribute] <- attributes(x)[attribute]
-    }
+    attributes(y)[preserve_attributes] <- attributes(x)[preserve_attributes]
     if (remove_trailing_zeros) {
       non_zero_idx <- which(y$pmf != 0)
       if (length(non_zero_idx) > 0) {
@@ -227,6 +219,7 @@ discretize <- discretise
 #' cumulative distribution function beyond 1 minus the value of this argument is
 #' removed. Default: `0`, i.e. use the full distribution.
 #' @importFrom cli cli_abort
+#' @importFrom rlang `%||%`
 #' @return a `<dist_spec>` with relevant attributes set that define its bounds
 #' @seealso [discretise()], which applies these bounds when producing a PMF.
 #' @export
