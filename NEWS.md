@@ -11,6 +11,9 @@ EpiNow2.
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
   ignored.
+- Comparing two distributions with `==` (or `!=`) no longer errors when a
+  parameter is a numeric vector of length greater than one; such parameters are
+  now compared as whole vectors.
 - `bound_dist()` now truncates a fixed nonparametric PMF at `max` when the PMF
   is longer than `max + 1`, renormalising the result, and leaves it untouched
   when `max` reaches beyond the support. Previously the condition was inverted,
