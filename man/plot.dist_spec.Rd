@@ -23,8 +23,8 @@ addition to the probability mass function}
 \item{...}{ignored}
 }
 \value{
-A \code{{ggplot2}} object showing the PMF (and, if \code{cumulative = TRUE}, the
-CDF) of each component, faceted by distribution.
+A \code{{ggplot2}} object showing the PMF (and, if \code{cumulative = TRUE},
+the CDF) of each component, faceted by distribution.
 }
 \description{
 This function takes a \verb{<dist_spec>} object and plots its probability mass

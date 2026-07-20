@@ -25,10 +25,5 @@ Authors:
   \item Sam Abbott \email{sam.abbott@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
 }
 
-Other contributors:
-\itemize{
-  \item EpiForecasts [copyright holder]
-}
-
 }
 \keyword{internal}
