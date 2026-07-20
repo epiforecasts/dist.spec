@@ -19,7 +19,7 @@
 #' `shape` and `rate` for [Gamma()] or `meanlog` and `sdlog` for [LogNormal()].
 #' It can sometimes also be specified using other parameters, such as its mean
 #' and standard deviation, which are then converted to the natural parameters
-#' (by random sampling if they are uncertain).
+#' (propagating any uncertainty with a first-order delta-method approximation).
 #'
 #' @seealso [discretise()] and [collapse()] to discretise and convolve
 #'   distributions, [sample_dist()] to draw samples, and [get_parameters()] /
@@ -326,7 +326,9 @@ validate_fixed_value <- function(value) {
 #'
 #' @description
 #' This will convert all parameters to natural parameters before generating
-#' a `dist_spec`. If they have uncertainty this will be done using sampling.
+#' a `dist_spec`. If they are uncertain the uncertainty is propagated to the
+#' natural parameters with a first-order (delta-method) approximation (see
+#' [convert_to_natural()]).
 #' @param params Parameters of the distribution (including `max`)
 #' @param distribution Character; the distribution type (e.g. `"gamma"`,
 #'   `"lognormal"`, `"nonparametric"`).
@@ -400,16 +402,27 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       if (length(unnatural_params) > 0) {
         ## warn if any parameter carries genuine uncertainty
         if (has_uncertainty(ret)) {
+          np <- natural_params(ret)
+          # used inside the cli glue string below (object_usage_linter does not
+          # see the interpolation)
+          example <- paste0( # nolint: object_usage_linter
+            constructor_name(distribution), "(",
+            paste0(np, " = Normal(...)", collapse = ", "), ")"
+          )
           # nolint start: duplicate_argument_linter
           cli_warn(
             c(
-              "!" = "Uncertain {distribution} distribution specified in
-              terms of parameters that are not the \"natural\" parameters of
-              the distribution {natural_params(ret)}.",
-              "i" = "Converting using a crude and very approximate method
-            that is likely to produce biased results.",
-              "i" = "If possible it is preferable to specify the
-            distribution directly in terms of the natural parameters."
+              "!" = "Uncertain {distribution} distribution specified in terms
+              of parameters other than its natural parameters
+              ({.arg {np}}).",
+              "i" = "Propagating the uncertainty to {.arg {np}} with a
+              first-order (delta-method) approximation. This assumes the
+              parameter uncertainty is small and treats the resulting natural
+              parameters as independent, so their correlation is not
+              represented.",
+              "i" = "To avoid the approximation, specify the distribution
+              directly in terms of its natural parameters, e.g.
+              {.code {example}}."
             )
           )
           # nolint end
@@ -467,6 +480,16 @@ dist_prototype <- function(distribution) {
   new_single_dist_spec(list(), distribution)
 }
 
+# Map a distribution type to the name of its user-facing constructor, used to
+# suggest the natural-parameter specification in messages.
+constructor_name <- function(distribution) {
+  names <- c(
+    lognormal = "LogNormal", gamma = "Gamma", normal = "Normal",
+    beta = "Beta", exp = "Exp", weibull = "Weibull"
+  )
+  if (distribution %in% names(names)) names[[distribution]] else distribution
+}
+
 #' Convert a distribution's parameters to its natural parameters (per-type)
 #'
 #' @description
@@ -487,7 +510,22 @@ to_natural <- function(x, ux) UseMethod("to_natural")
 #' @description
 #' Preprocessing before generating a `dist_spec`: converts a distribution's
 #' parameters to its natural parameters via the per-type `to_natural()` method,
-#' re-attaching uncertainty by sampling where parameters are uncertain.
+#' re-attaching uncertainty where parameters are uncertain.
+#'
+#' When any of the supplied parameters are uncertain the uncertainty is
+#' propagated to the natural parameters using a first-order (delta-method)
+#' approximation. The uncertain parameters are treated as independent normals;
+#' the natural parameters are evaluated at their means and their variances are
+#' obtained from the Jacobian of the transformation, computed by central finite
+#' differences. Each natural parameter is returned as a [Normal()] with that
+#' mean and standard deviation.
+#'
+#' @section Residual limitation:
+#' The delta method represents each natural parameter's marginal uncertainty but
+#' discards the correlation between natural parameters induced by the shared
+#' unnatural parameters (for example, `shape` and `rate` of a gamma both depend
+#' on the uncertain `mean`). Specify the distribution directly in terms of its
+#' natural parameters when that correlation matters.
 #' @inheritParams natural_params
 #' @importFrom cli cli_abort
 #' @return A named list of natural parameters.
@@ -506,10 +544,10 @@ convert_to_natural <- function(x) {
       )
     )
   }
-  ## estimate relative uncertainty of parameters
+  ## standard deviations of the (independent) uncertain parameters; fixed
+  ## parameters have zero uncertainty
   sds <- vapply(params, sd, numeric(1))
   sds[is.na(sds)] <- 0
-  rel_unc <- mean(sds^2 / unlist(ux))
   ## convert the parameter means to natural parameters (per-type dispatch);
   ## drop any that could not be derived so the sort below flags them as missing
   natural <- to_natural(x, ux)
@@ -524,15 +562,78 @@ convert_to_natural <- function(x) {
       )
     )
   }
-  ## re-attach uncertainty by sampling around the natural parameters
-  if (rel_unc > 0) {
-    natural <- lapply(names(natural), function(param_name) {
-      Normal(
-        mean = natural[[param_name]],
-        sd = sqrt(abs(natural[[param_name]]) * rel_unc)
-      )
-    })
-    names(natural) <- natural_params(x)
+  ## no uncertainty: keep the natural parameters numeric, exactly as when they
+  ## are specified directly
+  if (all(sds == 0)) {
+    return(natural)
   }
+  ## propagate the parameter uncertainty to the natural parameters using a
+  ## first-order (delta-method) approximation. The Jacobian of the map from the
+  ## unnatural to the natural parameters is estimated by central finite
+  ## differences, so this works uniformly for every distribution type (including
+  ## the Weibull, whose `to_natural()` solves for the shape numerically).
+  natural_sd <- delta_method_sd(x, sds, natural)
+  natural <- lapply(names(natural), function(param_name) {
+    if (natural_sd[[param_name]] > 0) {
+      Normal(mean = natural[[param_name]], sd = natural_sd[[param_name]])
+    } else {
+      natural[[param_name]]
+    }
+  })
+  names(natural) <- natural_params(x)
   natural
+}
+
+#' Delta-method standard deviations of the natural parameters
+#'
+#' @description
+#' First-order (delta-method) standard deviations of a distribution's natural
+#' parameters, propagated from uncertain unnatural parameters. The uncertain
+#' unnatural parameters are treated as independent normals with standard
+#' deviations `sds`, and for each natural parameter the propagated standard
+#' deviation is `sqrt(sum_i J[j, i]^2 * sds[i]^2)`, where the Jacobian
+#' `J[j, i] = d(natural_j) / d(param_i)` is estimated by central finite
+#' differences. Estimating the Jacobian numerically lets this work uniformly for
+#' every distribution type, including the Weibull, whose [to_natural()] solves
+#' for the shape numerically.
+#'
+#' @param x A single `<dist_spec>` whose parameters are the unnatural parameters
+#'   evaluated at their means.
+#' @param sds Numeric; the standard deviation of each unnatural parameter, in
+#'   `names(x$parameters)` order (`0` for a fixed parameter).
+#' @param natural The natural-parameter list evaluated at the means.
+#' @param h_rel Numeric; the relative step of the central finite difference. For
+#'   parameter `i` the step is `h_rel * max(abs(mean_i), 1)`, i.e. relative to
+#'   the parameter value with an absolute floor near zero. The default `1e-4`
+#'   keeps both the truncation error (order `h^2`) and the floating-point
+#'   cancellation error (order `eps / h`) small for the smooth [to_natural()]
+#'   maps. It is a numerical-differentiation constant exposed here for testing,
+#'   deliberately kept off the user-facing constructors.
+#' @return A named numeric vector of standard deviations, one per natural
+#'   parameter.
+#' @keywords internal
+delta_method_sd <- function(x, sds, natural, h_rel = 1e-4) {
+  param_names <- names(x$parameters)
+  natural_names <- natural_params(x)
+  means <- vapply(x$parameters, mean, numeric(1))
+  ## map a numeric vector of unnatural parameters to the natural-parameter
+  ## vector (in canonical order) via the per-type `to_natural()` method
+  to_natural_vec <- function(values) {
+    ux <- as.list(stats::setNames(values, param_names))
+    tmp <- x
+    tmp$parameters <- ux
+    unlist(to_natural(tmp, ux)[natural_names])
+  }
+  variances <- stats::setNames(numeric(length(natural_names)), natural_names)
+  for (i in seq_along(param_names)) {
+    if (sds[i] == 0) next
+    h <- h_rel * max(abs(means[i]), 1)
+    up <- means
+    up[i] <- up[i] + h
+    down <- means
+    down[i] <- down[i] - h
+    jac_col <- (to_natural_vec(up) - to_natural_vec(down)) / (2 * h)
+    variances <- variances + (jac_col * sds[i])^2
+  }
+  sqrt(variances)
 }

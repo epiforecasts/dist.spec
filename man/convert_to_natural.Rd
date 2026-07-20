@@ -15,6 +15,23 @@ A named list of natural parameters.
 \description{
 Preprocessing before generating a \code{dist_spec}: converts a distribution's
 parameters to its natural parameters via the per-type \code{to_natural()} method,
-re-attaching uncertainty by sampling where parameters are uncertain.
+re-attaching uncertainty where parameters are uncertain.
+
+When any of the supplied parameters are uncertain the uncertainty is
+propagated to the natural parameters using a first-order (delta-method)
+approximation. The uncertain parameters are treated as independent normals;
+the natural parameters are evaluated at their means and their variances are
+obtained from the Jacobian of the transformation, computed by central finite
+differences. Each natural parameter is returned as a \code{\link[=Normal]{Normal()}} with that
+mean and standard deviation.
 }
+\section{Residual limitation}{
+
+The delta method represents each natural parameter's marginal uncertainty but
+discards the correlation between natural parameters induced by the shared
+unnatural parameters (for example, \code{shape} and \code{rate} of a gamma both depend
+on the uncertain \code{mean}). Specify the distribution directly in terms of its
+natural parameters when that correlation matters.
+}
+
 \keyword{internal}
