@@ -66,4 +66,8 @@ EpiNow2.
   The internal per-distribution `switch()` statements have been collapsed to
   direct S3 dispatch; attempting to discretise a distribution that has no CDF
   now reports this directly.
+- Improved the error messages from `get_element()` and `get_parameters()`: an
+  out-of-range `id` now reports the offending value and valid range, and the
+  nonparametric error no longer implies that Weibull, Beta and Exponential
+  distributions lack parameters.
 - Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
