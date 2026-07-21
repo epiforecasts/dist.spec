@@ -21,7 +21,8 @@ registered_types <- function() {
 
 test_that("at least the known distribution types are enumerated", {
   expect_true(all(
-    c("gamma", "lognormal", "normal", "beta", "exp", "weibull", "fixed") %in%
+    c("gamma", "lognormal", "normal", "beta", "exp", "weibull", "fixed",
+      "dirichlet") %in%
       registered_types()
   ))
 })
