@@ -463,9 +463,9 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 1) {
 # memberships intact) and re-adds one only if a prior remains, so it can be
 # re-run whenever the parameters change.
 mark_uncertainty <- function(x) {
-  class(x) <- setdiff(class(x), "uncertain")
+  class(x) <- setdiff(class(x), "uncertain_dist_spec")
   if (has_uncertainty(x)) {
-    class(x) <- c("uncertain", class(x))
+    class(x) <- c("uncertain_dist_spec", class(x))
   }
   x
 }

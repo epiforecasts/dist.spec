@@ -622,7 +622,7 @@ test_that("NonParametric works with Dirichlet prior", {
   expect_s3_class(result$pmf, "dist_spec")
   expect_equal(get_distribution(result$pmf), "dirichlet")
   expect_equal(get_parameters(result$pmf)$alpha, conc * prior / sum(prior))
-  expect_s3_class(result, "uncertain")
+  expect_s3_class(result, "uncertain_dist_spec")
 })
 
 test_that("an estimated nonparametric distribution has no concrete PMF", {
@@ -642,7 +642,7 @@ test_that("fix_parameters resolves an estimated nonparametric distribution", {
   fixed <- fix_parameters(result, strategy = "mean")
   expect_equal(get_distribution(fixed), "nonparametric")
   expect_equal(get_pmf(fixed), prior / sum(prior))
-  expect_false(inherits(fixed, "uncertain"))
+  expect_false(inherits(fixed, "uncertain_dist_spec"))
 })
 
 test_that("bounding an estimated nonparametric distribution errors", {
@@ -776,7 +776,7 @@ test_that("a certain (sd 0) distribution parameter is treated as fixed", {
   ## should behave exactly like passing the number `x`
   d <- Gamma(shape = Normal(3, 0), rate = 2)
   expect_false(has_uncertainty(d))
-  expect_false(is(d, "uncertain"))
+  expect_false(is(d, "uncertain_dist_spec"))
   expect_true(is.numeric(get_parameters(d)$shape))
   expect_equal(mean(d), 1.5)
   expect_equal(sd(d), sqrt(3) / 2)

@@ -215,10 +215,10 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   )
 }
 
-#' @method mean uncertain
+#' @method mean uncertain_dist_spec
 #' @importFrom cli cli_inform
 #' @export
-mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
+mean.uncertain_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   ## an uncertain distribution carries a prior, so its mean is `NA` unless we
   ## ignore the uncertainty; then we resolve it to its mean/point estimate with
   ## `fix_parameters()` and take that distribution's mean. This handles both an
@@ -286,7 +286,7 @@ sd.dist_spec <- function(x, ...) {
 
 #' @importFrom cli cli_inform
 #' @export
-sd.uncertain <- function(x, ...) {
+sd.uncertain_dist_spec <- function(x, ...) {
   cli_inform(
     c(
       "Returning NA: this distribution has uncertain parameters.",
@@ -368,7 +368,7 @@ sample_dist.dist_spec <- function(x, n, ...) {
 # nonparametric) carries a prior and so cannot be sampled directly; the user
 # resolves it with `fix_parameters()` first.
 #' @exportS3Method
-sample_dist.uncertain <- function(x, n, ...) {
+sample_dist.uncertain_dist_spec <- function(x, n, ...) {
   cli_abort(
     c(
       "!" = "Can only sample from a distribution with fixed parameters.",
@@ -381,7 +381,8 @@ sample_dist.uncertain <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## An uncertain component errors via its own `sample_dist.uncertain()` method.
+  ## An uncertain component errors via its own `sample_dist.uncertain_dist_spec()`
+  ## method.
   vapply(x, sample_dist, numeric(n), n = n)
 }
 
@@ -772,7 +773,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     x$parameters <- sampled
   }
   ## the parameters are now fixed, so recompute the uncertainty marker; this
-  ## drops the "uncertain" class while leaving other class memberships intact
+  ## drops the "uncertain_dist_spec" class while leaving other class memberships
+  ## intact
   mark_uncertainty(x)
 }
 
