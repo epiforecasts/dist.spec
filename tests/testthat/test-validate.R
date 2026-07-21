@@ -52,6 +52,11 @@ test_that("a bad max fails validation", {
   dist <- Gamma(shape = 2, rate = 1)
   attr(dist, "max") <- -1
   expect_error(validate_dist_spec(dist), "max")
+  ## a negative infinite max is rejected while a positive infinite one is fine
+  attr(dist, "max") <- -Inf
+  expect_error(validate_dist_spec(dist), "max")
+  attr(dist, "max") <- Inf
+  expect_silent(validate_dist_spec(dist))
 })
 
 test_that("parameters that are not a named list fail validation", {
