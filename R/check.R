@@ -147,7 +147,7 @@ validate_dist_bounds <- function(x) {
   max_value <- attr(x, "max")
   if (!is.null(max_value)) {
     if (!is.numeric(max_value) || length(max_value) != 1 || is.na(max_value) ||
-          (max_value < 0 && !is.infinite(max_value))) {
+          max_value < 0) {
       cli_abort(
         "The {.field max} attribute of a {.cls dist_spec} must be a single
         numeric that is non-negative or {.val {Inf}}."
