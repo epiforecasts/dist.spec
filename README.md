@@ -11,10 +11,10 @@ coverage](https://codecov.io/gh/epiforecasts/distspec/graph/badge.svg)](https://
 <!-- badges: end -->
 
 distspec represents a probability distribution as a single object, a
-`<dist_spec>`, whose parameters can be either fixed or uncertain. It
-grew out of [EpiNow2](https://epiforecasts.io/EpiNow2/) and targets the
-delay distributions that recur in infectious disease modelling —
-generation times, incubation periods, reporting delays — while remaining
+`<dist_spec>`, whose parameters can be either fixed or uncertain. It grew
+out of [EpiNow2](https://epiforecasts.io/EpiNow2/) and is aimed at the
+delay distributions common in infectious disease modelling, such as
+generation times, incubation periods and reporting delays, while staying
 independent of any particular model.
 
 With distspec you can:
