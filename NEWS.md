@@ -7,7 +7,7 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
 
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Added `Exponential()` and `Weibull()` distributions.
-- Added `Dirichlet()` and support for estimated nonparametric distributions
+- Added `Dirichlet()` and support for uncertain nonparametric distributions
   specified via a Dirichlet prior (`NonParametric(pmf = Dirichlet(...))`).
 - Added `sample_dist()` to draw random samples from a distribution with fixed
   parameters. A composite distribution is sampled per component, returning an
@@ -80,14 +80,14 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
   `value` parameter has been corrected accordingly, and a value below that
   bound is now rejected with an informative error instead of silently
   producing an invalid probability mass function.
-- An estimated (Dirichlet-backed) nonparametric distribution is now treated
+- An uncertain (Dirichlet-backed) nonparametric distribution is now treated
   consistently as uncertain, storing its Dirichlet prior in place of a concrete
   PMF just as an uncertain parametric distribution stores a `dist_spec` for a
   parameter. It has no PMF until resolved with `fix_parameters()`: `get_pmf()`
   errors on such a distribution, `mean()` returns `NA` (or the prior mean with
   `ignore_uncertainty = TRUE`), and it prints with its prior nested like any
   other uncertain distribution.
-- Applying `max` or `cdf_cutoff` to an estimated (Dirichlet-backed)
+- Applying `max` or `cdf_cutoff` to an uncertain (Dirichlet-backed)
   nonparametric distribution now raises an informative error, since its support
   is fixed by the Dirichlet prior and the bound would otherwise be silently
   ignored.
