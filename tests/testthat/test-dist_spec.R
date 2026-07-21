@@ -700,7 +700,7 @@ test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
 test_that("an uncertain nonparametric distribution nests its prior on print", {
   result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## printed like any uncertain distribution: the PMF shown as a nested prior,
-  ## with no special "uncertain" label
+  ## with no extra label in the output beyond the distribution type
   expect_output(print(result), "- nonparametric distribution:")
   expect_output(print(result), "pmf:")
   expect_output(print(result), "- dirichlet distribution:")
