@@ -381,8 +381,8 @@ sample_dist.uncertain_dist_spec <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## An uncertain component errors via its own `sample_dist.uncertain_dist_spec()`
-  ## method.
+  ## An uncertain component errors via its own
+  ## `sample_dist.uncertain_dist_spec()` method.
   vapply(x, sample_dist, numeric(n), n = n)
 }
 
