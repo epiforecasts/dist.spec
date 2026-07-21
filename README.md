@@ -14,10 +14,10 @@ coverage](https://codecov.io/gh/epiforecasts/distspec/graph/badge.svg)](https://
 status](https://www.r-pkg.org/badges/version/distspec)](https://CRAN.R-project.org/package=distspec)
 
 [![MIT
-license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/distspec/blob/main/LICENSE.md/)
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/distspec/blob/main/LICENSE.md)
 [![GitHub
 contributors](https://img.shields.io/github/contributors/epiforecasts/distspec)](https://github.com/epiforecasts/distspec/graphs/contributors)
-[![universe](https://epiforecasts.r-universe.dev/badges/distspec)](http://epiforecasts.r-universe.dev/distspec)
+[![universe](https://epiforecasts.r-universe.dev/badges/distspec)](https://epiforecasts.r-universe.dev/distspec)
 <!-- badges: end -->
 
 distspec represents a probability distribution as a single object, a
