@@ -5,6 +5,9 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
 
 ## New features
 
+- Added `validate_dist_spec()`, which checks that a `<dist_spec>` has a
+  well-formed structure (class, parameters, and `max`/`cdf_cutoff` attributes).
+  Every constructor now validates the object it builds.
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Added `Exponential()` and `Weibull()` distributions.
 - Added `Dirichlet()` and support for estimated nonparametric distributions
