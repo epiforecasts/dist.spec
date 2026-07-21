@@ -454,8 +454,10 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 1) {
   ## mark uncertain distributions so the shared handlers dispatch
   ret <- mark_uncertainty(ret)
 
-  ## assert the structural invariants of the constructed object
+  ## assert the structural invariants of the constructed object, then return it
+  ## visibly (validate_dist_spec() returns invisibly)
   validate_dist_spec(ret)
+  ret
 }
 
 # Recompute the uncertainty marker class from a distribution's current
