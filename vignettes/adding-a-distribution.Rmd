@@ -35,7 +35,7 @@ arguments to `new_dist_spec()`, which builds the object. A single parametric
 Its class is `c("<type>", "dist_spec")`. Per-type S3 methods dispatch on the
 `"<type>"` head; shared behaviour that is the same for every distribution
 (printing, addition, discretisation) dispatches on the `"dist_spec"` tail. An
-uncertain distribution additionally carries an `"uncertain_dist_spec"` class at
+uncertain distribution additionally carries an `"uncertain"` class at
 the front so the shared uncertainty handlers pick it up.
 
 `new_dist_spec()` does the shared work once for every type: it checks that the
