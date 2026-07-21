@@ -3,6 +3,27 @@
 # Per-type methods for the beta distribution; see `gamma.R` and #64. The beta
 # distribution is not discretised, so it provides no `dist_cdf()` method.
 
+#' Beta distribution
+#'
+#' @description
+#' A beta distribution as a `<dist_spec>`, given either by its shape parameters
+#' `shape1`/`shape2` or by its `mean`/`sd`. It is not discretised.
+#'
+#' @param shape1,shape2 Shape parameters of the beta distribution.
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape1`/`shape2`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' Beta(shape1 = 2, shape2 = 5)
+#' Beta(mean = 0.3, sd = 0.15)
+Beta <- function(shape1, shape2, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "beta", ...)
+}
+
 #' @exportS3Method
 natural_params.beta <- function(x) c("shape1", "shape2")
 

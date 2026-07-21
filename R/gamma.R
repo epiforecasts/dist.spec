@@ -6,6 +6,28 @@
 # shared `dist_spec`/`uncertain` methods (see `distribution.R`, `dist_spec.R`
 # and #64), so these methods are pure.
 
+#' Gamma distribution
+#'
+#' @description
+#' A gamma distribution as a `<dist_spec>`, given either by its natural
+#' parameters `shape`/`rate` (or `shape`/`scale`) or by its `mean`/`sd`.
+#'
+#' @inheritParams stats::GammaDist
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape`/`rate`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' Gamma(mean = 4, sd = 1)
+#' Gamma(shape = 16, rate = 4)
+#' Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
+Gamma <- function(shape, rate, scale, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "gamma", ...)
+}
+
 #' @exportS3Method
 natural_params.gamma <- function(x) c("shape", "rate")
 
