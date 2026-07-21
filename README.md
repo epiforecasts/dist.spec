@@ -60,12 +60,19 @@ delay
 #>   rate:
 #>     1
 
-# Discretise it to a probability mass function
-get_pmf(discretise(delay))
-#>  [1] 4.348792e-03 6.644381e-02 1.734249e-01 2.178947e-01 1.932673e-01
-#>  [6] 1.407835e-01 9.044713e-02 5.327464e-02 2.944744e-02 1.550665e-02
-#> [11] 7.859601e-03 3.862608e-03 1.850583e-03 8.678941e-04 3.997049e-04
-#> [16] 1.812269e-04 8.105858e-05 3.582527e-05 1.566718e-05 6.787387e-06
+# Add two delays with `+` to convolve them into one composite distribution
+combined <- delay + LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
+
+# Discretise, collapse and read off the combined probability mass function
+get_pmf(collapse(discretise(combined)))
+#>  [1] 1.575639e-05 7.774458e-04 1.014705e-02 4.346165e-02 9.800319e-02
+#>  [6] 1.456661e-01 1.643242e-01 1.534134e-01 1.251838e-01 9.253855e-02
+#> [11] 6.351282e-02 4.119038e-02 2.557434e-02 1.535600e-02 8.989614e-03
+#> [16] 5.165638e-03 2.930517e-03 1.649767e-03 9.258817e-04 5.201756e-04
+#> [21] 2.935802e-04 1.657837e-04 9.204736e-05 4.981584e-05 2.623759e-05
+#> [26] 1.344782e-05 6.713756e-06 3.270010e-06 1.556508e-06 7.251518e-07
+#> [31] 3.310044e-07 1.480833e-07 6.488306e-08 2.777755e-08 1.156102e-08
+#> [36] 4.630397e-09 1.747153e-09 5.903038e-10 1.510470e-10
 
 # A parameter can itself be a distribution, expressing uncertainty
 Gamma(shape = Normal(2, 0.5), rate = 1)
@@ -79,6 +86,15 @@ Gamma(shape = Normal(2, 0.5), rate = 1)
 #>   rate:
 #>     1
 ```
+
+`plot()` shows the probability mass and cumulative distribution
+functions, one facet per component:
+
+``` r
+plot(combined)
+```
+
+<img src="man/figures/README-plot-1.png" alt="PMF and CDF of a gamma and a lognormal delay." width="100%" />
 
 See `vignette("distspec")` to get started, and the [reference
 index](https://epiforecasts.io/distspec/reference/) for the full list of
