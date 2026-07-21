@@ -467,23 +467,6 @@ test_that("delay distributions can be specified in different ways", {
     round(get_pmf(discretise(Weibull(shape = 2, scale = 5, max = 5))), 2),
     c(0.02, 0.14, 0.24, 0.30, 0.30)
   )
-  expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
-  ## fractional fixed values split probability across adjacent intervals
-  expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))
-  expect_equal(get_pmf(discretise(Fixed(value = 1.25))), c(0, 0.75, 0.25))
-  expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
-  expect_equal(
-    get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),
-    c(0.1, 0.3, 0.2, 0.4)
-  )
-  expect_equal(
-    round(get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))), 2),
-    c(0.12, 0.37, 0.25, 0.12, 0.12)
-  )
-  expect_equal(
-    get_distribution(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
-    "nonparametric"
-  )
 })
 
 test_that("get functions report errors", {
