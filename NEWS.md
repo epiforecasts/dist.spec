@@ -135,4 +135,6 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
   attribute-copy loop in `discretise()`, used `%||%` for null-default attribute
   guards, and extracted repeated `get_parameters()` calls and `sum(convolutions)`
   into local variables.
-- Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`.
+- Reduced dependencies: dropped `data.table`, `checkmate` and `purrr`, and
+  moved `ggplot2` to `Suggests`. `plot()` now prompts to install `ggplot2` if it
+  is missing, so it is no longer a hard dependency of the package.

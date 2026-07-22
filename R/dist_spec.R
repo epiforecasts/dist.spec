@@ -548,8 +548,6 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' [bound_dist()]).
 #' @return A `{ggplot2}` object showing the PMF (and, if `cumulative = TRUE`,
 #'   the CDF) of each component, faceted by distribution.
-#' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
-#' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
 #' @importFrom rlang .data `%||%`
 #' @importFrom cli cli_abort cli_warn
@@ -575,6 +573,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
 plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
+  rlang::check_installed("ggplot2", reason = "to plot a `<dist_spec>`.")
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
@@ -642,17 +641,17 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   )
 
   # Plot PMF and CDF as facets in the same plot
-  p <- ggplot(
+  p <- ggplot2::ggplot(
     pmf_data,
-    mapping = aes(
+    mapping = ggplot2::aes(
       x = .data$x, y = .data$p, group = .data$sample, color = .data$type
     )
   ) +
-    geom_line() +
-    facet_wrap(vars(.data$distribution)) +
-    labs(x = "x", y = "Probability") +
-    scale_color_brewer(palette = "Dark2") +
-    theme_bw()
+    ggplot2::geom_line() +
+    ggplot2::facet_wrap(ggplot2::vars(.data$distribution)) +
+    ggplot2::labs(x = "x", y = "Probability") +
+    ggplot2::scale_color_brewer(palette = "Dark2") +
+    ggplot2::theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data
     cmf_data$p <- ave(
@@ -660,7 +659,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     )
     cmf_data$type <- factor("cmf", levels = c("pmf", "cmf"))
     p <- p +
-      geom_step(data = cmf_data)
+      ggplot2::geom_step(data = cmf_data)
   }
   p
 }
