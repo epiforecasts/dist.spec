@@ -17,11 +17,26 @@ set.seed(1)
 
 ```{r setup}
 library(distspec)
+library(ggplot2)
 ```
 
 In distspec, a probability distribution is a single object: a `<dist_spec>`. It
 can hold fixed parameters or uncertain ones, and the same functions work on
 either.
+
+## Quick start
+
+Add two delays with `+`, discretise to a probability mass function, and plot:
+
+```{r quickstart}
+delays <- Gamma(mean = 4, sd = 2, max = 20) +
+  LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
+get_pmf(collapse(discretise(delays)))
+```
+
+```{r quickstart-plot, fig.width = 7, fig.height = 4, fig.alt = "PMF and CDF of a gamma and a lognormal delay."}
+plot(delays)
+```
 
 ## Defining a distribution
 
@@ -92,6 +107,26 @@ the same summaries work on it:
 
 ```{r combine-mean}
 mean(collapse(discretise(combined)))
+```
+
+## Plotting
+
+`plot()` draws the probability mass function of a distribution, and its
+cumulative distribution function when `cumulative = TRUE`. Each component of a
+composite is shown in its own facet:
+
+```{r plot, fig.width = 7, fig.height = 4, fig.alt = "PMF and CDF of a discretised gamma distribution."}
+plot(discretise(Gamma(mean = 4, sd = 2, max = 20)))
+```
+
+An uncertain distribution is drawn as a sample of PMFs from its priors, one line
+per draw. Here `cumulative = FALSE` shows the mass functions on their own:
+
+```{r plot-uncertain, fig.width = 7, fig.height = 4, fig.alt = "Sampled PMFs of an uncertain gamma distribution."}
+plot(
+  Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 20),
+  cumulative = FALSE
+)
 ```
 
 ## Sampling

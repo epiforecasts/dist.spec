@@ -2,6 +2,29 @@
 #
 # Per-type methods for the lognormal distribution; see `gamma.R` and #64.
 
+#' Lognormal distribution
+#'
+#' @description
+#' A lognormal distribution as a `<dist_spec>`, given either by its natural
+#' parameters `meanlog`/`sdlog` or by its `mean`/`sd`.
+#'
+#' @inheritParams stats::Lognormal
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `meanlog`/`sdlog`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' LogNormal(mean = 4, sd = 1)
+#' LogNormal(mean = 4, sd = 1, max = 10)
+#' # Uncertain parameters must be given as the natural parameters
+#' LogNormal(meanlog = Normal(1.5, 0.5), sdlog = 0.25, max = 10)
+LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "lognormal", ...)
+}
+
 #' @exportS3Method
 natural_params.lognormal <- function(x) c("meanlog", "sdlog")
 
