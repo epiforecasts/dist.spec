@@ -29,7 +29,6 @@ Depends:
     R (>= 3.5.0)
 Imports:
     cli,
-    ggplot2,
     lifecycle,
     methods,
     primarycensored,
@@ -39,6 +38,7 @@ Imports:
     utils
 Suggests:
     covr,
+    ggplot2,
     knitr,
     rmarkdown,
     spelling,
