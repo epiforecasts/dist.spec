@@ -17,6 +17,14 @@ test_that("Dirichlet works with prior and concentration", {
   expect_equal(mean(result), prior / sum(prior))
 })
 
+test_that("Dirichlet rejects a bad numeric prior", {
+  expect_error(Dirichlet(prior = c(0.5, -0.1, 0.6), concentration = 10),
+    "negative"
+  )
+  expect_error(Dirichlet(prior = c(0.5, NA, 0.5), concentration = 10), "finite")
+  expect_error(Dirichlet(prior = c(0, 0, 0), concentration = 10), "all zero")
+})
+
 test_that("Dirichlet works with dist_spec prior", {
   dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
   result <- Dirichlet(prior = dist, concentration = 5)

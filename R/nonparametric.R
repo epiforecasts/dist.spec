@@ -27,6 +27,7 @@
 #' NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
 NonParametric <- function(pmf, ...) {
   if (is.numeric(pmf)) {
+    check_pmf_values(pmf, "pmf")
     check_sparse_pmf_tail(pmf)
     pmf <- pmf / sum(pmf)
   }

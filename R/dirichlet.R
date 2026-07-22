@@ -48,6 +48,7 @@ Dirichlet <- function(alpha, prior, concentration, ...) {
     if (is(prior, "dist_spec")) {
       pmf <- get_pmf(discretise(prior))
     } else {
+      check_pmf_values(prior, "prior")
       pmf <- prior / sum(prior)
     }
     alpha <- concentration * pmf

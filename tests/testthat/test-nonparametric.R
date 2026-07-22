@@ -13,6 +13,16 @@ test_that("a nonparametric distribution normalises its PMF", {
   )
 })
 
+test_that("NonParametric accepts un-normalised weights but rejects bad values", {
+  ## un-normalised weights are treated as such and normalised
+  expect_equal(get_pmf(NonParametric(c(1, 2, 1))), c(0.25, 0.5, 0.25))
+  ## genuinely invalid input errors rather than silently normalising
+  expect_error(NonParametric(c(0.5, -0.1, 0.6)), "negative")
+  expect_error(NonParametric(c(0.5, NA, 0.5)), "finite")
+  expect_error(NonParametric(c(0.5, Inf, 0.5)), "finite")
+  expect_error(NonParametric(c(0, 0, 0)), "all zero")
+})
+
 test_that("NonParametric works with Dirichlet prior", {
   prior <- c(0.1, 0.3, 0.4, 0.2)
   conc <- 10
