@@ -26,76 +26,42 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
   }
 }
 
-#' Validate the structure of a `<dist_spec>`
-#'
-#' @description
-#' Asserts the structural invariants of a `<dist_spec>` object: its class, the
-#' shape of its parameters, and its `max`/`cdf_cutoff` attributes. Every
-#' constructor validates the object it builds, so a `<dist_spec>` obtained from
-#' the package is always well-formed; this is exposed so that dependent code
-#' that constructs or modifies these objects can assert the same invariants.
-#'
-#' A composite (`multi_dist_spec`) is valid when each of its components is a
-#' valid single `<dist_spec>`.
-#'
-#' @param x A `<dist_spec>` object.
-#' @return `x`, invisibly, if it is valid; otherwise an error is raised.
-#' @export
-#' @examples
-#' validate_dist_spec(Gamma(shape = 2, rate = 1))
-#' validate_dist_spec(NonParametric(c(0.1, 0.3, 0.6)))
-#' validate_dist_spec(Fixed(3) + Gamma(shape = 2, rate = 1))
-validate_dist_spec <- function(x) {
-  UseMethod("validate_dist_spec")
-}
-
-#' @method validate_dist_spec default
+# Validate the structural invariants of a `<dist_spec>`: its class, the shape of
+# its parameters, and its `max`/`cdf_cutoff` attributes. Called by every
+# constructor on the object it builds, so a `<dist_spec>` from the package is
+# always well-formed. Returns `x` invisibly on success, otherwise raises an
+# error.
 #' @importFrom cli cli_abort
-#' @export
-validate_dist_spec.default <- function(x) {
-  cli_abort(
-    c(
-      "!" = "{.arg x} must be a {.cls dist_spec}.",
-      "i" = "You have supplied an object of class {.cls {class(x)}}."
-    )
-  )
-}
-
-# A composite is valid when it is a list whose components are each a valid
-# single (non-composite) `<dist_spec>`.
-#' @method validate_dist_spec multi_dist_spec
-#' @export
-validate_dist_spec.multi_dist_spec <- function(x) {
-  if (!is.list(x)) {
+validate_dist_spec <- function(x) {
+  if (!inherits(x, "dist_spec")) {
     cli_abort(
-      "A {.cls multi_dist_spec} must be a list of component distributions."
+      c(
+        "!" = "{.arg x} must be a {.cls dist_spec}.",
+        "i" = "You have supplied an object of class {.cls {class(x)}}."
+      )
     )
   }
-  for (i in seq_along(x)) {
-    component <- x[[i]]
-    if (inherits(component, "multi_dist_spec")) {
-      cli_abort(
-        "Component {i} of a {.cls multi_dist_spec} must itself be a single
-        {.cls dist_spec}, not a composite."
-      )
-    }
-    if (!inherits(component, "dist_spec")) {
-      cli_abort(
-        c(
-          "!" = "Component {i} of a {.cls multi_dist_spec} must be a
-          {.cls dist_spec}.",
-          "i" = "It has class {.cls {class(component)}}."
-        )
-      )
-    }
-    validate_dist_spec(component)
-  }
-  invisible(x)
-}
 
-#' @method validate_dist_spec dist_spec
-#' @export
-validate_dist_spec.dist_spec <- function(x) {
+  ## a composite is valid when each of its (single, non-composite) components is
+  if (inherits(x, "multi_dist_spec")) {
+    if (!is.list(x)) {
+      cli_abort(
+        "A {.cls multi_dist_spec} must be a list of component distributions."
+      )
+    }
+    for (i in seq_along(x)) {
+      component <- x[[i]]
+      if (inherits(component, "multi_dist_spec")) {
+        cli_abort(
+          "Component {i} of a {.cls multi_dist_spec} must itself be a single
+          {.cls dist_spec}, not a composite."
+        )
+      }
+      validate_dist_spec(component)
+    }
+    return(invisible(x))
+  }
+
   distribution <- x$distribution
   if (!is.character(distribution) || length(distribution) != 1 ||
         is.na(distribution) || !nzchar(distribution)) {
