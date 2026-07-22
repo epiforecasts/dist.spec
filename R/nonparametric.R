@@ -10,8 +10,8 @@
 #'
 #' @description
 #' A nonparametric distribution as a `<dist_spec>`, defined directly by its
-#' probability mass function. The PMF can instead be estimated during model
-#' fitting by passing a [Dirichlet()] prior.
+#' probability mass function. The PMF can instead be left uncertain by
+#' passing a [Dirichlet()] prior.
 #'
 #' @param pmf Probability mass function, as a zero-indexed numeric vector (the
 #'   first entry is the mass at zero) or a `<dist_spec>` (e.g. from
@@ -23,7 +23,7 @@
 #' @examples
 #' NonParametric(c(0.1, 0.3, 0.2, 0.4))
 #'
-#' # With a Dirichlet prior (estimated during model fitting)
+#' # With a Dirichlet prior (PMF left uncertain)
 #' NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
 NonParametric <- function(pmf, ...) {
   if (is.numeric(pmf)) {
@@ -53,7 +53,7 @@ sd.nonparametric <- function(x, ...) {
 #' @method max nonparametric
 #' @export
 max.nonparametric <- function(x, ...) {
-  ## an estimated distribution has no PMF; its support size is the length of
+  ## an uncertain distribution has no PMF; its support size is the length of
   ## the Dirichlet prior it carries
   if (has_uncertainty(x)) {
     length(get_parameters(x$pmf)$alpha)

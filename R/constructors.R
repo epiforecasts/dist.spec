@@ -183,14 +183,14 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 1) {
 # Recompute the uncertainty marker class from a distribution's current
 # parameters, so the shared `mean`/`sd`/`sample_dist` handlers dispatch on it:
 # applied to a distribution that carries a prior (a parametric distribution with
-# a prior parameter, or an estimated Dirichlet-backed nonparametric). This is
+# a prior parameter, or an uncertain Dirichlet-backed nonparametric). This is
 # idempotent: it strips any existing marker first (leaving other class
 # memberships intact) and re-adds one only if a prior remains, so it can be
 # re-run whenever the parameters change.
 mark_uncertainty <- function(x) {
-  class(x) <- setdiff(class(x), "uncertain")
+  class(x) <- setdiff(class(x), "uncertain_dist_spec")
   if (has_uncertainty(x)) {
-    class(x) <- c("uncertain", class(x))
+    class(x) <- c("uncertain_dist_spec", class(x))
   }
   x
 }

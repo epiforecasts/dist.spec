@@ -1,6 +1,6 @@
 # Dirichlet distribution
 #
-# A prior over the weights of a nonparametric PMF, used to specify an estimated
+# A prior over the weights of a nonparametric PMF, used to specify an uncertain
 # nonparametric distribution. Its mean is the vector of expected weights,
 # alpha / sum(alpha). It is not discretised and has no scalar sd. Per-type
 # methods read from x$parameters; see gamma.R and issue #64.
@@ -9,9 +9,9 @@
 #'
 #' @description
 #' A Dirichlet prior over the weights of a nonparametric probability mass
-#' function, used to specify an estimated [NonParametric()] distribution whose
-#' PMF is estimated during model fitting. Give either `alpha` directly, or a
-#' reference `prior` PMF together with a `concentration`.
+#' function, used to specify an uncertain [NonParametric()] distribution whose
+#' PMF is left uncertain given the Dirichlet prior. Give either `alpha`
+#' directly, or a reference `prior` PMF together with a `concentration`.
 #'
 #' @param alpha A positive numeric vector of concentration parameters.
 #' @param prior Either a numeric PMF vector (zero-indexed, i.e. the
