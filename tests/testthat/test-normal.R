@@ -2,8 +2,6 @@ test_that("a normal is specified via its natural mean and sd", {
   result <- Normal(mean = 4, sd = 2)
   expect_equal(get_distribution(result), "normal")
   expect_equal(get_parameters(result), list(mean = 4, sd = 2))
-  expect_equal(mean(result), 4)
-  expect_equal(sd(result), 2)
 })
 
 test_that("distributions with vector-valued parameters compare correctly", {

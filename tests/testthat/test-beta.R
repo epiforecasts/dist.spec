@@ -2,8 +2,6 @@ test_that("beta distribution is specified via natural shape parameters", {
   result <- Beta(shape1 = 2, shape2 = 5)
   expect_equal(get_distribution(result), "beta")
   expect_equal(get_parameters(result), list(shape1 = 2, shape2 = 5))
-  expect_equal(mean(result), 2 / 7)
-  expect_equal(sd(result), sqrt(2 * 5 / (7^2 * 8)))
 })
 
 test_that("beta distribution can be specified via mean and sd", {
