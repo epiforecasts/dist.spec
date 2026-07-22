@@ -17,11 +17,26 @@ set.seed(1)
 
 ```{r setup}
 library(distspec)
+library(ggplot2)
 ```
 
 In distspec, a probability distribution is a single object: a `<dist_spec>`. It
 can hold fixed parameters or uncertain ones, and the same functions work on
 either.
+
+## Quick start
+
+Add two delays with `+`, discretise to a probability mass function, and plot:
+
+```{r quickstart}
+delays <- Gamma(mean = 4, sd = 2, max = 20) +
+  LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
+get_pmf(collapse(discretise(delays)))
+```
+
+```{r quickstart-plot, fig.width = 7, fig.height = 4, fig.alt = "PMF and CDF of a gamma and a lognormal delay."}
+plot(delays)
+```
 
 ## Defining a distribution
 
