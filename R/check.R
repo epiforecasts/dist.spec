@@ -25,3 +25,110 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
     )
   }
 }
+
+#' Validate the structure of a `<dist_spec>`
+#'
+#' @description
+#' Asserts the structural invariants of a `<dist_spec>`: its class, the shape of
+#' its parameters, and its `max`/`cdf_cutoff` attributes. Called by every
+#' constructor on the object it builds, so a `<dist_spec>` from the package is
+#' always well-formed. A composite is valid when each of its components is.
+#'
+#' @param x A `<dist_spec>` object.
+#' @return `x`, invisibly, if it is valid; otherwise an error is raised.
+#' @importFrom cli cli_abort
+#' @keywords internal
+validate_dist_spec <- function(x) {
+  if (!inherits(x, "dist_spec")) {
+    cli_abort(
+      c(
+        "!" = "{.arg x} must be a {.cls dist_spec}.",
+        "i" = "You have supplied an object of class {.cls {class(x)}}."
+      )
+    )
+  }
+
+  ## a composite is valid when each of its (single, non-composite) components is
+  if (inherits(x, "multi_dist_spec")) {
+    if (!is.list(x)) {
+      cli_abort(
+        "A {.cls multi_dist_spec} must be a list of component distributions."
+      )
+    }
+    for (i in seq_along(x)) {
+      component <- x[[i]]
+      if (inherits(component, "multi_dist_spec")) {
+        cli_abort(
+          "Component {i} of a {.cls multi_dist_spec} must itself be a single
+          {.cls dist_spec}, not a composite."
+        )
+      }
+      validate_dist_spec(component)
+    }
+    return(invisible(x))
+  }
+
+  distribution <- x$distribution
+  if (!is.character(distribution) || length(distribution) != 1 ||
+        is.na(distribution) || !nzchar(distribution)) {
+    cli_abort(
+      "The {.field distribution} of a {.cls dist_spec} must be a single
+      non-empty string."
+    )
+  }
+
+  ## the object carries a type class (its `$distribution`) followed by the
+  ## `"dist_spec"` tail, optionally with markers (such as the uncertainty
+  ## marker) prepended. The type class is therefore the one immediately before
+  ## `"dist_spec"`, which must equal `$distribution`; this validates the match
+  ## without hard-coding any marker name
+  obj_classes <- class(x)
+  type_class <- obj_classes[match("dist_spec", obj_classes) - 1L]
+  if (length(type_class) == 0 || is.na(type_class) ||
+        !identical(type_class, distribution)) {
+    cli_abort(
+      c(
+        "!" = "The {.field distribution} of a {.cls dist_spec} must match its
+        type class.",
+        "i" = "The distribution is {.val {distribution}} but the leading type
+        class is {.val {type_class}}."
+      )
+    )
+  }
+
+  ## a nonparametric distribution stores its PMF in `$pmf`; every other type
+  ## stores a named parameter list in `$parameters`
+  if (!is.null(x$parameters)) {
+    if (!is.list(x$parameters) || is.null(names(x$parameters)) ||
+          any(!nzchar(names(x$parameters)))) {
+      cli_abort(
+        "The {.field parameters} of a {.cls dist_spec} must be a named list."
+      )
+    }
+  }
+
+  ## the `max` and `cdf_cutoff` attributes, if present, must be well-formed
+  max_value <- attr(x, "max")
+  if (!is.null(max_value)) {
+    if (!is.numeric(max_value) || length(max_value) != 1 || is.na(max_value) ||
+          max_value < 0) {
+      cli_abort(
+        "The {.field max} attribute of a {.cls dist_spec} must be a single
+        numeric that is non-negative or {.val {Inf}}."
+      )
+    }
+  }
+
+  cdf_cutoff <- attr(x, "cdf_cutoff")
+  if (!is.null(cdf_cutoff)) {
+    if (!is.numeric(cdf_cutoff) || length(cdf_cutoff) != 1 ||
+          is.na(cdf_cutoff) || cdf_cutoff <= 0 || cdf_cutoff > 1) {
+      cli_abort(
+        "The {.field cdf_cutoff} attribute of a {.cls dist_spec} must be a
+        single numeric in {.code (0, 1]}."
+      )
+    }
+  }
+
+  invisible(x)
+}

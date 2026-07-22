@@ -5,6 +5,9 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
 
 ## New features
 
+- Distribution constructors now validate the structure of the object they build
+  (class, parameters, and `max`/`cdf_cutoff` attributes) and raise an
+  informative error if it is malformed.
 - Added a `Beta()` distribution (`shape1`/`shape2`, or `mean`/`sd`).
 - Added `Exponential()` and `Weibull()` distributions.
 - Added `Dirichlet()` and support for uncertain nonparametric distributions
