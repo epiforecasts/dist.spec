@@ -66,6 +66,13 @@ get_pmf(discretise(delay))
 Gamma(shape = Normal(2, 0.5), rate = 1)
 ```
 
+`plot()` shows the probability mass and cumulative distribution functions:
+
+```{r plot, fig.alt = "PMF and CDF of a gamma delay with mean 4 and standard deviation 2."}
+library(ggplot2)
+plot(delay)
+```
+
 See `vignette("distspec")` to get started, and the
 [reference index](https://epiforecasts.io/distspec/reference/) for the full list
 of functions.
