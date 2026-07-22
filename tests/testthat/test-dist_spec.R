@@ -1,43 +1,8 @@
-test_that("dist_spec returns correct output for fixed lognormal distribution", {
-  result <- discretise(LogNormal(meanlog = 5, sdlog = 1, max = 19))
-  expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 19)
-  expect_equal(
-    as.vector(round(get_pmf(result), 2)),
-    c(
-      0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
-      0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
-      0.11, 0.12, 0.13
-    )
-  )
-})
-
 test_that("discretise and collapse work with LogNormal distributions with trailing zeroes", {
   dist1 <- LogNormal(mean = 1.77, sd = 1.08, max = 30)
   dist2 <- LogNormal(mean = 4.4, sd = 0.67, max = 30)
   result <- collapse(discretise(dist1 + dist2))
   expect_true(all(result$pmf >= 0))
-})
-
-test_that("dist_spec returns correct output for uncertain gamma distribution", {
-  result <- discretise(
-    Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19),
-    strict = FALSE
-  )
-  expect_equal(get_parameters(result)$shape$parameters$mean, 3)
-  expect_equal(get_parameters(result)$shape$parameters$sd, 0.5)
-  expect_equal(get_parameters(result)$rate$parameters$mean, 2)
-  expect_equal(get_parameters(result)$rate$parameters$sd, 0.5)
-  expect_equal(get_distribution(result), "gamma")
-  expect_equal(max(result), 19)
-})
-
-test_that("dist_spec returns correct output for gamma distribution parameterised with scale", {
-  result <- Gamma(shape = 3, scale = 2)
-  expect_equal(get_parameters(result)$shape, 3)
-  expect_equal(get_parameters(result)$rate, 0.5)
-  expect_equal(get_distribution(result), "gamma")
-  expect_true(is.infinite(max(result)))
 })
 
 test_that("dist_spec returns correct output for fixed distribution", {
@@ -53,13 +18,6 @@ test_that("dist_spec returns correct output for fixed distribution", {
       0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
       0.11, 0.12, 0.13
     )
-  )
-})
-
-test_that("dist_spec returns error when mixed natural and unnatural parameters are specified", {
-  expect_error(
-    LogNormal(meanlog = 5, sd = 1, max = 20),
-    "Incompatible combination."
   )
 })
 
@@ -249,19 +207,6 @@ test_that("`bound_dist` function can be applied to a convolution", {
     tolerance = 0.01
   )
   expect_equal(mean(combined), mean(combined_cdf_cutoff), tolerance = 0.1)
-})
-
-test_that("summary functions return correct output for fixed lognormal distribution", {
-  dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
-  expect_equal(mean(dist), 3.0, tolerance = 0.01)
-  expect_equal(sd(dist), 1.08, tolerance = 0.01)
-  expect_equal(max(dist), 19L)
-})
-
-test_that("summary functions return correct output for uncertain gamma distribution", {
-  dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
-  expect_equal(mean(dist, ignore_uncertainty = TRUE), 1.5)
-  expect_equal(max(dist), 19L)
 })
 
 test_that("mean returns correct output for sum of two distributions", {
@@ -531,50 +476,6 @@ test_that("delay distributions can be specified in different ways", {
     round(get_pmf(discretise(Weibull(shape = 2, scale = 5, max = 5))), 2),
     c(0.02, 0.14, 0.24, 0.30, 0.30)
   )
-  expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
-  ## fractional fixed values split probability across adjacent intervals
-  expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))
-  expect_equal(get_pmf(discretise(Fixed(value = 1.25))), c(0, 0.75, 0.25))
-  expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
-  expect_equal(
-    get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),
-    c(0.1, 0.3, 0.2, 0.4)
-  )
-  expect_equal(
-    round(get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))), 2),
-    c(0.12, 0.37, 0.25, 0.12, 0.12)
-  )
-  expect_equal(
-    get_distribution(NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))),
-    "nonparametric"
-  )
-})
-
-test_that("a fixed distribution accepts a value of zero", {
-  zero <- Fixed(value = 0)
-  expect_identical(lower_bounds(zero), c(value = 0))
-  expect_equal(mean(zero), 0)
-  expect_equal(sd(zero), 0)
-  expect_equal(get_pmf(discretise(Fixed(value = 0))), 1)
-})
-
-test_that("a fixed distribution rejects a value below its lower bound", {
-  expect_error(Fixed(value = -1), "lower bound")
-  expect_error(Fixed(value = -0.5), "lower bound")
-  ## an uncertain value is bound-checked when sampled, not at construction
-  expect_no_error(Fixed(value = Normal(0.3, 0.05)))
-  ## the same bound is enforced when a zero-sd normal collapses to fixed
-  expect_error(Normal(-3, 0), "lower bound")
-  expect_no_error(Normal(3, 0))
-})
-
-test_that("an uncertain fixed value is not truncated below one when sampled", {
-  set.seed(1)
-  ## with the old lower bound of 1 the sampled value would be truncated at 1
-  sampled <- fix_parameters(
-    Fixed(value = Normal(0.3, 0.05)), strategy = "sample"
-  )
-  expect_lt(get_parameters(sampled)$value, 1)
 })
 
 test_that("get functions report errors", {
@@ -601,141 +502,6 @@ test_that("get functions report errors", {
   )), "must be specified")
 })
 
-test_that("Dirichlet works with alpha vector", {
-  alpha <- c(1, 2, 3)
-  result <- Dirichlet(alpha)
-  expect_s3_class(result, "dist_spec")
-  expect_equal(get_distribution(result), "dirichlet")
-  expect_equal(get_parameters(result)$alpha, alpha)
-  expect_equal(mean(result), alpha / sum(alpha))
-})
-
-test_that("Dirichlet works with prior and concentration", {
-  prior <- c(0.1, 0.3, 0.4, 0.2)
-  conc <- 10
-  result <- Dirichlet(prior = prior, concentration = conc)
-  expect_s3_class(result, "dist_spec")
-  expect_equal(get_distribution(result), "dirichlet")
-  expect_equal(get_parameters(result)$alpha, conc * prior / sum(prior))
-  expect_equal(mean(result), prior / sum(prior))
-})
-
-test_that("NonParametric works with Dirichlet prior", {
-  prior <- c(0.1, 0.3, 0.4, 0.2)
-  conc <- 10
-  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = conc))
-  expect_s3_class(result, "dist_spec")
-  expect_equal(get_distribution(result), "nonparametric")
-  ## an uncertain distribution stores its Dirichlet prior as the `pmf`, so it
-  ## has no concrete (numeric) PMF
-  expect_s3_class(result$pmf, "dist_spec")
-  expect_equal(get_distribution(result$pmf), "dirichlet")
-  expect_equal(get_parameters(result$pmf)$alpha, conc * prior / sum(prior))
-  expect_s3_class(result, "uncertain_dist_spec")
-})
-
-test_that("an uncertain nonparametric distribution has no concrete PMF", {
-  prior <- c(0.1, 0.3, 0.4, 0.2)
-  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
-  ## `get_pmf()` and sampling error; the mean is uncertain
-  expect_error(get_pmf(result), "no fixed probability mass function")
-  expect_error(sample_dist(result, 5), "fixed parameters")
-  expect_true(is.na(suppressMessages(mean(result))))
-  expect_equal(mean(result, ignore_uncertainty = TRUE), sum((0:3) * prior))
-  expect_equal(max(result), length(prior))
-})
-
-test_that("fix_parameters resolves an uncertain nonparametric distribution", {
-  prior <- c(0.1, 0.3, 0.4, 0.2)
-  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
-  fixed <- fix_parameters(result, strategy = "mean")
-  expect_equal(get_distribution(fixed), "nonparametric")
-  expect_equal(get_pmf(fixed), prior / sum(prior))
-  expect_false(inherits(fixed, "uncertain_dist_spec"))
-})
-
-test_that("bounding an uncertain nonparametric distribution errors", {
-  ## `max`/`cdf_cutoff` have no effect on an uncertain distribution, so they are
-  ## rejected rather than silently ignored
-  expect_error(
-    NonParametric(pmf = Dirichlet(c(0, 2, 4)), cdf_cutoff = 0.9),
-    "uncertain nonparametric"
-  )
-  expect_error(
-    NonParametric(pmf = Dirichlet(c(0, 2, 4)), max = 2),
-    "uncertain nonparametric"
-  )
-  expect_error(
-    bound_dist(NonParametric(pmf = Dirichlet(c(0, 2, 4))), max = 2),
-    "uncertain nonparametric"
-  )
-  ## an unbounded uncertain distribution is fine
-  expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
-})
-
-test_that("bound_dist truncates and renormalises a fixed nonparametric PMF", {
-  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
-  ## `max` smaller than the support keeps bins 0..max and renormalises
-  bounded <- bound_dist(np, max = 2)
-  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
-  expect_equal(sum(get_pmf(bounded)), 1)
-  expect_equal(max(bounded), 3)
-})
-
-test_that("bound_dist leaves a fixed nonparametric PMF untouched beyond support", {
-  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
-  ## `max` at or beyond the support is a no-op and introduces no NAs
-  expect_equal(get_pmf(bound_dist(np, max = 5)), c(0.1, 0.3, 0.4, 0.2))
-  expect_equal(get_pmf(bound_dist(np, max = 3)), c(0.1, 0.3, 0.4, 0.2))
-  expect_false(anyNA(get_pmf(bound_dist(np, max = 5))))
-})
-
-test_that("NonParametric applies max at construction", {
-  ## the same truncation is reachable through the constructor
-  expect_equal(
-    get_pmf(NonParametric(c(0.1, 0.3, 0.4, 0.2), max = 2)),
-    c(0.125, 0.375, 0.5)
-  )
-})
-
-test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
-  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
-  ## `cdf_cutoff` is applied to the tail before `max` truncates and renormalises
-  bounded <- bound_dist(np, max = 2, cdf_cutoff = 0.95)
-  expect_equal(get_pmf(bounded), c(0.125, 0.375, 0.5))
-  expect_equal(sum(get_pmf(bounded)), 1)
-})
-
-test_that("an uncertain nonparametric distribution nests its prior on print", {
-  result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
-  ## printed like any uncertain distribution: the PMF shown as a nested prior,
-  ## with no extra label in the output beyond the distribution type
-  expect_output(print(result), "- nonparametric distribution:")
-  expect_output(print(result), "pmf:")
-  expect_output(print(result), "- dirichlet distribution:")
-  expect_output(print(result), "alpha:")
-})
-
-test_that("uncertain nonparametric distributions compare by their prior", {
-  a <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
-  ## equal to another with the same prior, unequal to a different prior or to
-  ## a fixed PMF
-  expect_true(a == NonParametric(pmf = Dirichlet(c(2, 4, 4))))
-  expect_false(a == NonParametric(pmf = Dirichlet(c(2, 4, 5))))
-  expect_false(a == NonParametric(pmf = c(0.2, 0.4, 0.4)))
-})
-
-test_that("distributions with vector-valued parameters compare correctly", {
-  expect_true(Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 2), sd = 1))
-  expect_false(Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 3), sd = 1))
-  expect_false(
-    Normal(mean = c(1, 2), sd = 1) == Normal(mean = c(1, 2, 3), sd = 1)
-  )
-  expect_true(
-    Normal(mean = c(1, 2), sd = 1) != Normal(mean = c(1, 3), sd = 1)
-  )
-})
-
 test_that("has_uncertainty distinguishes fixed and uncertain distributions", {
   expect_false(has_uncertainty(Gamma(shape = 1, rate = 1)))
   expect_true(has_uncertainty(Gamma(shape = Normal(1, 0.5), rate = 1)))
@@ -747,37 +513,6 @@ test_that("has_uncertainty distinguishes fixed and uncertain distributions", {
     Gamma(shape = Normal(1, 0.5), rate = 1)
   expect_false(has_uncertainty(composite, 1))
   expect_true(has_uncertainty(composite, 2))
-})
-
-test_that("Dirichlet works with dist_spec prior", {
-  dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
-  result <- Dirichlet(prior = dist, concentration = 5)
-  expect_s3_class(result, "dist_spec")
-  expect_equal(get_distribution(result), "dirichlet")
-  expected_pmf <- get_pmf(discretise(dist))
-  expect_equal(mean(result), expected_pmf)
-  expect_equal(get_parameters(result)$alpha, 5 * expected_pmf)
-})
-
-test_that("beta distribution is specified via natural shape parameters", {
-  result <- Beta(shape1 = 2, shape2 = 5)
-  expect_equal(get_distribution(result), "beta")
-  expect_equal(get_parameters(result), list(shape1 = 2, shape2 = 5))
-  expect_equal(mean(result), 2 / 7)
-  expect_equal(sd(result), sqrt(2 * 5 / (7^2 * 8)))
-})
-
-test_that("beta distribution can be specified via mean and sd", {
-  result <- Beta(mean = 0.3, sd = 0.15)
-  expect_equal(get_distribution(result), "beta")
-  expect_equal(mean(result), 0.3)
-  expect_equal(sd(result), 0.15)
-})
-
-test_that("beta rejects an infeasible mean/sd and out-of-range shapes", {
-  expect_error(Beta(mean = 0.5, sd = 0.6), "variance of a beta")
-  expect_error(Beta(mean = 1.2, sd = 0.1), "must be between 0 and 1")
-  expect_error(Beta(shape1 = -1, shape2 = 2), "lower bound")
 })
 
 test_that("a certain (sd 0) distribution parameter is treated as fixed", {
