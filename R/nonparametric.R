@@ -25,7 +25,7 @@ sd.nonparametric <- function(x, ...) {
 #' @method max nonparametric
 #' @export
 max.nonparametric <- function(x, ...) {
-  ## an estimated distribution has no PMF; its support size is the length of
+  ## an uncertain distribution has no PMF; its support size is the length of
   ## the Dirichlet prior it carries
   if (has_uncertainty(x)) {
     length(get_parameters(x$pmf)$alpha)

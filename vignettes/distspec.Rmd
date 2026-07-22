@@ -122,12 +122,12 @@ plot(
 sample_dist(Gamma(mean = 4, sd = 2, max = 20), n = 5)
 ```
 
-## Estimated nonparametric distributions
+## Uncertain nonparametric distributions
 
 Instead of a fixed PMF, a nonparametric distribution can carry a `Dirichlet()`
-prior over its bins, to be estimated during model fitting:
+prior over its bins, leaving its PMF uncertain:
 
-```{r estimated}
+```{r uncertain-nonparametric}
 est <- NonParametric(pmf = Dirichlet(c(0, 2, 4, 3)))
 est
 ```

@@ -3,8 +3,8 @@
 # Everything specific to the gamma distribution. Per-type S3 methods dispatch on
 # the `"gamma"` class of a `dist_spec` and read fixed parameters from
 # `x$parameters`. Uncertainty, validation and discretisation are handled by the
-# shared `dist_spec`/`uncertain` methods (see `distribution.R`, `dist_spec.R`
-# and #64), so these methods are pure.
+# shared `dist_spec`/`uncertain_dist_spec` methods (see `distribution.R`,
+# `dist_spec.R` and #64), so these methods are pure.
 
 #' @exportS3Method
 natural_params.gamma <- function(x) c("shape", "rate")
