@@ -89,6 +89,16 @@ Gamma(shape = Normal(2, 0.5), rate = 1)
 #>     1
 ```
 
+`plot()` shows the probability mass and cumulative distribution
+functions:
+
+``` r
+library(ggplot2)
+plot(delay)
+```
+
+<img src="man/figures/README-plot-1.png" alt="PMF and CDF of a gamma delay with mean 4 and standard deviation 2." width="100%" />
+
 See `vignette("distspec")` to get started, and the [reference
 index](https://epiforecasts.io/distspec/reference/) for the full list of
 functions.
@@ -96,9 +106,7 @@ functions.
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-
 <!-- prettier-ignore-start -->
-
 <!-- markdownlint-disable -->
 
 All contributions to this project are gratefully acknowledged using the
@@ -119,7 +127,5 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/distspec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
 
 <!-- markdownlint-enable -->
-
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
