@@ -26,12 +26,18 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
   }
 }
 
-# Validate the structural invariants of a `<dist_spec>`: its class, the shape of
-# its parameters, and its `max`/`cdf_cutoff` attributes. Called by every
-# constructor on the object it builds, so a `<dist_spec>` from the package is
-# always well-formed. Returns `x` invisibly on success, otherwise raises an
-# error.
+#' Validate the structure of a `<dist_spec>`
+#'
+#' @description
+#' Asserts the structural invariants of a `<dist_spec>`: its class, the shape of
+#' its parameters, and its `max`/`cdf_cutoff` attributes. Called by every
+#' constructor on the object it builds, so a `<dist_spec>` from the package is
+#' always well-formed. A composite is valid when each of its components is.
+#'
+#' @param x A `<dist_spec>` object.
+#' @return `x`, invisibly, if it is valid; otherwise an error is raised.
 #' @importFrom cli cli_abort
+#' @keywords internal
 validate_dist_spec <- function(x) {
   if (!inherits(x, "dist_spec")) {
     cli_abort(
