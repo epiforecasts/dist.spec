@@ -61,23 +61,11 @@ validate_dist_spec.default <- function(x) {
   )
 }
 
+# A composite is valid when it is a list whose components are each a valid
+# single (non-composite) `<dist_spec>`.
 #' @method validate_dist_spec multi_dist_spec
 #' @export
 validate_dist_spec.multi_dist_spec <- function(x) {
-  validate_multi_dist_spec(x)
-  invisible(x)
-}
-
-#' @method validate_dist_spec dist_spec
-#' @export
-validate_dist_spec.dist_spec <- function(x) {
-  validate_single_dist_spec(x)
-  invisible(x)
-}
-
-# Assert the invariants of a composite `<dist_spec>`: it is a list whose
-# components are each a valid single (non-composite) `<dist_spec>`.
-validate_multi_dist_spec <- function(x) {
   if (!is.list(x)) {
     cli_abort(
       "A {.cls multi_dist_spec} must be a list of component distributions."
@@ -100,13 +88,14 @@ validate_multi_dist_spec <- function(x) {
         )
       )
     }
-    validate_single_dist_spec(component)
+    validate_dist_spec(component)
   }
   invisible(x)
 }
 
-# Assert the invariants of a single (non-composite) `<dist_spec>`.
-validate_single_dist_spec <- function(x) {
+#' @method validate_dist_spec dist_spec
+#' @export
+validate_dist_spec.dist_spec <- function(x) {
   distribution <- x$distribution
   if (!is.character(distribution) || length(distribution) != 1 ||
         is.na(distribution) || !nzchar(distribution)) {
@@ -146,14 +135,7 @@ validate_single_dist_spec <- function(x) {
     }
   }
 
-  validate_dist_bounds(x)
-
-  invisible(x)
-}
-
-# Assert the `max` and `cdf_cutoff` attributes of a single `<dist_spec>`, if
-# present.
-validate_dist_bounds <- function(x) {
+  ## the `max` and `cdf_cutoff` attributes, if present, must be well-formed
   max_value <- attr(x, "max")
   if (!is.null(max_value)) {
     if (!is.numeric(max_value) || length(max_value) != 1 || is.na(max_value) ||
