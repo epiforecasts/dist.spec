@@ -18,13 +18,13 @@ A \verb{<dist_spec>}.
 }
 \description{
 A nonparametric distribution as a \verb{<dist_spec>}, defined directly by its
-probability mass function. The PMF can instead be estimated during model
-fitting by passing a \code{\link[=Dirichlet]{Dirichlet()}} prior.
+probability mass function. The PMF can instead be left uncertain by
+passing a \code{\link[=Dirichlet]{Dirichlet()}} prior.
 }
 \examples{
 NonParametric(c(0.1, 0.3, 0.2, 0.4))
 
-# With a Dirichlet prior (estimated during model fitting)
+# With a Dirichlet prior (PMF left uncertain)
 NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
 }
 \seealso{

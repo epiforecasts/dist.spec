@@ -184,8 +184,8 @@ Fixed <- function(value, ...) {
 #'
 #' @description
 #' A nonparametric distribution as a `<dist_spec>`, defined directly by its
-#' probability mass function. The PMF can instead be estimated during model
-#' fitting by passing a [Dirichlet()] prior.
+#' probability mass function. The PMF can instead be left uncertain by
+#' passing a [Dirichlet()] prior.
 #'
 #' @param pmf Probability mass function, as a zero-indexed numeric vector (the
 #'   first entry is the mass at zero) or a `<dist_spec>` (e.g. from
@@ -197,7 +197,7 @@ Fixed <- function(value, ...) {
 #' @examples
 #' NonParametric(c(0.1, 0.3, 0.2, 0.4))
 #'
-#' # With a Dirichlet prior (estimated during model fitting)
+#' # With a Dirichlet prior (PMF left uncertain)
 #' NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
 NonParametric <- function(pmf, ...) {
   if (is.numeric(pmf)) {
@@ -212,8 +212,9 @@ NonParametric <- function(pmf, ...) {
 #'
 #' @description
 #' A Dirichlet prior over the weights of a nonparametric probability mass
-#' function, used to specify an estimated [NonParametric()] distribution whose
-#' PMF is estimated during model fitting. Give either `alpha` directly, or a
+#' function, used to specify an uncertain [NonParametric()] distribution whose
+#' PMF is left uncertain given the Dirichlet prior. Give either `alpha`
+#' directly, or a
 #' reference `prior` PMF together with a `concentration`.
 #'
 #' @param alpha A positive numeric vector of concentration parameters.
@@ -463,14 +464,14 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 1) {
 # Recompute the uncertainty marker class from a distribution's current
 # parameters, so the shared `mean`/`sd`/`sample_dist` handlers dispatch on it:
 # applied to a distribution that carries a prior (a parametric distribution with
-# a prior parameter, or an estimated Dirichlet-backed nonparametric). This is
+# a prior parameter, or an uncertain Dirichlet-backed nonparametric). This is
 # idempotent: it strips any existing marker first (leaving other class
 # memberships intact) and re-adds one only if a prior remains, so it can be
 # re-run whenever the parameters change.
 mark_uncertainty <- function(x) {
-  class(x) <- setdiff(class(x), "uncertain")
+  class(x) <- setdiff(class(x), "uncertain_dist_spec")
   if (has_uncertainty(x)) {
-    class(x) <- c("uncertain", class(x))
+    class(x) <- c("uncertain_dist_spec", class(x))
   }
   x
 }

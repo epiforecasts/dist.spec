@@ -5,16 +5,26 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/epiforecasts/distspec/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/epiforecasts/distspec/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/epiforecasts/distspec/graph/badge.svg)](https://app.codecov.io/gh/epiforecasts/distspec)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/distspec)](https://CRAN.R-project.org/package=distspec)
+
+[![MIT
+license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/epiforecasts/distspec/blob/main/LICENSE.md)
+[![GitHub
+contributors](https://img.shields.io/github/contributors/epiforecasts/distspec)](https://github.com/epiforecasts/distspec/graphs/contributors)
+[![universe](https://epiforecasts.r-universe.dev/badges/distspec)](https://epiforecasts.r-universe.dev/distspec)
 <!-- badges: end -->
 
 distspec represents a probability distribution as a single object, a
 `<dist_spec>`, whose parameters can be either fixed or uncertain. It
-grew out of [EpiNow2](https://epiforecasts.io/EpiNow2/) and targets the
-delay distributions that recur in infectious disease modelling —
-generation times, incubation periods, reporting delays — while remaining
+grew out of [EpiNow2](https://epiforecasts.io/EpiNow2/) and is aimed at
+the delay distributions common in infectious disease modelling, such as
+generation times, incubation periods and reporting delays, while staying
 independent of any particular model.
 
 With distspec you can:
@@ -25,8 +35,7 @@ With distspec you can:
   mean and standard deviation;
 - give any parameter an uncertain prior (for example
   `Gamma(shape = Normal(2, 0.5), rate = 1)`), or leave a nonparametric
-  mass function to be estimated during model fitting via a `Dirichlet()`
-  prior;
+  mass function uncertain via a `Dirichlet()` prior;
 - discretise a continuous distribution to a probability mass function
   (`discretise()`), convolve distributions (`+`, `collapse()`), draw
   samples (`sample_dist()`), and query means, standard deviations,
@@ -87,7 +96,9 @@ functions.
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
 
 All contributions to this project are gratefully acknowledged using the
@@ -108,5 +119,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/distspec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
 
 <!-- markdownlint-enable -->
+
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->

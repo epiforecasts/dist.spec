@@ -332,12 +332,14 @@ test_that("print.dist_spec correctly prints the parameters of a combination of d
 })
 
 test_that("plot.dist_spec returns a ggplot object", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   plot <- plot(dist)
   expect_s3_class(plot, "ggplot")
 })
 
 test_that("plot.dist_spec correctly plots a single distribution", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   plot <- plot(dist)
   expect_equal(length(plot$layers), 2)
@@ -345,6 +347,7 @@ test_that("plot.dist_spec correctly plots a single distribution", {
 })
 
 test_that("plot.dist_spec correctly plots multiple distributions", {
+  skip_if_not_installed("ggplot2")
   dist1 <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   dist2 <- Gamma(shape = Normal(3, 5), rate = Normal(1, 2), max = 19)
   combined <- dist1 + dist2
@@ -354,6 +357,7 @@ test_that("plot.dist_spec correctly plots multiple distributions", {
 })
 
 test_that("plot.dist_spec correctly plots a combination of fixed distributions", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   combined <- dist + dist
   plot <- plot(combined)
@@ -362,6 +366,7 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
 })
 
 test_that("plot.dist_spec errors on an unbounded distribution", {
+  skip_if_not_installed("ggplot2")
   expect_error(plot(Gamma(mean = 4, sd = 2)), "no finite range")
   expect_error(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "no finite range")
   ## a bounded distribution plots fine, either via max or cdf_cutoff
@@ -370,11 +375,13 @@ test_that("plot.dist_spec errors on an unbounded distribution", {
 })
 
 test_that("plot.dist_spec errors on an unbounded uncertain distribution", {
+  skip_if_not_installed("ggplot2")
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5))
   expect_error(plot(dist), "no finite range")
 })
 
 test_that("plot.dist_spec warns when res is applied to a nonparametric component", {
+  skip_if_not_installed("ggplot2")
   rlang::reset_warning_verbosity("plot_res_nonparametric")
   dist <- Gamma(mean = 4, sd = 2, max = 20) +
     NonParametric(c(0.1, 0.3, 0.4, 0.2))
@@ -386,6 +393,7 @@ test_that("plot.dist_spec warns when res is applied to a nonparametric component
 })
 
 test_that("plot.dist_spec warns for a lone nonparametric component with res", {
+  skip_if_not_installed("ggplot2")
   rlang::reset_warning_verbosity("plot_res_nonparametric")
   expect_warning(
     plot(NonParametric(c(0.1, 0.3, 0.4, 0.2)), res = 0.1),
@@ -394,6 +402,7 @@ test_that("plot.dist_spec warns for a lone nonparametric component with res", {
 })
 
 test_that("plot.dist_spec does not warn with the default res", {
+  skip_if_not_installed("ggplot2")
   dist <- Gamma(mean = 4, sd = 2, max = 20) +
     NonParametric(c(0.1, 0.3, 0.4, 0.2))
   expect_no_warning(plot(dist))
@@ -617,15 +626,15 @@ test_that("NonParametric works with Dirichlet prior", {
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = conc))
   expect_s3_class(result, "dist_spec")
   expect_equal(get_distribution(result), "nonparametric")
-  ## an estimated distribution stores its Dirichlet prior as the `pmf`, so it
+  ## an uncertain distribution stores its Dirichlet prior as the `pmf`, so it
   ## has no concrete (numeric) PMF
   expect_s3_class(result$pmf, "dist_spec")
   expect_equal(get_distribution(result$pmf), "dirichlet")
   expect_equal(get_parameters(result$pmf)$alpha, conc * prior / sum(prior))
-  expect_s3_class(result, "uncertain")
+  expect_s3_class(result, "uncertain_dist_spec")
 })
 
-test_that("an estimated nonparametric distribution has no concrete PMF", {
+test_that("an uncertain nonparametric distribution has no concrete PMF", {
   prior <- c(0.1, 0.3, 0.4, 0.2)
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
   ## `get_pmf()` and sampling error; the mean is uncertain
@@ -636,31 +645,31 @@ test_that("an estimated nonparametric distribution has no concrete PMF", {
   expect_equal(max(result), length(prior))
 })
 
-test_that("fix_parameters resolves an estimated nonparametric distribution", {
+test_that("fix_parameters resolves an uncertain nonparametric distribution", {
   prior <- c(0.1, 0.3, 0.4, 0.2)
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
   fixed <- fix_parameters(result, strategy = "mean")
   expect_equal(get_distribution(fixed), "nonparametric")
   expect_equal(get_pmf(fixed), prior / sum(prior))
-  expect_false(inherits(fixed, "uncertain"))
+  expect_false(inherits(fixed, "uncertain_dist_spec"))
 })
 
-test_that("bounding an estimated nonparametric distribution errors", {
-  ## `max`/`cdf_cutoff` have no effect on an estimated distribution, so they are
+test_that("bounding an uncertain nonparametric distribution errors", {
+  ## `max`/`cdf_cutoff` have no effect on an uncertain distribution, so they are
   ## rejected rather than silently ignored
   expect_error(
     NonParametric(pmf = Dirichlet(c(0, 2, 4)), cdf_cutoff = 0.9),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
   expect_error(
     NonParametric(pmf = Dirichlet(c(0, 2, 4)), max = 2),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
   expect_error(
     bound_dist(NonParametric(pmf = Dirichlet(c(0, 2, 4))), max = 2),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
-  ## an unbounded estimated distribution is fine
+  ## an unbounded uncertain distribution is fine
   expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
 })
 
@@ -697,17 +706,17 @@ test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
   expect_equal(sum(get_pmf(bounded)), 1)
 })
 
-test_that("an estimated nonparametric distribution nests its prior on print", {
+test_that("an uncertain nonparametric distribution nests its prior on print", {
   result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## printed like any uncertain distribution: the PMF shown as a nested prior,
-  ## with no special "estimated" label
+  ## with no extra label in the output beyond the distribution type
   expect_output(print(result), "- nonparametric distribution:")
   expect_output(print(result), "pmf:")
   expect_output(print(result), "- dirichlet distribution:")
   expect_output(print(result), "alpha:")
 })
 
-test_that("estimated nonparametric distributions compare by their prior", {
+test_that("uncertain nonparametric distributions compare by their prior", {
   a <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## equal to another with the same prior, unequal to a different prior or to
   ## a fixed PMF
@@ -776,7 +785,7 @@ test_that("a certain (sd 0) distribution parameter is treated as fixed", {
   ## should behave exactly like passing the number `x`
   d <- Gamma(shape = Normal(3, 0), rate = 2)
   expect_false(has_uncertainty(d))
-  expect_false(is(d, "uncertain"))
+  expect_false(is(d, "uncertain_dist_spec"))
   expect_true(is.numeric(get_parameters(d)$shape))
   expect_equal(mean(d), 1.5)
   expect_equal(sd(d), sqrt(3) / 2)

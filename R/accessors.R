@@ -130,7 +130,7 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
 ##' Get the probability mass function of a nonparametric distribution
 ##'
 ##' @details
-##' An estimated (Dirichlet-backed) nonparametric distribution has no concrete
+##' An uncertain (Dirichlet-backed) nonparametric distribution has no concrete
 ##' PMF, so calling `get_pmf()` on one is an error. Resolve it to a fixed PMF
 ##' first with [fix_parameters()] (e.g. `strategy = "mean"`).
 ##'
@@ -160,7 +160,7 @@ get_pmf <- function(x, id = NULL) {
   if (has_uncertainty(x, id)) {
     cli_abort(
       c(
-        "!" = "An estimated distribution has no fixed probability mass
+        "!" = "An uncertain distribution has no fixed probability mass
         function.",
         "i" = "Resolve it first with {.fn fix_parameters}."
       )
