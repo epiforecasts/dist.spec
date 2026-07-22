@@ -59,9 +59,9 @@ test_that("sample_dist errors on distributions with uncertain parameters", {
   expect_error(sample_dist(uncertain, 10), "fixed parameters")
 })
 
-test_that("sample_dist errors on an estimated nonparametric distribution", {
-  estimated <- NonParametric(pmf = Dirichlet(c(1, 1, 1)))
-  expect_error(sample_dist(estimated, 10), "fixed parameters")
+test_that("sample_dist errors on an uncertain nonparametric distribution", {
+  uncertain <- NonParametric(pmf = Dirichlet(c(1, 1, 1)))
+  expect_error(sample_dist(uncertain, 10), "fixed parameters")
 })
 
 test_that("sample_dist errors on distributions with no sampler", {

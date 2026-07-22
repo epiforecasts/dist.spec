@@ -52,7 +52,7 @@
       return(FALSE)
     }
     if (get_distribution(e1, i) == "nonparametric") {
-      ## an estimated distribution is compared by its Dirichlet prior, a fixed
+      ## an uncertain distribution is compared by its Dirichlet prior, a fixed
       ## one by its PMF; the two are never equal
       d1 <- extract_single_dist(e1, i)
       d2 <- extract_single_dist(e2, i)
@@ -215,14 +215,14 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   )
 }
 
-#' @method mean uncertain
+#' @method mean uncertain_dist_spec
 #' @importFrom cli cli_inform
 #' @export
-mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
+mean.uncertain_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   ## an uncertain distribution carries a prior, so its mean is `NA` unless we
   ## ignore the uncertainty; then we resolve it to its mean/point estimate with
   ## `fix_parameters()` and take that distribution's mean. This handles both an
-  ## uncertain parametric distribution and an estimated nonparametric one.
+  ## uncertain parametric distribution and an uncertain nonparametric one.
   if (!ignore_uncertainty) {
     cli_inform(
       c(
@@ -286,7 +286,7 @@ sd.dist_spec <- function(x, ...) {
 
 #' @importFrom cli cli_inform
 #' @export
-sd.uncertain <- function(x, ...) {
+sd.uncertain_dist_spec <- function(x, ...) {
   cli_inform(
     c(
       "Returning NA: this distribution has uncertain parameters.",
@@ -364,11 +364,11 @@ sample_dist.dist_spec <- function(x, n, ...) {
   )
 }
 
-# An uncertain distribution (including an estimated Dirichlet-backed
+# An uncertain distribution (including an uncertain Dirichlet-backed
 # nonparametric) carries a prior and so cannot be sampled directly; the user
 # resolves it with `fix_parameters()` first.
 #' @exportS3Method
-sample_dist.uncertain <- function(x, n, ...) {
+sample_dist.uncertain_dist_spec <- function(x, n, ...) {
   cli_abort(
     c(
       "!" = "Can only sample from a distribution with fixed parameters.",
@@ -381,7 +381,8 @@ sample_dist.uncertain <- function(x, n, ...) {
 #' @rdname sample_dist
 #' @export
 sample_dist.multi_dist_spec <- function(x, n, ...) {
-  ## An uncertain component errors via its own `sample_dist.uncertain()` method.
+  ## An uncertain component errors via its own
+  ## `sample_dist.uncertain_dist_spec()` method.
   vapply(x, sample_dist, numeric(n), n = n)
 }
 
@@ -548,8 +549,6 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' [bound_dist()]).
 #' @return A `{ggplot2}` object showing the PMF (and, if `cumulative = TRUE`,
 #'   the CDF) of each component, faceted by distribution.
-#' @importFrom ggplot2 aes ggplot geom_col geom_line geom_step facet_wrap vars
-#' theme_bw scale_color_brewer labs
 #' @importFrom stats ave
 #' @importFrom rlang .data `%||%`
 #' @importFrom cli cli_abort cli_warn
@@ -575,6 +574,7 @@ print_dist_spec_indented <- function(x, indent, ...) {
 #' # cumulative distribution
 #' plot(dist1 + dist2, res = 0.1, cumulative = FALSE)
 plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
+  rlang::check_installed("ggplot2", reason = "to plot a `<dist_spec>`.")
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
@@ -642,17 +642,17 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   )
 
   # Plot PMF and CDF as facets in the same plot
-  p <- ggplot(
+  p <- ggplot2::ggplot(
     pmf_data,
-    mapping = aes(
+    mapping = ggplot2::aes(
       x = .data$x, y = .data$p, group = .data$sample, color = .data$type
     )
   ) +
-    geom_line() +
-    facet_wrap(vars(.data$distribution)) +
-    labs(x = "x", y = "Probability") +
-    scale_color_brewer(palette = "Dark2") +
-    theme_bw()
+    ggplot2::geom_line() +
+    ggplot2::facet_wrap(ggplot2::vars(.data$distribution)) +
+    ggplot2::labs(x = "x", y = "Probability") +
+    ggplot2::scale_color_brewer(palette = "Dark2") +
+    ggplot2::theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data
     cmf_data$p <- ave(
@@ -660,7 +660,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     )
     cmf_data$type <- factor("cmf", levels = c("pmf", "cmf"))
     p <- p +
-      geom_step(data = cmf_data)
+      ggplot2::geom_step(data = cmf_data)
   }
   p
 }
@@ -772,7 +772,8 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     x$parameters <- sampled
   }
   ## the parameters are now fixed, so recompute the uncertainty marker; this
-  ## drops the "uncertain" class while leaving other class memberships intact
+  ## drops the "uncertain_dist_spec" class while leaving other class memberships
+  ## intact
   mark_uncertainty(x)
 }
 
@@ -832,7 +833,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' Build PMF data for the nonparametric branch of `plot.dist_spec`
 #'
 #' For a fixed nonparametric delay returns a single row per bin
-#' (the stored PMF). For a Dirichlet-backed estimated delay, draws
+#' (the stored PMF). For a Dirichlet-backed uncertain delay, draws
 #' `samples` PMFs from the alpha vector via [rdirichlet()] and
 #' returns one row per sample-bin pair so the calling plot can
 #' render an uncertainty band.

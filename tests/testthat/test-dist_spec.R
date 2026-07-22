@@ -277,12 +277,14 @@ test_that("print.dist_spec correctly prints the parameters of a combination of d
 })
 
 test_that("plot.dist_spec returns a ggplot object", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   plot <- plot(dist)
   expect_s3_class(plot, "ggplot")
 })
 
 test_that("plot.dist_spec correctly plots a single distribution", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   plot <- plot(dist)
   expect_equal(length(plot$layers), 2)
@@ -290,6 +292,7 @@ test_that("plot.dist_spec correctly plots a single distribution", {
 })
 
 test_that("plot.dist_spec correctly plots multiple distributions", {
+  skip_if_not_installed("ggplot2")
   dist1 <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   dist2 <- Gamma(shape = Normal(3, 5), rate = Normal(1, 2), max = 19)
   combined <- dist1 + dist2
@@ -299,6 +302,7 @@ test_that("plot.dist_spec correctly plots multiple distributions", {
 })
 
 test_that("plot.dist_spec correctly plots a combination of fixed distributions", {
+  skip_if_not_installed("ggplot2")
   dist <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 19)
   combined <- dist + dist
   plot <- plot(combined)
@@ -307,6 +311,7 @@ test_that("plot.dist_spec correctly plots a combination of fixed distributions",
 })
 
 test_that("plot.dist_spec errors on an unbounded distribution", {
+  skip_if_not_installed("ggplot2")
   expect_error(plot(Gamma(mean = 4, sd = 2)), "no finite range")
   expect_error(plot(LogNormal(meanlog = 1.5, sdlog = 0.5)), "no finite range")
   ## a bounded distribution plots fine, either via max or cdf_cutoff
@@ -315,11 +320,13 @@ test_that("plot.dist_spec errors on an unbounded distribution", {
 })
 
 test_that("plot.dist_spec errors on an unbounded uncertain distribution", {
+  skip_if_not_installed("ggplot2")
   dist <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5))
   expect_error(plot(dist), "no finite range")
 })
 
 test_that("plot.dist_spec warns when res is applied to a nonparametric component", {
+  skip_if_not_installed("ggplot2")
   rlang::reset_warning_verbosity("plot_res_nonparametric")
   dist <- Gamma(mean = 4, sd = 2, max = 20) +
     NonParametric(c(0.1, 0.3, 0.4, 0.2))
@@ -331,6 +338,7 @@ test_that("plot.dist_spec warns when res is applied to a nonparametric component
 })
 
 test_that("plot.dist_spec warns for a lone nonparametric component with res", {
+  skip_if_not_installed("ggplot2")
   rlang::reset_warning_verbosity("plot_res_nonparametric")
   expect_warning(
     plot(NonParametric(c(0.1, 0.3, 0.4, 0.2)), res = 0.1),
@@ -339,6 +347,7 @@ test_that("plot.dist_spec warns for a lone nonparametric component with res", {
 })
 
 test_that("plot.dist_spec does not warn with the default res", {
+  skip_if_not_installed("ggplot2")
   dist <- Gamma(mean = 4, sd = 2, max = 20) +
     NonParametric(c(0.1, 0.3, 0.4, 0.2))
   expect_no_warning(plot(dist))
@@ -511,7 +520,7 @@ test_that("a certain (sd 0) distribution parameter is treated as fixed", {
   ## should behave exactly like passing the number `x`
   d <- Gamma(shape = Normal(3, 0), rate = 2)
   expect_false(has_uncertainty(d))
-  expect_false(is(d, "uncertain"))
+  expect_false(is(d, "uncertain_dist_spec"))
   expect_true(is.numeric(get_parameters(d)$shape))
   expect_equal(mean(d), 1.5)
   expect_equal(sd(d), sqrt(3) / 2)
