@@ -2,6 +2,33 @@
 #
 # Per-type methods for the exponential distribution; see `gamma.R` and #64.
 
+#' Exponential distribution
+#'
+#' @description
+#' An exponential distribution as a `<dist_spec>`, given either by its `rate` or
+#' by its `mean`.
+#'
+#' @inheritParams stats::Exponential
+#' @param mean Mean of the distribution, as an alternative to `rate`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' Exponential(rate = 1)
+#' Exponential(mean = 4)
+Exponential <- function(rate, mean, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "exp", ...)
+}
+
+#' @rdname Exponential
+#' @export
+Exp <- function(...) {
+  lifecycle::deprecate_warn("0.1.0", "Exp()", "Exponential()")
+  Exponential(...)
+}
+
 #' @exportS3Method
 natural_params.exp <- function(x) "rate"
 

@@ -4,6 +4,41 @@
 # issue #64. It discretises to a point mass via its own discrete_pmf method
 # rather than through a CDF, so it has no dist_cdf method.
 
+#' Fixed (point-mass) distribution
+#'
+#' @description
+#' A fixed (delta) distribution as a `<dist_spec>`, placing all of its mass on a
+#' single `value`.
+#'
+#' @param value Value of the fixed (delta) distribution.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' Fixed(value = 3)
+#' Fixed(value = 3.5)
+Fixed <- function(value, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "fixed")
+}
+
+# Validate a fixed `value` against its lower bound. An uncertain (non-numeric)
+# value is bound-checked when sampled rather than here.
+validate_fixed_value <- function(value) {
+  lb <- lower_bounds(dist_prototype("fixed"))[["value"]]
+  if (is.numeric(value) && any(value < lb)) {
+    cli_abort(
+      c(
+        "!" = "Parameter {.arg value} must be greater than or equal to its
+        lower bound {lb}.",
+        "i" = "It is currently set to less than the lower bound."
+      )
+    )
+  }
+  invisible(value)
+}
+
 #' @exportS3Method
 natural_params.fixed <- function(x) "value"
 

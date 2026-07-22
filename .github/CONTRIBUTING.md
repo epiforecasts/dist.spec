@@ -90,11 +90,11 @@ precommit::use_precommit()
 
 ## Adding a new distribution
 
-Each distribution's behaviour comes from a small set of S3 methods dispatched on the distribution *type*. Adding one means writing a new `R/<type>.R` file that implements those methods.
+Each distribution's behaviour comes from a small set of S3 methods dispatched on the distribution *type*. Adding one means writing a new `R/<type>.R` file that holds its constructor and those methods.
 
 ### How dispatch works
 
-A `<dist_spec>` carries its distribution type as the head of its S3 class (e.g. `c("gamma", "dist_spec")`), so your per-type methods dispatch on it directly and read parameters from `x$parameters` (or `x$pmf` for the nonparametric family). The framework handles the shared work: validating the number of samples, and resolving a distribution whose parameters are themselves priors. An uncertain distribution is given an extra `"uncertain"` class, so `mean.uncertain()`/`sample_dist.uncertain()` intercept it before your method runs. Your per-type methods therefore only ever see fixed, numeric parameters, and are written as plain functions.
+A `<dist_spec>` carries its distribution type as the head of its S3 class (e.g. `c("gamma", "dist_spec")`), so your per-type methods dispatch on it directly and read parameters from `x$parameters` (or `x$pmf` for the nonparametric family). The framework handles the shared work: validating the number of samples, and resolving a distribution whose parameters are themselves priors. An uncertain distribution is given an extra `"uncertain_dist_spec"` class, so `mean.uncertain_dist_spec()`/`sample_dist.uncertain_dist_spec()` intercept it before your method runs. Your per-type methods therefore only ever see fixed, numeric parameters, and are written as plain functions. `new_dist_spec()` runs `validate_dist_spec()` on every object it builds, so a malformed spec fails at construction.
 
 ### The methods
 
@@ -106,7 +106,7 @@ Create `R/<type>.R` and implement the methods that apply. Only `natural_params()
 # `x$parameters`. Uncertainty and validation are handled by the framework, so
 # these methods are pure.
 
-# Required: the names of the natural (estimated) parameters, in order.
+# Required: the names of the natural parameters, in order.
 #' @exportS3Method
 natural_params.mydist <- function(x) c("param1", "param2")
 
@@ -169,7 +169,7 @@ dist_cdf.mydist <- function(x) pmydist
 
 1. File an issue describing the distribution (see [Big changes](#big-changes)).
 2. Create `R/<type>.R` with the methods above (copy the template, replacing `mydist` with your type name).
-3. Add a user-facing constructor in `R/dist_spec.R`, following the existing pattern (see e.g. `Exp()`), and document it under the shared `Distributions` help topic:
+3. Add a user-facing constructor at the top of the same `R/<type>.R` file, following an existing one (see e.g. `Exponential()` in `R/exp.R`), and document it under the shared `Distributions` help topic:
 
     ```r
     MyDist <- function(param1, param2, ...) {
@@ -179,7 +179,7 @@ dist_cdf.mydist <- function(x) pmydist
     ```
 
 4. Run `devtools::document()` so the new S3 methods are registered in `NAMESPACE`.
-5. Add tests under `tests/testthat/` and a bullet to `NEWS.md`.
+5. Add tests under `tests/testthat/` and a bullet to `NEWS.md`. A completeness test (`tests/testthat/test-completeness.R`) already checks that every registered distribution defines the core methods (`natural_params()`, `lower_bounds()`, `mean()`), so a half-added distribution fails CI.
 6. Check locally with `devtools::test()`, `lintr::lint_package()` and `devtools::check()`.
 
 ## Code of Conduct

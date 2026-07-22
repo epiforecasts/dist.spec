@@ -6,6 +6,34 @@
 # `natural_params()`/`lower_bounds()` (it is not an estimated parametric family)
 # and no `dist_cdf()` (it is already discretised). See `gamma.R` and #64.
 
+#' Nonparametric distribution
+#'
+#' @description
+#' A nonparametric distribution as a `<dist_spec>`, defined directly by its
+#' probability mass function. The PMF can instead be left uncertain by
+#' passing a [Dirichlet()] prior.
+#'
+#' @param pmf Probability mass function, as a zero-indexed numeric vector (the
+#'   first entry is the mass at zero) or a `<dist_spec>` (e.g. from
+#'   [Dirichlet()]). A numeric vector is normalised to sum to one.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' NonParametric(c(0.1, 0.3, 0.2, 0.4))
+#'
+#' # With a Dirichlet prior (PMF left uncertain)
+#' NonParametric(pmf = Dirichlet(c(1, 1, 1, 1)))
+NonParametric <- function(pmf, ...) {
+  if (is.numeric(pmf)) {
+    check_sparse_pmf_tail(pmf)
+    pmf <- pmf / sum(pmf)
+  }
+  params <- list(pmf = pmf)
+  new_dist_spec(params, "nonparametric", ...)
+}
+
 #' @method mean nonparametric
 #' @export
 mean.nonparametric <- function(x, ...) {

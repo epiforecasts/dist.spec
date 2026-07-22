@@ -2,6 +2,28 @@
 #
 # Per-type methods for the Weibull distribution; see `gamma.R` and #64.
 
+#' Weibull distribution
+#'
+#' @description
+#' A Weibull distribution as a `<dist_spec>`, given either by its
+#' `shape`/`scale` or by its `mean`/`sd`.
+#'
+#' @inheritParams stats::Weibull
+#' @param mean,sd Mean and standard deviation of the distribution, as an
+#'   alternative to `shape`/`scale`.
+#' @param ... Limits of the distribution, passed to [bound_dist()].
+#' @return A `<dist_spec>`.
+#' @seealso [Distributions] for an overview and the other distributions.
+#' @export
+#' @examples
+#' Weibull(shape = 1, scale = 1)
+#' Weibull(shape = 1, scale = 1, max = 10)
+#' Weibull(mean = 4, sd = 1)
+Weibull <- function(shape, scale, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "weibull", ...)
+}
+
 #' @exportS3Method
 natural_params.weibull <- function(x) c("shape", "scale")
 
