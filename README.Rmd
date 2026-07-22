@@ -59,21 +59,18 @@ library(distspec)
 delay <- Gamma(mean = 4, sd = 2, max = 20)
 delay
 
-# Add two delays with `+` to convolve them into one composite distribution
-combined <- delay + LogNormal(meanlog = 1, sdlog = 0.5, max = 20)
-
-# Discretise, collapse and read off the combined probability mass function
-get_pmf(collapse(discretise(combined)))
+# Discretise it to a probability mass function
+get_pmf(discretise(delay))
 
 # A parameter can itself be a distribution, expressing uncertainty
 Gamma(shape = Normal(2, 0.5), rate = 1)
 ```
 
-`plot()` shows the probability mass and cumulative distribution functions, one
-facet per component:
+`plot()` shows the probability mass and cumulative distribution functions:
 
-```{r plot, fig.alt = "PMF and CDF of a gamma and a lognormal delay."}
-plot(combined)
+```{r plot, fig.alt = "PMF and CDF of a gamma delay with mean 4 and standard deviation 2."}
+library(ggplot2)
+plot(delay)
 ```
 
 See `vignette("distspec")` to get started, and the
