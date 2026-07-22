@@ -6,7 +6,7 @@
 \alias{distspec-package}
 \title{distspec: Define Probability Distributions with Certain or Uncertain Parameters}
 \description{
-Represents probability distributions with fixed or potentially uncertain parameters, typically epidemiological delays such as generation times or reporting delays, with tools to discretise, convolve, sample from and summarise them.
+Represents probability distributions with fixed or potentially uncertain parameters, with tools to discretise, convolve, sample from and summarise them.
 }
 \seealso{
 Useful links:

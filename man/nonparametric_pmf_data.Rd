@@ -19,7 +19,7 @@ A \code{data.frame} with columns \code{sample}, \code{x}, \code{p},
 }
 \description{
 For a fixed nonparametric delay returns a single row per bin
-(the stored PMF). For a Dirichlet-backed estimated delay, draws
+(the stored PMF). For a Dirichlet-backed uncertain delay, draws
 \code{samples} PMFs from the alpha vector via \code{\link[=rdirichlet]{rdirichlet()}} and
 returns one row per sample-bin pair so the calling plot can
 render an uncertainty band.

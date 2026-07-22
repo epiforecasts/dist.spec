@@ -1,6 +1,6 @@
 # Dirichlet distribution
 #
-# A prior over the weights of a nonparametric PMF, used to specify an estimated
+# A prior over the weights of a nonparametric PMF, used to specify an uncertain
 # nonparametric distribution. Its mean is the vector of expected weights,
 # alpha / sum(alpha). It is not discretised and has no scalar sd. Per-type
 # methods read from x$parameters; see gamma.R and issue #64.

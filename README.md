@@ -35,8 +35,7 @@ With distspec you can:
   mean and standard deviation;
 - give any parameter an uncertain prior (for example
   `Gamma(shape = Normal(2, 0.5), rate = 1)`), or leave a nonparametric
-  mass function to be estimated during model fitting via a `Dirichlet()`
-  prior;
+  mass function uncertain via a `Dirichlet()` prior;
 - discretise a continuous distribution to a probability mass function
   (`discretise()`), convolve distributions (`+`, `collapse()`), draw
   samples (`sample_dist()`), and query means, standard deviations,

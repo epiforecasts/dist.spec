@@ -626,7 +626,7 @@ test_that("NonParametric works with Dirichlet prior", {
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = conc))
   expect_s3_class(result, "dist_spec")
   expect_equal(get_distribution(result), "nonparametric")
-  ## an estimated distribution stores its Dirichlet prior as the `pmf`, so it
+  ## an uncertain distribution stores its Dirichlet prior as the `pmf`, so it
   ## has no concrete (numeric) PMF
   expect_s3_class(result$pmf, "dist_spec")
   expect_equal(get_distribution(result$pmf), "dirichlet")
@@ -634,7 +634,7 @@ test_that("NonParametric works with Dirichlet prior", {
   expect_s3_class(result, "uncertain")
 })
 
-test_that("an estimated nonparametric distribution has no concrete PMF", {
+test_that("an uncertain nonparametric distribution has no concrete PMF", {
   prior <- c(0.1, 0.3, 0.4, 0.2)
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
   ## `get_pmf()` and sampling error; the mean is uncertain
@@ -645,7 +645,7 @@ test_that("an estimated nonparametric distribution has no concrete PMF", {
   expect_equal(max(result), length(prior))
 })
 
-test_that("fix_parameters resolves an estimated nonparametric distribution", {
+test_that("fix_parameters resolves an uncertain nonparametric distribution", {
   prior <- c(0.1, 0.3, 0.4, 0.2)
   result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = 10))
   fixed <- fix_parameters(result, strategy = "mean")
@@ -654,22 +654,22 @@ test_that("fix_parameters resolves an estimated nonparametric distribution", {
   expect_false(inherits(fixed, "uncertain"))
 })
 
-test_that("bounding an estimated nonparametric distribution errors", {
-  ## `max`/`cdf_cutoff` have no effect on an estimated distribution, so they are
+test_that("bounding an uncertain nonparametric distribution errors", {
+  ## `max`/`cdf_cutoff` have no effect on an uncertain distribution, so they are
   ## rejected rather than silently ignored
   expect_error(
     NonParametric(pmf = Dirichlet(c(0, 2, 4)), cdf_cutoff = 0.9),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
   expect_error(
     NonParametric(pmf = Dirichlet(c(0, 2, 4)), max = 2),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
   expect_error(
     bound_dist(NonParametric(pmf = Dirichlet(c(0, 2, 4))), max = 2),
-    "estimated nonparametric"
+    "uncertain nonparametric"
   )
-  ## an unbounded estimated distribution is fine
+  ## an unbounded uncertain distribution is fine
   expect_s3_class(NonParametric(pmf = Dirichlet(c(0, 2, 4))), "dist_spec")
 })
 
@@ -706,17 +706,17 @@ test_that("bound_dist combines cdf_cutoff and max on a nonparametric PMF", {
   expect_equal(sum(get_pmf(bounded)), 1)
 })
 
-test_that("an estimated nonparametric distribution nests its prior on print", {
+test_that("an uncertain nonparametric distribution nests its prior on print", {
   result <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## printed like any uncertain distribution: the PMF shown as a nested prior,
-  ## with no special "estimated" label
+  ## with no extra label in the output beyond the distribution type
   expect_output(print(result), "- nonparametric distribution:")
   expect_output(print(result), "pmf:")
   expect_output(print(result), "- dirichlet distribution:")
   expect_output(print(result), "alpha:")
 })
 
-test_that("estimated nonparametric distributions compare by their prior", {
+test_that("uncertain nonparametric distributions compare by their prior", {
   a <- NonParametric(pmf = Dirichlet(c(2, 4, 4)))
   ## equal to another with the same prior, unequal to a different prior or to
   ## a fixed PMF

@@ -52,7 +52,7 @@
       return(FALSE)
     }
     if (get_distribution(e1, i) == "nonparametric") {
-      ## an estimated distribution is compared by its Dirichlet prior, a fixed
+      ## an uncertain distribution is compared by its Dirichlet prior, a fixed
       ## one by its PMF; the two are never equal
       d1 <- extract_single_dist(e1, i)
       d2 <- extract_single_dist(e2, i)
@@ -222,7 +222,7 @@ mean.uncertain <- function(x, ..., ignore_uncertainty = FALSE) {
   ## an uncertain distribution carries a prior, so its mean is `NA` unless we
   ## ignore the uncertainty; then we resolve it to its mean/point estimate with
   ## `fix_parameters()` and take that distribution's mean. This handles both an
-  ## uncertain parametric distribution and an estimated nonparametric one.
+  ## uncertain parametric distribution and an uncertain nonparametric one.
   if (!ignore_uncertainty) {
     cli_inform(
       c(
@@ -364,7 +364,7 @@ sample_dist.dist_spec <- function(x, n, ...) {
   )
 }
 
-# An uncertain distribution (including an estimated Dirichlet-backed
+# An uncertain distribution (including an uncertain Dirichlet-backed
 # nonparametric) carries a prior and so cannot be sampled directly; the user
 # resolves it with `fix_parameters()` first.
 #' @exportS3Method
@@ -831,7 +831,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' Build PMF data for the nonparametric branch of `plot.dist_spec`
 #'
 #' For a fixed nonparametric delay returns a single row per bin
-#' (the stored PMF). For a Dirichlet-backed estimated delay, draws
+#' (the stored PMF). For a Dirichlet-backed uncertain delay, draws
 #' `samples` PMFs from the alpha vector via [rdirichlet()] and
 #' returns one row per sample-bin pair so the calling plot can
 #' render an uncertainty band.

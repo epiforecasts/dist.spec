@@ -35,8 +35,9 @@ A \verb{<dist_spec>}.
 }
 \description{
 A Dirichlet prior over the weights of a nonparametric probability mass
-function, used to specify an estimated \code{\link[=NonParametric]{NonParametric()}} distribution whose
-PMF is estimated during model fitting. Give either \code{alpha} directly, or a
+function, used to specify an uncertain \code{\link[=NonParametric]{NonParametric()}} distribution whose
+PMF is left uncertain given the Dirichlet prior. Give either \code{alpha}
+directly, or a
 reference \code{prior} PMF together with a \code{concentration}.
 }
 \examples{
