@@ -20,7 +20,7 @@ The pmf of the distribution
 Get the probability mass function of a nonparametric distribution
 }
 \details{
-An estimated (Dirichlet-backed) nonparametric distribution has no concrete
+An uncertain (Dirichlet-backed) nonparametric distribution has no concrete
 PMF, so calling \code{get_pmf()} on one is an error. Resolve it to a fixed PMF
 first with \code{\link[=fix_parameters]{fix_parameters()}} (e.g. \code{strategy = "mean"}).
 }
