@@ -179,7 +179,11 @@ dist_cdf.mydist <- function(x) pmydist
     ```
 
 4. Run `devtools::document()` so the new S3 methods are registered in `NAMESPACE`.
-5. Add tests under `tests/testthat/` and a bullet to `NEWS.md`. A completeness test (`tests/testthat/test-completeness.R`) already checks that every registered distribution defines the core methods (`natural_params()`, `lower_bounds()`, `mean()`), so a half-added distribution fails CI.
+5. Add tests in two places, and a bullet to `NEWS.md`:
+    * add a row to the table in `tests/testthat/test-reference.R` so your distribution is checked by the shared loop (sampling against the base-R generator, analytic moments, and, if discretisable, the PMF against `primarycensored`);
+    * put any behaviour that does not generalise (alternative parameterisations, bounds, error cases) in `tests/testthat/test-<type>.R`.
+
+    A completeness test (`tests/testthat/test-completeness.R`) also checks that every registered distribution defines the core methods (`natural_params()`, `lower_bounds()`, `mean()`), so a half-added distribution fails CI.
 6. Check locally with `devtools::test()`, `lintr::lint_package()` and `devtools::check()`.
 
 ## Code of Conduct
