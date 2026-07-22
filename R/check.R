@@ -40,28 +40,38 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'
 #' @param x A `<dist_spec>` object.
 #' @return `x`, invisibly, if it is valid; otherwise an error is raised.
-#' @importFrom cli cli_abort
 #' @export
 #' @examples
 #' validate_dist_spec(Gamma(shape = 2, rate = 1))
 #' validate_dist_spec(NonParametric(c(0.1, 0.3, 0.6)))
 #' validate_dist_spec(Fixed(3) + Gamma(shape = 2, rate = 1))
 validate_dist_spec <- function(x) {
-  if (!inherits(x, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "{.arg x} must be a {.cls dist_spec}.",
-        "i" = "You have supplied an object of class {.cls {class(x)}}."
-      )
+  UseMethod("validate_dist_spec")
+}
+
+#' @method validate_dist_spec default
+#' @importFrom cli cli_abort
+#' @export
+validate_dist_spec.default <- function(x) {
+  cli_abort(
+    c(
+      "!" = "{.arg x} must be a {.cls dist_spec}.",
+      "i" = "You have supplied an object of class {.cls {class(x)}}."
     )
-  }
+  )
+}
 
-  if (inherits(x, "multi_dist_spec")) {
-    validate_multi_dist_spec(x)
-  } else {
-    validate_single_dist_spec(x)
-  }
+#' @method validate_dist_spec multi_dist_spec
+#' @export
+validate_dist_spec.multi_dist_spec <- function(x) {
+  validate_multi_dist_spec(x)
+  invisible(x)
+}
 
+#' @method validate_dist_spec dist_spec
+#' @export
+validate_dist_spec.dist_spec <- function(x) {
+  validate_single_dist_spec(x)
   invisible(x)
 }
 

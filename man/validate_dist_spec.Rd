@@ -16,11 +16,11 @@ validate_dist_spec(x)
 Asserts the structural invariants of a \verb{<dist_spec>} object: its class, the
 shape of its parameters, and its \code{max}/\code{cdf_cutoff} attributes. Every
 constructor validates the object it builds, so a \verb{<dist_spec>} obtained from
-the package is always well-formed; this is exposed so that dependent code that
-constructs or modifies these objects can assert the same invariants.
+the package is always well-formed; this is exposed so that dependent code
+that constructs or modifies these objects can assert the same invariants.
 
-A composite (\code{multi_dist_spec}) is valid when each of its components is a valid
-single \verb{<dist_spec>}.
+A composite (\code{multi_dist_spec}) is valid when each of its components is a
+valid single \verb{<dist_spec>}.
 }
 \examples{
 validate_dist_spec(Gamma(shape = 2, rate = 1))
