@@ -1,0 +1,139 @@
+# Package index
+
+## Defining probability distributions
+
+Constructors for the supported probability distributions.
+
+- [`Distributions`](https://epiforecasts.io/distspec/dev/reference/Distributions.md)
+  : Probability distributions
+
+- [`Gamma()`](https://epiforecasts.io/distspec/dev/reference/Gamma.md) :
+  Gamma distribution
+
+- [`LogNormal()`](https://epiforecasts.io/distspec/dev/reference/LogNormal.md)
+  : Lognormal distribution
+
+- [`Normal()`](https://epiforecasts.io/distspec/dev/reference/Normal.md)
+  : Normal distribution
+
+- [`Exp()`](https://epiforecasts.io/distspec/dev/reference/Exp.md) :
+  Exponential distribution
+
+- [`Weibull()`](https://epiforecasts.io/distspec/dev/reference/Weibull.md)
+  : Weibull distribution
+
+- [`Beta()`](https://epiforecasts.io/distspec/dev/reference/Beta.md) :
+  Beta distribution
+
+- [`Fixed()`](https://epiforecasts.io/distspec/dev/reference/Fixed.md) :
+  Fixed (point-mass) distribution
+
+- [`NonParametric()`](https://epiforecasts.io/distspec/dev/reference/NonParametric.md)
+  : Nonparametric distribution
+
+- [`Dirichlet()`](https://epiforecasts.io/distspec/dev/reference/Dirichlet.md)
+  : Dirichlet prior for a nonparametric distribution
+
+- [`new_dist_spec()`](https://epiforecasts.io/distspec/dev/reference/new_dist_spec.md)
+  :
+
+  Internal function for generating a `dist_spec` given parameters and a
+  distribution.
+
+## Access properties
+
+Extract the type, parameters or probability mass function of a
+distribution.
+
+- [`get_distribution()`](https://epiforecasts.io/distspec/dev/reference/get_distribution.md)
+  :
+
+  Get the distribution of a `<dist_spec>`
+
+- [`get_parameters()`](https://epiforecasts.io/distspec/dev/reference/get_parameters.md)
+  : Get parameters of a parametric distribution
+
+- [`get_pmf()`](https://epiforecasts.io/distspec/dev/reference/get_pmf.md)
+  : Get the probability mass function of a nonparametric distribution
+
+- [`ndist()`](https://epiforecasts.io/distspec/dev/reference/ndist.md) :
+
+  Calculate the number of distributions in a `<dist_spec>`
+
+## Summarise distributions
+
+Summary statistics of a distribution.
+
+- [`mean(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/mean.dist_spec.md)
+  : Returns the mean of one or more delay distribution
+- [`sd()`](https://epiforecasts.io/distspec/dev/reference/sd.md) :
+  Returns the standard deviation of one or more delay distribution
+- [`max(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/max.dist_spec.md)
+  : Returns the maximum of one or more delay distribution
+- [`is_constrained(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/is_constrained.md)
+  : Check if a \<dist_spec\> is constrained, i.e. has a finite maximum
+  or nonzero CDF cutoff.
+
+## Combine and modify distributions
+
+Combine, convolve, discretise and fix the parameters of distributions.
+
+- [`c(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/c.dist_spec.md)
+  : Combines multiple delay distributions for further processing
+
+- [`` `+`( ``*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/plus-.dist_spec.md)
+  : Creates a delay distribution as the sum of two other delay
+  distributions.
+
+- [`collapse(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/collapse.md)
+  : Collapse nonparametric distributions in a \<dist_spec\>
+
+- [`discretise(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/discretise.md)
+  [`discretize()`](https://epiforecasts.io/distspec/dev/reference/discretise.md)
+  : Discretise a \<dist_spec\>
+
+- [`bound_dist()`](https://epiforecasts.io/distspec/dev/reference/bound_dist.md)
+  :
+
+  Define bounds of a `<dist_spec>`
+
+- [`fix_parameters(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/fix_parameters.md)
+  :
+
+  Fix the parameters of a `<dist_spec>`
+
+## Sample from distributions
+
+Draw random samples from a distribution with fixed parameters.
+
+- [`sample_dist()`](https://epiforecasts.io/distspec/dev/reference/sample_dist.md)
+  : Sample from a distribution
+
+## Compare distributions
+
+- [`` `==`( ``*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/equals-.dist_spec.md)
+  [`` `!=`( ``*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/equals-.dist_spec.md)
+  : Compares two delay distributions
+
+## Visualise distributions
+
+Print or plot a distribution.
+
+- [`print(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/print.dist_spec.md)
+  : Prints the parameters of one or more delay distributions
+- [`plot(`*`<dist_spec>`*`)`](https://epiforecasts.io/distspec/dev/reference/plot.dist_spec.md)
+  : Plot PMF and CDF for a dist_spec object
+
+## Parameter helpers
+
+Lower-level helpers for working with distribution parameters.
+
+- [`natural_params()`](https://epiforecasts.io/distspec/dev/reference/natural_params.md)
+  : Get the names of the natural parameters of a distribution
+- [`lower_bounds()`](https://epiforecasts.io/distspec/dev/reference/lower_bounds.md)
+  : Get the lower bounds of the parameters of a distribution
+- [`convert_to_logmean()`](https://epiforecasts.io/distspec/dev/reference/convert_to_logmean.md)
+  : Convert mean and sd to log mean for a log normal distribution
+- [`convert_to_logsd()`](https://epiforecasts.io/distspec/dev/reference/convert_to_logsd.md)
+  : Convert mean and sd to log standard deviation for a log normal
+  distribution
