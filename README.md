@@ -103,6 +103,23 @@ See `vignette("distspec")` to get started, and the [reference
 index](https://epiforecasts.io/distspec/reference/) for the full list of
 functions.
 
+## Related work
+
+distspec discretises using
+[primarycensored](https://primarycensored.epinowcast.org/), which
+implements the double-censoring calculation. In Julia, the same
+censoring maths lives in
+[CensoredDistributions.jl](https://github.com/EpiAware/CensoredDistributions.jl),
+and
+[ComposedDistributions.jl](https://github.com/EpiAware/ComposedDistributions.jl)
+covers similar ground to the `<dist_spec>` combination interface, with
+`compose()` / `sequential()` in place of `+` and `observed_distribution`
+in place of `collapse()`. Both distspec and ComposedDistributions.jl
+carry parameter uncertainty in the object. The Julia packages build on
+[Distributions.jl](https://juliastats.org/Distributions.jl/) and
+represent richer event trees, while distspec keeps a flatter, R-native
+representation.
+
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
