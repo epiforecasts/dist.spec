@@ -26,6 +26,39 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
   }
 }
 
+#' Check that a numeric PMF or weight vector is valid
+#'
+#' @description
+#' A numeric probability mass function or weight vector must be numeric, contain
+#' only finite, non-negative values, and not be all zero, so that it can be
+#' normalised to sum to one. Raises an informative error otherwise.
+#' Un-normalised vectors are allowed: they are treated as weights and normalised
+#' by the caller.
+#'
+#' @param x A numeric vector.
+#' @param arg The name of the calling argument, used in the error messages.
+#' @return `x`, invisibly, if it is valid; otherwise an error is raised.
+#' @importFrom cli cli_abort
+#' @keywords internal
+check_pmf_values <- function(x, arg = "pmf") {
+  if (!is.numeric(x)) {
+    cli_abort("{.arg {arg}} must be a numeric vector.")
+  }
+  if (any(!is.finite(x))) {
+    cli_abort("{.arg {arg}} must contain only finite, non-missing values.")
+  }
+  if (any(x < 0)) {
+    cli_abort("{.arg {arg}} must not contain negative values.")
+  }
+  if (all(x == 0)) {
+    cli_abort(
+      "{.arg {arg}} must not be all zero; it cannot be normalised to a
+      probability mass function."
+    )
+  }
+  invisible(x)
+}
+
 #' Validate the structure of a `<dist_spec>`
 #'
 #' @description

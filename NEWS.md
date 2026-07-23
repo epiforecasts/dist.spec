@@ -54,6 +54,10 @@ below are changes relative to that code as it stood in EpiNow2 1.9.0.
 
 ## Bug fixes
 
+- `NonParametric()` and `Dirichlet(prior = )` now reject a numeric PMF or weight
+  vector that contains negative or non-finite values, or is all zero, with an
+  informative error, instead of silently producing an invalid distribution.
+  Un-normalised non-negative weights are still accepted and normalised.
 - A distribution parameter given as a certain distribution (standard deviation
   0, e.g. `Normal(x, 0)`, which collapses to `Fixed(x)`) is now resolved to its
   point value at construction, so it behaves exactly like passing the number.
