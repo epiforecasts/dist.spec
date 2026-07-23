@@ -83,7 +83,8 @@ distspec discretises using
 [primarycensored](https://primarycensored.epinowcast.org/), which implements the
 double-censoring calculation. In Julia, the same censoring maths lives in
 [CensoredDistributions.jl](https://github.com/EpiAware/CensoredDistributions.jl),
-and [ComposedDistributions.jl](https://composeddistributions.epiaware.org/)
+and
+[ComposedDistributions.jl](https://github.com/EpiAware/ComposedDistributions.jl)
 covers similar ground to the `<dist_spec>` combination interface, with
 `compose()` / `sequential()` in place of `+` and `observed_distribution` in
 place of `collapse()`. Both distspec and ComposedDistributions.jl carry

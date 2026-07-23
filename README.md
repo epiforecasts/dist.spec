@@ -111,7 +111,7 @@ implements the double-censoring calculation. In Julia, the same
 censoring maths lives in
 [CensoredDistributions.jl](https://github.com/EpiAware/CensoredDistributions.jl),
 and
-[ComposedDistributions.jl](https://composeddistributions.epiaware.org/)
+[ComposedDistributions.jl](https://github.com/EpiAware/ComposedDistributions.jl)
 covers similar ground to the `<dist_spec>` combination interface, with
 `compose()` / `sequential()` in place of `+` and `observed_distribution`
 in place of `collapse()`. Both distspec and ComposedDistributions.jl
@@ -123,7 +123,9 @@ representation.
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
 
 All contributions to this project are gratefully acknowledged using the
@@ -144,5 +146,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/distspec/issues?q=is%3Aissue+author%3Ajamesmbaazam">jamesmbaazam</a>
 
 <!-- markdownlint-enable -->
+
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
